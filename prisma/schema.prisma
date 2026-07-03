@@ -1,0 +1,135 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+model University {
+  id        Int      @id @default(autoincrement())
+  name      String
+  code      String   @unique
+  city      String?
+  state     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  colleges  College[]
+}
+model College {
+  id           Int      @id @default(autoincrement())
+  name         String
+  code         String
+  city         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  universityId Int
+  university   University   @relation(fields: [universityId], references: [id])
+
+  departments  Department[]
+  students  User[]
+  admin     User?   @relation("CollegeAdmin")
+
+  @@unique([universityId, code])
+}
+model Department {
+  id        Int      @id @default(autoincrement())
+  name      String
+  code      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  collegeId Int
+  college   College   @relation(fields: [collegeId], references: [id])
+
+  courses   Course[]
+  students  User[]
+
+  @@unique([collegeId, code])
+}
+
+model Course {
+  id           Int      @id @default(autoincrement())
+  name         String
+  code         String
+  durationYrs  Int      @default(4)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  departmentId Int
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  semesters    Semester[]
+ students  User[]
+  @@unique([departmentId, code])
+}
+
+model Semester {
+  id        Int      @id @default(autoincrement())
+  number    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  courseId  Int
+  course    Course   @relation(fields: [courseId], references: [id])
+
+  subjects  Subject[]
+ 
+students  User[]
+  @@unique([courseId, number])
+}
+
+model Subject {
+  id         Int      @id @default(autoincrement())
+  name       String
+  code       String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  semesterId Int
+  semester   Semester @relation(fields: [semesterId], references: [id])
+
+  @@unique([semesterId, code])
+}
+enum UserRole {
+  STUDENT
+  FACULTY
+  ADMIN
+  SUPER_ADMIN
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(STUDENT)
+
+  phone        String?
+  avatarUrl    String?
+
+  isPremium    Boolean  @default(false)
+  premiumUntil DateTime?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Student ke liye — kis college/dept/course/semester me hai
+  collegeId    Int?
+  college      College?    @relation(fields: [collegeId], references: [id])
+
+  departmentId Int?
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  courseId     Int?
+  course       Course?     @relation(fields: [courseId], references: [id])
+
+  semesterId   Int?
+  semester     Semester?   @relation(fields: [semesterId], references: [id])
+
+  // Admin ke liye — sirf ek college manage karta hai
+  managedCollegeId Int?    @unique
+  managedCollege   College? @relation("CollegeAdmin", fields: [managedCollegeId], references: [id])
+}
