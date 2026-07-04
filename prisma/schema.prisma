@@ -34,7 +34,9 @@ model College {
   departments  Department[]
   students     User[]
   admin        User?   @relation("CollegeAdmin")
-
+  notices Notice[]
+  events Event[]
+  listings Listing[]
   @@unique([universityId, code])
 }
 
@@ -50,6 +52,7 @@ model Department {
 
   courses   Course[]
   students  User[]
+  notices Notice[]
 
   @@unique([collegeId, code])
 }
@@ -68,6 +71,7 @@ model Course {
   semesters    Semester[]
   students     User[]
   notes        Note[]
+  notices Notice[]
 
   @@unique([departmentId, code])
 }
@@ -84,7 +88,7 @@ model Semester {
   subjects  Subject[]
   students  User[]
   notes     Note[]
-
+  notices Notice[]
   @@unique([courseId, number])
 }
 
@@ -147,6 +151,13 @@ model User {
   ratings   Rating[]
   bookmarks Bookmark[]
   comments  Comment[]
+  postedNotices Notice[] @relation("PostedNotices")
+  createdEvents Event[] @relation("CreatedEvents")
+  eventRegistrations EventRegistration[]
+  sellerListings Listing[] @relation("SellerListings")
+  wishlist       Wishlist[]
+  sentMessages   ChatMessage[] @relation("SentMessages")
+  buyerOrders    Order[] @relation("BuyerOrders")
   coupons Coupon[]
 }
 
@@ -251,4 +262,163 @@ model Comment {
 
   noteId    Int
   note      Note     @relation(fields: [noteId], references: [id])
+}
+model Notice {
+  id           Int       @id @default(autoincrement())
+  title        String
+  content      String
+  attachmentUrl String?
+
+  isPinned     Boolean   @default(false)
+  isArchived   Boolean   @default(false)
+  publishAt    DateTime  @default(now())
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  postedById   Int
+  postedBy     User      @relation("PostedNotices", fields: [postedById], references: [id])
+
+  collegeId    Int
+  college      College   @relation(fields: [collegeId], references: [id])
+
+  departmentId Int?
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  courseId     Int?
+  course       Course?   @relation(fields: [courseId], references: [id])
+
+  semesterId   Int?
+  semester     Semester? @relation(fields: [semesterId], references: [id])
+}
+enum EventType {
+  FEST
+  HACKATHON
+  SEMINAR
+  SPORTS
+  WORKSHOP
+  COMPETITION
+  OTHER
+}
+
+model Event {
+  id            Int       @id @default(autoincrement())
+  title         String
+  description   String?
+  type          EventType @default(OTHER)
+  venue         String?
+  bannerUrl     String?
+
+  eventDate     DateTime
+  registrationDeadline DateTime?
+  seatLimit     Int?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  createdById   Int
+  createdBy     User      @relation("CreatedEvents", fields: [createdById], references: [id])
+
+  collegeId     Int
+  college       College   @relation(fields: [collegeId], references: [id])
+
+  registrations EventRegistration[]
+}
+
+model EventRegistration {
+  id          Int      @id @default(autoincrement())
+  registeredAt DateTime @default(now())
+  qrCode      String   @unique
+  attended    Boolean  @default(false)
+
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+
+  eventId     Int
+  event       Event    @relation(fields: [eventId], references: [id])
+
+  @@unique([userId, eventId])
+}
+enum ListingType {
+  SELL
+  EXCHANGE
+}
+
+enum ListingCategory {
+  BOOKS
+  LAPTOP
+  CYCLE
+  CALCULATOR
+  FURNITURE
+  HOSTEL_ITEMS
+  ELECTRONICS
+  OTHER
+}
+
+enum ListingStatus {
+  AVAILABLE
+  SOLD
+  RESERVED
+}
+
+model Listing {
+  id          Int             @id @default(autoincrement())
+  title       String
+  description String?
+  category    ListingCategory
+  type        ListingType     @default(SELL)
+  price       Int?
+  imageUrl    String?
+  location    String?
+  status      ListingStatus   @default(AVAILABLE)
+
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  sellerId    Int
+  seller      User            @relation("SellerListings", fields: [sellerId], references: [id])
+
+  collegeId   Int
+  college     College         @relation(fields: [collegeId], references: [id])
+
+  wishlistedBy Wishlist[]
+  messages     ChatMessage[]
+  orders       Order[]
+}
+
+model Wishlist {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+
+  listingId Int
+  listing   Listing  @relation(fields: [listingId], references: [id])
+
+  @@unique([userId, listingId])
+}
+
+model ChatMessage {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+
+  senderId  Int
+  sender    User     @relation("SentMessages", fields: [senderId], references: [id])
+
+  listingId Int
+  listing   Listing  @relation(fields: [listingId], references: [id])
+}
+
+model Order {
+  id          Int      @id @default(autoincrement())
+  finalPrice  Int?
+  createdAt   DateTime @default(now())
+
+  buyerId     Int
+  buyer       User     @relation("BuyerOrders", fields: [buyerId], references: [id])
+
+  listingId   Int
+  listing     Listing  @relation(fields: [listingId], references: [id])
 }
