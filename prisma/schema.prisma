@@ -6,6 +6,7 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
 model University {
   id        Int      @id @default(autoincrement())
   name      String
@@ -16,7 +17,9 @@ model University {
   updatedAt DateTime @updatedAt
 
   colleges  College[]
+  notes     Note[]
 }
+
 model College {
   id           Int      @id @default(autoincrement())
   name         String
@@ -29,11 +32,12 @@ model College {
   university   University   @relation(fields: [universityId], references: [id])
 
   departments  Department[]
-  students  User[]
-  admin     User?   @relation("CollegeAdmin")
+  students     User[]
+  admin        User?   @relation("CollegeAdmin")
 
   @@unique([universityId, code])
 }
+
 model Department {
   id        Int      @id @default(autoincrement())
   name      String
@@ -62,7 +66,9 @@ model Course {
   department   Department @relation(fields: [departmentId], references: [id])
 
   semesters    Semester[]
- students  User[]
+  students     User[]
+  notes        Note[]
+
   @@unique([departmentId, code])
 }
 
@@ -76,8 +82,9 @@ model Semester {
   course    Course   @relation(fields: [courseId], references: [id])
 
   subjects  Subject[]
- 
-students  User[]
+  students  User[]
+  notes     Note[]
+
   @@unique([courseId, number])
 }
 
@@ -91,8 +98,11 @@ model Subject {
   semesterId Int
   semester   Semester @relation(fields: [semesterId], references: [id])
 
+  notes      Note[]
+
   @@unique([semesterId, code])
 }
+
 enum UserRole {
   STUDENT
   FACULTY
@@ -132,4 +142,113 @@ model User {
   // Admin ke liye — sirf ek college manage karta hai
   managedCollegeId Int?    @unique
   managedCollege   College? @relation("CollegeAdmin", fields: [managedCollegeId], references: [id])
+
+  uploadedNotes Note[] @relation("UploadedNotes")
+  ratings   Rating[]
+  bookmarks Bookmark[]
+  comments  Comment[]
+  coupons Coupon[]
+}
+
+enum NoteCategory {
+  NOTES
+  ASSIGNMENT
+  LAB_RECORD
+  PREVIOUS_YEAR_PAPER
+  BOOK
+  PRESENTATION
+  PRACTICAL_FILE
+  QUESTION_BANK
+  FACULTY_NOTES
+  VIVA_QUESTIONS
+  PROJECT
+  SYLLABUS
+  OTHERS
+}
+model Note {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  fileUrl     String
+  fileType    String
+  category    NoteCategory @default(NOTES)
+  unit        String?
+  isPremium   Boolean  @default(false)
+
+  views       Int      @default(0)
+  downloads   Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  uploadedById Int
+  uploadedBy   User     @relation("UploadedNotes", fields: [uploadedById], references: [id])
+
+  universityId Int
+  university   University @relation(fields: [universityId], references: [id])
+
+  courseId    Int
+  course      Course   @relation(fields: [courseId], references: [id])
+
+  semesterId  Int
+  semester    Semester @relation(fields: [semesterId], references: [id])
+
+  subjectId   Int?
+  subject     Subject? @relation(fields: [subjectId], references: [id])
+  ratings   Rating[]
+  bookmarks Bookmark[]
+  comments  Comment[]
+  coupons Coupon[]
+}
+model Coupon {
+  id              Int      @id @default(autoincrement())
+  code            String   @unique
+  discountPercent Int      @default(5)
+  isUsed          Boolean  @default(false)
+  usedAt          DateTime?
+  createdAt       DateTime @default(now())
+
+  ownerId         Int
+  owner           User     @relation(fields: [ownerId], references: [id])
+
+  sourceNoteId    Int?
+  sourceNote      Note?    @relation(fields: [sourceNoteId], references: [id])
+}
+model Rating {
+  id        Int      @id @default(autoincrement())
+  value     Int
+  createdAt DateTime @default(now())
+
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+
+  noteId    Int
+  note      Note     @relation(fields: [noteId], references: [id])
+
+  @@unique([userId, noteId])
+}
+
+model Bookmark {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+
+  noteId    Int
+  note      Note     @relation(fields: [noteId], references: [id])
+
+  @@unique([userId, noteId])
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+
+  noteId    Int
+  note      Note     @relation(fields: [noteId], references: [id])
 }
