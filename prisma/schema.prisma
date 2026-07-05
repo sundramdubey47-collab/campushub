@@ -38,6 +38,7 @@ model College {
   events Event[]
   listings Listing[]
   lostFoundItems LostFoundItem[]
+  rentalItems RentalItem[]
   @@unique([universityId, code])
 }
 
@@ -160,6 +161,8 @@ model User {
   sentMessages   ChatMessage[] @relation("SentMessages")
   buyerOrders    Order[] @relation("BuyerOrders")
   lostFoundItems LostFoundItem[]
+  rentalItems    RentalItem[] @relation("RentalOwner")
+  rentalBookings RentalBooking[] @relation("RentalRenter")
   coupons Coupon[]
 }
 
@@ -448,4 +451,76 @@ model LostFoundItem {
 
   collegeId     Int
   college       College       @relation(fields: [collegeId], references: [id])
+}
+enum RentalCategory {
+  BOOKS
+  LAPTOP
+  PROJECTOR
+  CALCULATOR
+  CAMERA
+  CYCLE
+  FURNITURE
+  OTHER
+}
+
+enum RentalPricingType {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum RentalItemStatus {
+  AVAILABLE
+  RENTED
+}
+
+model RentalItem {
+  id             Int               @id @default(autoincrement())
+  title          String
+  description    String?
+  category       RentalCategory
+  imageUrl       String?
+  pricingType    RentalPricingType @default(DAILY)
+  price          Int
+  securityDeposit Int              @default(0)
+  status         RentalItemStatus  @default(AVAILABLE)
+
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  ownerId        Int
+  owner          User              @relation("RentalOwner", fields: [ownerId], references: [id])
+
+  collegeId      Int
+  college        College           @relation(fields: [collegeId], references: [id])
+
+  bookings       RentalBooking[]
+}
+
+enum RentalBookingStatus {
+  ACTIVE
+  RETURNED
+  OVERDUE
+}
+
+model RentalBooking {
+  id             Int                 @id @default(autoincrement())
+  startDate      DateTime
+  expectedReturnDate DateTime
+  actualReturnDate   DateTime?
+  status         RentalBookingStatus @default(ACTIVE)
+
+  rentAmount     Int
+  securityDeposit Int
+  lateFee        Int                 @default(0)
+  couponUsed     Boolean             @default(false)
+  platformAbsorbed Int               @default(0)
+
+  createdAt      DateTime            @default(now())
+
+  renterId       Int
+  renter         User                @relation("RentalRenter", fields: [renterId], references: [id])
+
+  itemId         Int
+  item           RentalItem          @relation(fields: [itemId], references: [id])
 }
