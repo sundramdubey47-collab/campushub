@@ -3,13 +3,15 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, FileText, Bell, ShoppingBag } from "lucide-react"
+import { LayoutDashboard, FileText, Bell, ShoppingBag, User } from "lucide-react"
+
 
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/notes", label: "Notes", icon: FileText },
   { href: "/notices", label: "Notices", icon: Bell },
   { href: "/marketplace", label: "Marketplace", icon: ShoppingBag },
+  { href: "/profile", label: "Profile", icon: User },
 ]
 
 export function SidebarNav() {

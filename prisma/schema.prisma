@@ -37,6 +37,7 @@ model College {
   notices Notice[]
   events Event[]
   listings Listing[]
+  lostFoundItems LostFoundItem[]
   @@unique([universityId, code])
 }
 
@@ -158,6 +159,7 @@ model User {
   wishlist       Wishlist[]
   sentMessages   ChatMessage[] @relation("SentMessages")
   buyerOrders    Order[] @relation("BuyerOrders")
+  lostFoundItems LostFoundItem[]
   coupons Coupon[]
 }
 
@@ -421,4 +423,29 @@ model Order {
 
   listingId   Int
   listing     Listing  @relation(fields: [listingId], references: [id])
+}
+enum LostFoundType {
+  LOST
+  FOUND
+}
+
+model LostFoundItem {
+  id            Int           @id @default(autoincrement())
+  type          LostFoundType
+  title         String
+  description   String?
+  imageUrl      String?
+  location      String?
+  contactNumber String?
+  reward        String?
+  isResolved    Boolean       @default(false)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  reportedById  Int
+  reportedBy    User          @relation(fields: [reportedById], references: [id])
+
+  collegeId     Int
+  college       College       @relation(fields: [collegeId], references: [id])
 }
