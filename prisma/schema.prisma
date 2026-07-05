@@ -39,6 +39,7 @@ model College {
   listings Listing[]
   lostFoundItems LostFoundItem[]
   rentalItems RentalItem[]
+  tests Test[]
   @@unique([universityId, code])
 }
 
@@ -74,7 +75,7 @@ model Course {
   students     User[]
   notes        Note[]
   notices Notice[]
-
+tests Test[]
   @@unique([departmentId, code])
 }
 
@@ -91,6 +92,7 @@ model Semester {
   students  User[]
   notes     Note[]
   notices Notice[]
+  tests Test[]
   @@unique([courseId, number])
 }
 
@@ -105,7 +107,7 @@ model Subject {
   semester   Semester @relation(fields: [semesterId], references: [id])
 
   notes      Note[]
-
+tests Test[]
   @@unique([semesterId, code])
 }
 
@@ -163,6 +165,11 @@ model User {
   lostFoundItems LostFoundItem[]
   rentalItems    RentalItem[] @relation("RentalOwner")
   rentalBookings RentalBooking[] @relation("RentalRenter")
+  payments Payment[]
+  chatSessions ChatSession[]
+  createdTests   Test[]
+  testAttempts   TestAttempt[]
+  testPurchases  TestPurchase[]
   coupons Coupon[]
 }
 
@@ -523,4 +530,145 @@ model RentalBooking {
 
   itemId         Int
   item           RentalItem          @relation(fields: [itemId], references: [id])
+}
+enum PlanType {
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+enum PaymentStatus {
+  CREATED
+  PAID
+  FAILED
+}
+
+model Payment {
+  id              Int           @id @default(autoincrement())
+  razorpayOrderId String        @unique
+  razorpayPaymentId String?
+  amount          Int
+  planType        PlanType
+  status          PaymentStatus @default(CREATED)
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  userId          Int
+  user            User          @relation(fields: [userId], references: [id])
+}
+model ChatSession {
+  id        Int      @id @default(autoincrement())
+  title     String   @default("New Chat")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+
+  messages  AiMessage[]
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+}
+
+model AiMessage {
+  id        Int         @id @default(autoincrement())
+  role      MessageRole
+  content   String
+  createdAt DateTime    @default(now())
+
+  sessionId Int
+  session   ChatSession @relation(fields: [sessionId], references: [id])
+}
+enum TestDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+model Test {
+  id             Int            @id @default(autoincrement())
+  title          String
+  topic          String
+  difficulty     TestDifficulty @default(MEDIUM)
+  durationMinutes Int           @default(30)
+  negativeMarking Float         @default(0)
+  isPremium      Boolean        @default(false)
+  price          Int?
+
+  createdAt      DateTime       @default(now())
+
+  createdById    Int
+  createdBy      User           @relation(fields: [createdById], references: [id])
+
+  collegeId      Int
+  college        College        @relation(fields: [collegeId], references: [id])
+
+  courseId       Int
+  course         Course         @relation(fields: [courseId], references: [id])
+
+  semesterId     Int
+  semester       Semester       @relation(fields: [semesterId], references: [id])
+
+  subjectId      Int?
+  subject        Subject?       @relation(fields: [subjectId], references: [id])
+
+  questions      TestQuestion[]
+  attempts       TestAttempt[]
+  purchases      TestPurchase[]
+}
+
+model TestQuestion {
+  id            Int      @id @default(autoincrement())
+  questionText  String
+  options       Json
+  correctIndex  Int
+
+  testId        Int
+  test          Test     @relation(fields: [testId], references: [id])
+  answers TestAnswer[]
+}
+
+model TestAttempt {
+  id           Int       @id @default(autoincrement())
+  score        Int       @default(0)
+  totalQuestions Int
+  startedAt    DateTime  @default(now())
+  submittedAt  DateTime?
+
+  userId       Int
+  user         User      @relation(fields: [userId], references: [id])
+
+  testId       Int
+  test         Test      @relation(fields: [testId], references: [id])
+
+  answers      TestAnswer[]
+}
+
+model TestAnswer {
+  id             Int      @id @default(autoincrement())
+  selectedIndex  Int?
+  isCorrect      Boolean  @default(false)
+
+  attemptId      Int
+  attempt        TestAttempt @relation(fields: [attemptId], references: [id])
+
+  questionId     Int
+  question       TestQuestion @relation(fields: [questionId], references: [id])
+}
+
+model TestPurchase {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+
+  testId    Int
+  test      Test     @relation(fields: [testId], references: [id])
+
+  @@unique([userId, testId])
 }
