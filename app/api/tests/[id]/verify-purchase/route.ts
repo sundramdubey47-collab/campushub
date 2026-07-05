@@ -10,11 +10,11 @@ export async function POST(
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
-  if (!dbUser) return NextResponse.json({ error: "User nahi mila" }, { status: 400 })
+  if (!dbUser) return NextResponse.json({ error: "User not found" }, { status: 400 })
 
   const { id } = await params
   const body = await req.json()
@@ -26,7 +26,7 @@ export async function POST(
     .digest("hex")
 
   if (expectedSignature !== razorpay_signature) {
-    return NextResponse.json({ error: "Payment verification fail ho gaya" }, { status: 400 })
+    return NextResponse.json({ error: "Payment verification failed" }, { status: 400 })
   }
 
   await prisma.testPurchase.create({

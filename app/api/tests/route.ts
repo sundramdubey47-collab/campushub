@@ -7,17 +7,17 @@ export async function POST(req: Request) {
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
 
   if (!dbUser || !["FACULTY", "ADMIN", "SUPER_ADMIN"].includes(dbUser.role)) {
-    return NextResponse.json({ error: "Sirf Faculty/Admin test bana sakte hain" }, { status: 403 })
+    return NextResponse.json({ error: "Oly Faculty/Admin can create test" }, { status: 403 })
   }
 
   if (!dbUser.collegeId) {
-    return NextResponse.json({ error: "Aapki college set nahi hai" }, { status: 400 })
+    return NextResponse.json({ error: "your collage not define" }, { status: 400 })
   }
 
   const body = await req.json()
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
   } = body
 
   if (!title || !topic || !courseId || !semesterId) {
-    return NextResponse.json({ error: "Title, Topic, Branch aur Semester zaroori hai" }, { status: 400 })
+    return NextResponse.json({ error: "Title, Topic, Branch and Semester are required " }, { status: 400 })
   }
 
   let generatedQuestions

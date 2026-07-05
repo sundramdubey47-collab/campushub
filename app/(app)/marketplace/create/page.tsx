@@ -70,7 +70,7 @@ export default function CreateListingPage() {
 
   return (
     <div className="max-w-lg space-y-4">
-      <h1 className="text-2xl font-bold">Item List Karo</h1>
+      <h1 className="text-2xl font-bold"> list your Item  </h1>
 
       <form onSubmit={handleSubmit} className="space-y-4 border rounded-lg p-6">
         {error && <p className="text-sm text-red-500">{error}</p>}
@@ -87,12 +87,12 @@ export default function CreateListingPage() {
 
         <div className="space-y-2">
           <Label>Category</Label>
-          <Combobox placeholder="Category chuno..." value={category} onChange={setCategory} options={CATEGORY_OPTIONS} />
+          <Combobox placeholder="Category..." value={category} onChange={setCategory} options={CATEGORY_OPTIONS} />
         </div>
 
         <div className="space-y-2">
           <Label>Type</Label>
-          <Combobox placeholder="Type chuno..." value={type} onChange={setType} options={TYPE_OPTIONS} />
+          <Combobox placeholder="Type..." value={type} onChange={setType} options={TYPE_OPTIONS} />
         </div>
 
         {type === "SELL" && (
@@ -113,7 +113,7 @@ export default function CreateListingPage() {
         </div>
 
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Post ho raha hai..." : "List Karo"}
+          {loading ? "Posting..." : "List item"}
         </Button>
       </form>
     </div>

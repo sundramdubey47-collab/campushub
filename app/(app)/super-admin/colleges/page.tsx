@@ -1,10 +1,13 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { PageHeader } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Autocomplete } from "@/components/autocomplete"
+import { EmptyState } from "@/components/empty-state"
+import { School, Plus, ShieldCheck } from "lucide-react"
 
 type University = { id: number; name: string }
 type College = {
@@ -48,7 +51,7 @@ export default function SuperAdminCollegesPage() {
     setError("")
 
     if (!name || !code || !universityId) {
-      setError("Sab fields zaroori hain")
+      setError("All fields are required")
       return
     }
 
@@ -66,10 +69,7 @@ export default function SuperAdminCollegesPage() {
       return
     }
 
-    setName("")
-    setCode("")
-    setCity("")
-    setUniversityId("")
+    setName(""); setCode(""); setCity(""); setUniversityId("")
     loadData()
   }
 
@@ -84,71 +84,76 @@ export default function SuperAdminCollegesPage() {
     })
     const data = await res.json()
 
-    setAssignMessage({ ...assignMessage, [collegeId]: res.ok ? "✅ Admin assign ho gaya" : "❌ " + data.error })
-
+    setAssignMessage({ ...assignMessage, [collegeId]: res.ok ? "✅ Admin assigned successfully" : "❌ " + data.error })
     if (res.ok) loadData()
   }
 
   return (
     <div className="max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold">Colleges</h1>
+      <PageHeader title="Colleges" description="Add colleges and assign administrators" />
 
-      <form onSubmit={handleSubmit} className="space-y-3 border rounded-lg p-4">
+      <form onSubmit={handleSubmit} className="rounded-xl border bg-card p-5 space-y-3">
         {error && <p className="text-sm text-red-500">{error}</p>}
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           <Label>University</Label>
           <Autocomplete
-            placeholder="University chuno..."
+            placeholder="Select university..."
             value={universityId}
             onChange={setUniversityId}
             options={universities.map((u) => ({ value: u.id.toString(), label: u.name }))}
           />
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label>Name</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} />
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label>Code</Label>
             <Input value={code} onChange={(e) => setCode(e.target.value)} />
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label>City</Label>
             <Input value={city} onChange={(e) => setCity(e.target.value)} />
           </div>
         </div>
-        <Button type="submit" disabled={loading}>
-          {loading ? "Ban raha hai..." : "College Banao"}
+        <Button type="submit" size="sm" disabled={loading}>
+          <Plus className="h-4 w-4 mr-1.5" /> {loading ? "Adding..." : "Add College"}
         </Button>
       </form>
 
-      <div className="space-y-3">
-        {colleges.map((c) => (
-          <div key={c.id} className="border rounded-lg p-4 space-y-2">
-            <div>
-              <p className="font-medium">{c.name} ({c.code})</p>
-              <p className="text-xs text-muted-foreground">{c.university.name} — {c.city}</p>
-            </div>
-
-            {c.admin ? (
-              <p className="text-sm text-green-600">Admin: {c.admin.name} ({c.admin.email})</p>
-            ) : (
-              <div className="flex gap-2">
-                <Input
-                  placeholder="User ka email (jo pehle se is college me hai)"
-                  value={assignEmail[c.id] || ""}
-                  onChange={(e) => setAssignEmail({ ...assignEmail, [c.id]: e.target.value })}
-                />
-                <Button size="sm" onClick={() => handleAssignAdmin(c.id)}>
-                  Admin Banao
-                </Button>
+      {colleges.length === 0 ? (
+        <EmptyState icon={School} title="No colleges added yet" />
+      ) : (
+        <div className="space-y-3">
+          {colleges.map((c) => (
+            <div key={c.id} className="rounded-xl border bg-card p-4 space-y-2">
+              <div>
+                <p className="font-medium text-sm">{c.name} <span className="text-muted-foreground font-normal">({c.code})</span></p>
+                <p className="text-xs text-muted-foreground">{c.university.name} — {c.city}</p>
               </div>
-            )}
-            {assignMessage[c.id] && <p className="text-xs">{assignMessage[c.id]}</p>}
-          </div>
-        ))}
-      </div>
+
+              {c.admin ? (
+                <p className="text-xs text-[oklch(var(--success))] flex items-center gap-1.5">
+                  <ShieldCheck className="h-3.5 w-3.5" /> Admin: {c.admin.name} ({c.admin.email})
+                </p>
+              ) : (
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Email of existing member to promote"
+                    value={assignEmail[c.id] || ""}
+                    onChange={(e) => setAssignEmail({ ...assignEmail, [c.id]: e.target.value })}
+                  />
+                  <Button size="sm" onClick={() => handleAssignAdmin(c.id)}>
+                    Assign Admin
+                  </Button>
+                </div>
+              )}
+              {assignMessage[c.id] && <p className="text-xs">{assignMessage[c.id]}</p>}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

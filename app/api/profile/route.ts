@@ -6,7 +6,7 @@ export async function GET() {
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({
@@ -36,7 +36,7 @@ export async function GET() {
   })
 
   if (!dbUser) {
-    return NextResponse.json({ error: "User nahi mila" }, { status: 404 })
+    return NextResponse.json({ error: "User not found" }, { status: 404 })
   }
 
   const totalDownloadsReceived = dbUser.uploadedNotes.reduce((sum, n) => sum + n.downloads, 0)

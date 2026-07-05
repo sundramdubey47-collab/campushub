@@ -82,7 +82,7 @@ export default function UploadResourcePage() {
     setError("")
 
     if (!file || !title || !courseId || !semesterId) {
-      setError("Title, Branch, Semester aur File zaroori hai")
+      setError("Title, Branch, Semester aur File ")
       return
     }
 
@@ -116,7 +116,7 @@ export default function UploadResourcePage() {
 
   return (
     <div className="max-w-lg space-y-4">
-      <h1 className="text-2xl font-bold">Academic Resource Upload Karo</h1>
+      <h1 className="text-2xl font-bold"> Upload your Academic Resource </h1>
 
       <form onSubmit={handleSubmit} className="space-y-4 border rounded-lg p-6">
         {error && <p className="text-sm text-red-500">{error}</p>}
@@ -127,14 +127,14 @@ export default function UploadResourcePage() {
         </div>
 
         <div className="space-y-2">
-          <Label>Description (optional)</Label>
+          <Label>Description</Label>
           <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
 
 <div className="space-y-2">
   <Label>Branch</Label>
   <Autocomplete
-    placeholder="Branch type karo..."
+    placeholder="Branch"
     value={courseId}
     onChange={setCourseId}
     options={courses.map((c) => ({ value: c.id.toString(), label: c.name }))}
@@ -144,7 +144,7 @@ export default function UploadResourcePage() {
       <div className="space-y-2">
   <Label>Semester</Label>
   <Autocomplete
-    placeholder="Semester type karo..."
+    placeholder="Semester"
     value={semesterId}
     onChange={setSemesterId}
     options={semesters.map((s) => ({ value: s.id.toString(), label: `Semester ${s.number}` }))}
@@ -155,14 +155,14 @@ export default function UploadResourcePage() {
        <div className="space-y-2">
   <Label>Subject / Unit</Label>
   <Autocomplete
-    placeholder="Subject type karo..."
+    placeholder="Subject"
     value={subjectId}
     onChange={setSubjectId}
     options={subjects.map((s) => ({ value: s.id.toString(), label: s.name }))}
     disabled={!semesterId}
   />
   <Input
-    placeholder="Unit/Chapter (optional) — jaise: Unit 2"
+    placeholder="Unit/Chapter (optional) — Eg-: Unit 2"
     value={unit}
     onChange={(e) => setUnit(e.target.value)}
   />
@@ -171,7 +171,7 @@ export default function UploadResourcePage() {
         <div className="space-y-2">
           <Label>Resource Type</Label>
           <Combobox
-            placeholder="Resource type chuno..."
+            placeholder="Resource..."
             value={category}
             onChange={setCategory}
             options={CATEGORY_OPTIONS}
@@ -189,7 +189,7 @@ export default function UploadResourcePage() {
         </div>
 
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Upload ho raha hai..." : "Upload Karo"}
+          {loading ? "Uploading..." : "Upload "}
         </Button>
       </form>
     </div>

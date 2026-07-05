@@ -82,7 +82,7 @@ export default function PremiumPage() {
   return (
     <div className="max-w-2xl space-y-6">
       <h1 className="text-2xl font-bold">Premium Membership</h1>
-      <p className="text-muted-foreground">Premium notes/resources download karne ke liye Premium lena zaroori hai</p>
+      <p className="text-muted-foreground">Unlock Premium to download exclusive notes/Academic Resources</p>
 
       {error && <p className="text-sm text-red-500">{error}</p>}
 
@@ -92,7 +92,7 @@ export default function PremiumPage() {
             <h2 className="font-semibold text-lg">{plan.label}</h2>
             <p className="text-3xl font-bold">₹{plan.price}</p>
             <Button className="w-full" onClick={() => handleSubscribe(plan.type)} disabled={loading === plan.type}>
-              {loading === plan.type ? "Loading..." : "Subscribe Karo"}
+              {loading === plan.type ? "Loading..." : "Subscribe"}
             </Button>
           </div>
         ))}

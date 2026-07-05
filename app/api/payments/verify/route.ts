@@ -7,17 +7,17 @@ export async function POST(req: Request) {
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
-  if (!dbUser) return NextResponse.json({ error: "User nahi mila" }, { status: 400 })
+  if (!dbUser) return NextResponse.json({ error: "User not found" }, { status: 400 })
 
   const body = await req.json()
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body
 
   if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-    return NextResponse.json({ error: "Payment details missing hain" }, { status: 400 })
+    return NextResponse.json({ error: "Payment details missing " }, { status: 400 })
   }
 
   // Signature verify karo — ye confirm karta hai ki payment asli Razorpay se aaya hai,
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       where: { razorpayOrderId: razorpay_order_id },
       data: { status: "FAILED" },
     })
-    return NextResponse.json({ error: "Payment verification fail ho gaya" }, { status: 400 })
+    return NextResponse.json({ error: "Payment verification failed" }, { status: 400 })
   }
 
   const payment = await prisma.payment.findUnique({
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
   })
 
   if (!payment || payment.userId !== dbUser.id) {
-    return NextResponse.json({ error: "Payment record nahi mila" }, { status: 400 })
+    return NextResponse.json({ error: " No Payment record found " }, { status: 400 })
   }
 
   await prisma.payment.update({

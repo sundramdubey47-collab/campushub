@@ -95,7 +95,7 @@ export default function CreateNoticePage() {
 
   return (
     <div className="max-w-lg space-y-4">
-      <h1 className="text-2xl font-bold">Notice Banao</h1>
+      <h1 className="text-2xl font-bold">Create Notice</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4 border rounded-lg p-6">
         {error && <p className="text-sm text-red-500">{error}</p>}
@@ -111,13 +111,13 @@ export default function CreateNoticePage() {
         </div>
 
         <p className="text-sm text-muted-foreground">
-          Niche khaali chhodo agar poori college ke liye notice hai
+          Leave blank if the notices is for the entire college
         </p>
 
         <div className="space-y-2">
           <Label>Department (optional)</Label>
           <Autocomplete
-            placeholder="Department chuno..."
+            placeholder="Department..."
             value={departmentId}
             onChange={setDepartmentId}
             options={departments.map((d) => ({ value: d.id.toString(), label: d.name! }))}
@@ -125,20 +125,9 @@ export default function CreateNoticePage() {
         </div>
 
         <div className="space-y-2">
-          <Label>Branch (optional)</Label>
-          <Autocomplete
-            placeholder="Branch chuno..."
-            value={courseId}
-            onChange={setCourseId}
-            options={courses.map((c) => ({ value: c.id.toString(), label: c.name! }))}
-            disabled={!departmentId}
-          />
-        </div>
-
-        <div className="space-y-2">
           <Label>Semester (optional)</Label>
           <Autocomplete
-            placeholder="Semester chuno..."
+            placeholder="Semester..."
             value={semesterId}
             onChange={setSemesterId}
             options={semesters.map((s) => ({ value: s.id.toString(), label: `Semester ${s.number}` }))}
@@ -156,7 +145,7 @@ export default function CreateNoticePage() {
         </div>
 
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Post ho raha hai..." : "Notice Post Karo"}
+          {loading ? "Posting..." : "Post Notice"}
         </Button>
       </form>
     </div>

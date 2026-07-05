@@ -6,31 +6,31 @@ export async function POST(req: Request) {
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
 
   if (!dbUser) {
-    return NextResponse.json({ error: "User nahi mila" }, { status: 400 })
+    return NextResponse.json({ error: "User not found" }, { status: 400 })
   }
 
   if (!["FACULTY", "ADMIN", "SUPER_ADMIN"].includes(dbUser.role)) {
     return NextResponse.json(
-      { error: "Sirf Faculty/Admin notice bana sakte hain" },
+      { error: "Only Faculty/Admin can create notice for sucerity purpose" },
       { status: 403 }
     )
   }
 
   if (!dbUser.collegeId) {
-    return NextResponse.json({ error: "Aapki college set nahi hai" }, { status: 400 })
+    return NextResponse.json({ error: "your college is not found" }, { status: 400 })
   }
 
   const body = await req.json()
   const { title, content, attachmentUrl, departmentId, courseId, semesterId, publishAt } = body
 
   if (!title || !content) {
-    return NextResponse.json({ error: "Title aur content zaroori hai" }, { status: 400 })
+    return NextResponse.json({ error: "Title and content must be required" }, { status: 400 })
   }
 
   const notice = await prisma.notice.create({
@@ -54,7 +54,7 @@ export async function GET() {
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })

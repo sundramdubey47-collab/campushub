@@ -28,7 +28,7 @@ export default function LoginPage() {
     setLoading(false)
 
     if (res?.error) {
-      setError("Email ya password galat hai")
+      setError("Email or password wrong")
       return
     }
 
@@ -70,7 +70,7 @@ export default function LoginPage() {
         </div>
 
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Login ho raha hai..." : "Login"}
+          {loading ? "Logining..." : "Login"}
         </Button>
 
         <Button

@@ -87,7 +87,7 @@ export default function AIAssistantPage() {
       {/* Chat History Sidebar */}
       <div className="hidden md:flex w-56 flex-col border rounded-lg p-3 gap-2 overflow-y-auto">
         <Button size="sm" onClick={startNewChat}>
-          <Plus className="h-4 w-4 mr-1" /> Naya Chat
+          <Plus className="h-4 w-4 mr-1" /> New Chat
         </Button>
         {sessions.map((s) => (
           <button
@@ -107,7 +107,7 @@ export default function AIAssistantPage() {
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.length === 0 ? (
             <p className="text-muted-foreground text-center mt-10">
-              👋 Namaste! Main CampusHub AI Assistant hoon. Kuch bhi pucho — padhai, coding, career, ya CampusHub ke features ke baare me.
+              👋 Namaste! Main CampusHub AI Assistant hoon. Kuch bhi puch sakte hai — padhai, coding, career, ya CampusHub ke features ke baare me.
             </p>
           ) : (
             messages.map((m) => (
@@ -122,7 +122,7 @@ export default function AIAssistantPage() {
               </div>
             ))
           )}
-          {loading && <p className="text-sm text-muted-foreground">AI soch raha hai...</p>}
+          {loading && <p className="text-sm text-muted-foreground">Thinking...</p>}
           <div ref={messagesEndRef} />
         </div>
 
@@ -130,7 +130,7 @@ export default function AIAssistantPage() {
 
         <form onSubmit={handleSend} className="flex gap-2 p-3 border-t">
           <Textarea
-            placeholder="Kuch bhi pucho..."
+            placeholder="Ask any things..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {

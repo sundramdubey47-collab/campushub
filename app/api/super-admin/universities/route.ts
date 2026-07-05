@@ -6,20 +6,20 @@ export async function POST(req: Request) {
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
 
   if (!dbUser || dbUser.role !== "SUPER_ADMIN") {
-    return NextResponse.json({ error: "Permission nahi hai" }, { status: 403 })
+    return NextResponse.json({ error: "Access Denied!" }, { status: 403 })
   }
 
   const body = await req.json()
   const { name, code, city, state } = body
 
   if (!name || !code) {
-    return NextResponse.json({ error: "Name aur Code zaroori hai" }, { status: 400 })
+    return NextResponse.json({ error: "Name and Code are required" }, { status: 400 })
   }
 
   const university = await prisma.university.create({

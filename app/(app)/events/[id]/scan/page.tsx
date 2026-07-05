@@ -56,7 +56,7 @@ export default function ScanPage() {
     <div className="max-w-md space-y-4">
       <h1 className="text-2xl font-bold">QR Scanner</h1>
       <p className="text-sm text-muted-foreground">
-        Student ka QR code camera ke saamne rakho
+        Place the students's QR code in front of the camera
       </p>
 
       <div id="qr-reader" className="w-full" />

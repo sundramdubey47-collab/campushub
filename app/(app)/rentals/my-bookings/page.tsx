@@ -45,22 +45,22 @@ export default function MyRentalBookingsPage() {
       return
     }
 
-    setMessage(data.lateFee > 0 ? `Return ho gaya. Late fee: ₹${data.lateFee}` : "Return ho gaya, koi late fee nahi!")
+    setMessage(data.lateFee > 0 ? `Returned successfully. Late fee: ₹${data.lateFee}` : "Returned on time- No late fee applied!")
     load()
   }
 
-  if (loading) return <p className="text-muted-foreground">Load ho raha hai...</p>
+  if (loading) return <p className="text-muted-foreground">Loading...</p>
 
   return (
     <div className="max-w-2xl space-y-8">
-      <h1 className="text-2xl font-bold">Meri Rentals</h1>
+      <h1 className="text-2xl font-bold">My Rentals</h1>
 
       {message && <p className="text-sm font-medium border rounded-lg p-3">{message}</p>}
 
       <div className="space-y-3">
-        <h2 className="font-semibold text-lg">Maine Rent Pe Liye Hain</h2>
+        <h2 className="font-semibold text-lg">My Rentls</h2>
         {asRenter.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Koi rental nahi hai</p>
+          <p className="text-sm text-muted-foreground">No rentals yet-Start exploring items to rent</p>
         ) : (
           asRenter.map((b) => (
             <div key={b.id} className="border rounded-lg p-4 space-y-1">
@@ -79,7 +79,7 @@ export default function MyRentalBookingsPage() {
               </p>
               {b.status !== "RETURNED" && (
                 <Button size="sm" onClick={() => handleReturn(b.id)}>
-                  Return Karo
+                  Return Now
                 </Button>
               )}
             </div>
@@ -88,9 +88,9 @@ export default function MyRentalBookingsPage() {
       </div>
 
       <div className="space-y-3">
-        <h2 className="font-semibold text-lg">Mere Items Jo Kisi Ne Rent Liye Hain</h2>
+        <h2 className="font-semibold text-lg"> my Items rented by others</h2>
         {asOwner.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Koi rental nahi hai</p>
+          <p className="text-sm text-muted-foreground">No active rentals from your side</p>
         ) : (
           asOwner.map((b) => (
             <div key={b.id} className="border rounded-lg p-4 space-y-1">

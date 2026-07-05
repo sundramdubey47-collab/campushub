@@ -9,13 +9,13 @@ export async function PATCH(
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
 
   if (!dbUser || !["ADMIN", "SUPER_ADMIN"].includes(dbUser.role)) {
-    return NextResponse.json({ error: "Permission nahi hai" }, { status: 403 })
+    return NextResponse.json({ error: "Access denied" }, { status: 403 })
   }
 
   const { id } = await params
@@ -24,13 +24,13 @@ export async function PATCH(
   const targetUser = await prisma.user.findUnique({ where: { id: Number(id) } })
 
   if (!targetUser || targetUser.collegeId !== dbUser.collegeId) {
-    return NextResponse.json({ error: "Ye user aapki college ka nahi hai" }, { status: 403 })
+    return NextResponse.json({ error: "User does not belong to your college" }, { status: 403 })
   }
 
   // Admin sirf STUDENT ko FACULTY bana sakta hai, ya wapas STUDENT
   // Kisi ko ADMIN/SUPER_ADMIN nahi bana sakta (wo Super Admin ka kaam hai)
   if (body.role && !["STUDENT", "FACULTY"].includes(body.role)) {
-    return NextResponse.json({ error: "Sirf Student/Faculty role set kar sakte hain" }, { status: 400 })
+    return NextResponse.json({ error: "Only Students/Faculty roles can be assigned" }, { status: 400 })
   }
 
   const updated = await prisma.user.update({

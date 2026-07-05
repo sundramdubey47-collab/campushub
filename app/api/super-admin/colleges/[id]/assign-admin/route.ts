@@ -9,13 +9,13 @@ export async function POST(
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
 
   if (!dbUser || dbUser.role !== "SUPER_ADMIN") {
-    return NextResponse.json({ error: "Permission nahi hai" }, { status: 403 })
+    return NextResponse.json({ error: "Access denied!" }, { status: 403 })
   }
 
   const { id } = await params
@@ -25,11 +25,11 @@ export async function POST(
   const targetUser = await prisma.user.findUnique({ where: { email: userEmail } })
 
   if (!targetUser) {
-    return NextResponse.json({ error: "User nahi mila" }, { status: 404 })
+    return NextResponse.json({ error: "User not found" }, { status: 404 })
   }
 
   if (targetUser.collegeId !== Number(id)) {
-    return NextResponse.json({ error: "Ye user is college ka nahi hai" }, { status: 400 })
+    return NextResponse.json({ error: "THis user is not for this college" }, { status: 400 })
   }
 
   await prisma.user.update({

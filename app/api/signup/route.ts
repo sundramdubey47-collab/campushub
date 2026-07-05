@@ -9,7 +9,7 @@ export async function POST(req: Request) {
 
     if (!name || !email || !password) {
       return NextResponse.json(
-        { error: "Sab fields bharna zaroori hai" },
+        { error: "Please fill all the fildes" },
         { status: 400 }
       )
     }
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "Is email se pehle se account bana hua hai" },
+        { error: "This email is already exist" },
         { status: 400 }
       )
     }
@@ -37,13 +37,13 @@ export async function POST(req: Request) {
     })
 
     return NextResponse.json(
-      { message: "Account ban gaya", userId: user.id },
+      { message: "Successfully Created Account", userId: user.id },
       { status: 201 }
     )
   } catch (error) {
     console.error(error)
     return NextResponse.json(
-      { error: "Kuch galat ho gaya" },
+      { error: "Somthing Went Wrong" },
       { status: 500 }
     )
   }

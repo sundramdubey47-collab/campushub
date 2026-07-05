@@ -6,14 +6,14 @@ export async function POST(req: Request) {
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const body = await req.json()
   const { collegeId, departmentId, courseId, semesterId } = body
 
   if (!collegeId || !departmentId || !courseId || !semesterId) {
-    return NextResponse.json({ error: "Sab fields zaroori hain" }, { status: 400 })
+    return NextResponse.json({ error: "All fileds are required" }, { status: 400 })
   }
 
   await prisma.user.update({

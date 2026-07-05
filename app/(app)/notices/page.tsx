@@ -2,8 +2,12 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Pin, Archive } from "lucide-react"
+import { PageHeader } from "@/components/page-header"
+import { EmptyState } from "@/components/empty-state"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Pin, Archive, Bell, Plus } from "lucide-react"
 import { useSession } from "next-auth/react"
 
 type Notice = {
@@ -17,9 +21,7 @@ type Notice = {
 
 export default function NoticesPage() {
   const { data: session } = useSession()
-  const canManage = ["FACULTY", "ADMIN", "SUPER_ADMIN"].includes(
-    (session?.user as any)?.role
-  )
+  const canManage = ["FACULTY", "ADMIN", "SUPER_ADMIN"].includes((session?.user as any)?.role)
 
   const [notices, setNotices] = useState<Notice[]>([])
   const [loading, setLoading] = useState(true)
@@ -55,57 +57,61 @@ export default function NoticesPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Notices</h1>
-        {canManage && (
-          <Link href="/notices/create">
-            <Button>Naya Notice Banao</Button>
-          </Link>
-        )}
-      </div>
+    <div className="space-y-5">
+      <PageHeader
+        title="Notices"
+        description="Important college notices and updates"
+        action={
+          canManage && (
+            <Link href="/notices/create">
+              <Button size="sm"><Plus className="h-4 w-4 mr-1.5" /> Create Notice</Button>
+            </Link>
+          )
+        }
+      />
 
       {loading ? (
-        <p className="text-muted-foreground">Load ho raha hai...</p>
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
+        </div>
       ) : notices.length === 0 ? (
-        <p className="text-muted-foreground">Koi notice nahi hai</p>
+        <EmptyState icon={Bell} title="Currently,there are no notices" description="All new college notices will be shown here instantly" />
       ) : (
         <div className="space-y-3">
-          {notices.map((notice) => (
-            <div key={notice.id} className="border rounded-lg p-4 space-y-1">
-              <div className="flex items-center justify-between">
+          {notices.map((notice, i) => (
+            <motion.div
+              key={notice.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25, delay: Math.min(i * 0.04, 0.3) }}
+              className={`ch-notebook-line rounded-xl border bg-card p-4 space-y-2 ${
+                notice.isPinned ? "border-primary/40" : ""
+              }`}
+            >
+              <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  {notice.isPinned && <Pin className="h-4 w-4 text-primary" />}
-                  <h2 className="font-semibold">{notice.title}</h2>
+                  {notice.isPinned && <Pin className="h-3.5 w-3.5 text-primary shrink-0" />}
+                  <h2 className="font-semibold text-sm">{notice.title}</h2>
                 </div>
 
                 {canManage && (
-                  <div className="flex gap-1">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => togglePin(notice.id, notice.isPinned)}
-                      title={notice.isPinned ? "Unpin karo" : "Pin karo"}
-                    >
-                      <Pin className="h-4 w-4" />
+                  <div className="flex gap-1 shrink-0">
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => togglePin(notice.id, notice.isPinned)}>
+                      <Pin className="h-3.5 w-3.5" />
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => archiveNotice(notice.id)}
-                      title="Archive karo"
-                    >
-                      <Archive className="h-4 w-4" />
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => archiveNotice(notice.id)}>
+                      <Archive className="h-3.5 w-3.5" />
                     </Button>
                   </div>
                 )}
               </div>
 
-              <p className="text-sm text-muted-foreground">{notice.content}</p>
-              <p className="text-xs text-muted-foreground">
-                By {notice.postedBy.name} ({notice.postedBy.role}) — {new Date(notice.createdAt).toLocaleDateString()}
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{notice.content}</p>
+
+              <p className="text-[11px] text-muted-foreground pt-1 border-t">
+                {notice.postedBy.name} • {notice.postedBy.role} • {new Date(notice.createdAt).toLocaleDateString()}
               </p>
-            </div>
+            </motion.div>
           ))}
         </div>
       )}

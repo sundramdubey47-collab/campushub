@@ -9,13 +9,13 @@ export async function PATCH(
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
 
   if (!dbUser || !["FACULTY", "ADMIN", "SUPER_ADMIN"].includes(dbUser.role)) {
-    return NextResponse.json({ error: "Permission nahi hai" }, { status: 403 })
+    return NextResponse.json({ error: "Access denied" }, { status: 403 })
   }
 
   const { id } = await params

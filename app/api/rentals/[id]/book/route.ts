@@ -9,25 +9,25 @@ export async function POST(
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
-  if (!dbUser) return NextResponse.json({ error: "User nahi mila" }, { status: 400 })
+  if (!dbUser) return NextResponse.json({ error: "User not found" }, { status: 400 })
 
   const { id } = await params
   const body = await req.json()
   const { startDate, expectedReturnDate, couponCode } = body
 
   if (!startDate || !expectedReturnDate) {
-    return NextResponse.json({ error: "Start date aur Return date zaroori hai" }, { status: 400 })
+    return NextResponse.json({ error: "Starting date and Returning date both are required" }, { status: 400 })
   }
 
   const item = await prisma.rentalItem.findUnique({ where: { id: Number(id) } })
 
-  if (!item) return NextResponse.json({ error: "Item nahi mila" }, { status: 404 })
-  if (item.status !== "AVAILABLE") return NextResponse.json({ error: "Ye item abhi available nahi hai" }, { status: 400 })
-  if (item.ownerId === dbUser.id) return NextResponse.json({ error: "Apna khud ka item rent nahi kar sakte" }, { status: 400 })
+  if (!item) return NextResponse.json({ error: "Item not found" }, { status: 404 })
+  if (item.status !== "AVAILABLE") return NextResponse.json({ error: " Soory! This item not available " }, { status: 400 })
+  if (item.ownerId === dbUser.id) return NextResponse.json({ error: "you can't rent your won item" }, { status: 400 })
 
   let rentAmount = item.price
   let couponUsed = false
@@ -38,13 +38,13 @@ export async function POST(
     const coupon = await prisma.coupon.findUnique({ where: { code: couponCode } })
 
     if (!coupon) {
-      return NextResponse.json({ error: "Coupon invalid hai" }, { status: 400 })
+      return NextResponse.json({ error: "Coupon invalid" }, { status: 400 })
     }
     if (coupon.isUsed) {
-      return NextResponse.json({ error: "Coupon already use ho chuka hai" }, { status: 400 })
+      return NextResponse.json({ error: " this Coupon is already " }, { status: 400 })
     }
     if (coupon.ownerId !== dbUser.id) {
-      return NextResponse.json({ error: "Ye coupon aapka nahi hai" }, { status: 400 })
+      return NextResponse.json({ error: "This coupon is not your " }, { status: 400 })
     }
 
     const discountAmount = Math.round((item.price * coupon.discountPercent) / 100)

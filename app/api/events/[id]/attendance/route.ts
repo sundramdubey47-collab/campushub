@@ -32,7 +32,7 @@ export async function POST(
   }
 
   if (registration.attended) {
-    return NextResponse.json({ error: `${registration.user.name} ki attendance pehle se lag chuki hai` }, { status: 400 })
+    return NextResponse.json({ error: `${registration.user.name} Attendance has alredy been taken` }, { status: 400 })
   }
 
   await prisma.eventRegistration.update({

@@ -13,7 +13,7 @@ export async function GET(
   })
 
   if (!listing) {
-    return NextResponse.json({ error: "Listing nahi mili" }, { status: 404 })
+    return NextResponse.json({ error: "Listing not found" }, { status: 404 })
   }
 
   return NextResponse.json(listing)

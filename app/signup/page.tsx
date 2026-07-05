@@ -49,7 +49,7 @@ export default function SignupPage() {
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="name">Naam</Label>
+          <Label htmlFor="name">Name</Label>
           <Input
             id="name"
             value={name}
@@ -81,7 +81,7 @@ export default function SignupPage() {
         </div>
 
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Ban raha hai..." : "Account Banao"}
+          {loading ? "please wait..." : " Create Account"}
         </Button>
       </form>
     </main>

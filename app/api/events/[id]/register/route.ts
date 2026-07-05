@@ -11,12 +11,12 @@ export async function POST(
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
   if (!dbUser) {
-    return NextResponse.json({ error: "User nahi mila" }, { status: 400 })
+    return NextResponse.json({ error: "User not found" }, { status: 400 })
   }
 
   const { id } = await params
@@ -28,15 +28,15 @@ export async function POST(
   })
 
   if (!event) {
-    return NextResponse.json({ error: "Event nahi mila" }, { status: 404 })
+    return NextResponse.json({ error: "Event not Found" }, { status: 404 })
   }
 
   if (event.registrationDeadline && new Date() > event.registrationDeadline) {
-    return NextResponse.json({ error: "Registration band ho chuki hai" }, { status: 400 })
+    return NextResponse.json({ error: "Oops! Registration already closed" }, { status: 400 })
   }
 
   if (event.seatLimit && event._count.registrations >= event.seatLimit) {
-    return NextResponse.json({ error: "Saari seats bhar chuki hain" }, { status: 400 })
+    return NextResponse.json({ error: "Try next time, All seats are full" }, { status: 400 })
   }
 
   const existing = await prisma.eventRegistration.findUnique({
@@ -44,7 +44,7 @@ export async function POST(
   })
 
   if (existing) {
-    return NextResponse.json({ error: "Aap pehle se register ho" }, { status: 400 })
+    return NextResponse.json({ error: "you are alredy register" }, { status: 400 })
   }
 
   const qrCode = crypto.randomBytes(16).toString("hex")

@@ -11,11 +11,11 @@ export async function POST(
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
-  if (!dbUser) return NextResponse.json({ error: "User nahi mila" }, { status: 400 })
+  if (!dbUser) return NextResponse.json({ error: "User not found" }, { status: 400 })
 
   const { id } = await params
 
@@ -24,14 +24,14 @@ export async function POST(
     include: { item: true },
   })
 
-  if (!booking) return NextResponse.json({ error: "Booking nahi mili" }, { status: 404 })
+  if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 404 })
 
   if (booking.renterId !== dbUser.id && booking.item.ownerId !== dbUser.id) {
-    return NextResponse.json({ error: "Permission nahi hai" }, { status: 403 })
+    return NextResponse.json({ error: "Access denied!" }, { status: 403 })
   }
 
   if (booking.status === "RETURNED") {
-    return NextResponse.json({ error: "Ye item pehle se return ho chuka hai" }, { status: 400 })
+    return NextResponse.json({ error: "This item has been alredy returned" }, { status: 400 })
   }
 
   const now = new Date()

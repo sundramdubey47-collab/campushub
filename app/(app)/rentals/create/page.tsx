@@ -71,7 +71,7 @@ export default function CreateRentalPage() {
 
   return (
     <div className="max-w-lg space-y-4">
-      <h1 className="text-2xl font-bold">Item Rent Pe Do</h1>
+      <h1 className="text-2xl font-bold"> Rent your Items</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4 border rounded-lg p-6">
         {error && <p className="text-sm text-red-500">{error}</p>}
@@ -88,12 +88,12 @@ export default function CreateRentalPage() {
 
         <div className="space-y-2">
           <Label>Category</Label>
-          <Combobox placeholder="Category chuno..." value={category} onChange={setCategory} options={CATEGORY_OPTIONS} />
+          <Combobox placeholder="Category..." value={category} onChange={setCategory} options={CATEGORY_OPTIONS} />
         </div>
 
         <div className="space-y-2">
           <Label>Pricing Type</Label>
-          <Combobox placeholder="Pricing chuno..." value={pricingType} onChange={setPricingType} options={PRICING_OPTIONS} />
+          <Combobox placeholder="Pricing..." value={pricingType} onChange={setPricingType} options={PRICING_OPTIONS} />
         </div>
 
         <div className="space-y-2">
@@ -112,7 +112,7 @@ export default function CreateRentalPage() {
         </div>
 
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Post ho raha hai..." : "List Karo"}
+          {loading ? "Posting..." : "List"}
         </Button>
       </form>
     </div>

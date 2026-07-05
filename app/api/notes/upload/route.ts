@@ -7,7 +7,7 @@ export async function POST(req: Request) {
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to contiue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
 
   if (!dbUser || !dbUser.collegeId) {
     return NextResponse.json(
-      { error: "Pehle onboarding complete karo" },
+      { error: "Frist complete your onboarding" },
       { status: 400 }
     )
   }
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
   })
 
   if (!college) {
-    return NextResponse.json({ error: "College nahi mila" }, { status: 400 })
+    return NextResponse.json({ error: "College not found" }, { status: 400 })
   }
 
   const formData = await req.formData()
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
 
   if (!file || !title || !courseId || !semesterId) {
     return NextResponse.json(
-      { error: "Title, Branch, Semester aur File zaroori hai" },
+      { error: "Title, Branch, Semester and files are required" },
       { status: 400 }
     )
   }
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
   })
 
   if (!course || course.department.collegeId !== dbUser.collegeId) {
-    return NextResponse.json({ error: "Galat branch select kiya" }, { status: 400 })
+    return NextResponse.json({ error: "Select wrong branch" }, { status: 400 })
   }
 
   const semester = await prisma.semester.findUnique({
@@ -61,7 +61,7 @@ export async function POST(req: Request) {
   })
 
   if (!semester || semester.courseId !== Number(courseId)) {
-    return NextResponse.json({ error: "Galat semester select kiya" }, { status: 400 })
+    return NextResponse.json({ error: "Select wrong branch" }, { status: 400 })
   }
 
   const bytes = await file.arrayBuffer()
@@ -92,5 +92,5 @@ export async function POST(req: Request) {
     },
   })
 
-  return NextResponse.json({ message: "Upload ho gaya", note })
+  return NextResponse.json({ message: "Uploaded successfully", note })
 }

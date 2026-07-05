@@ -6,14 +6,14 @@ export async function POST(req: Request) {
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const formData = await req.formData()
   const file = formData.get("file") as File
 
   if (!file) {
-    return NextResponse.json({ error: "File zaroori hai" }, { status: 400 })
+    return NextResponse.json({ error: "File is required" }, { status: 400 })
   }
 
   const bytes = await file.arrayBuffer()

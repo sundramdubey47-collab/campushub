@@ -59,18 +59,18 @@ export default function ReportLostFoundPage() {
 
   return (
     <div className="max-w-lg space-y-4">
-      <h1 className="text-2xl font-bold">Lost/Found Report Karo</h1>
+      <h1 className="text-2xl font-bold">Lost/Found Report</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4 border rounded-lg p-6">
         {error && <p className="text-sm text-red-500">{error}</p>}
 
         <div className="space-y-2">
           <Label>Type</Label>
-          <Combobox placeholder="Type chuno..." value={type} onChange={setType} options={TYPE_OPTIONS} />
+          <Combobox placeholder="Type..." value={type} onChange={setType} options={TYPE_OPTIONS} />
         </div>
 
         <div className="space-y-2">
-          <Label>Item ka Naam</Label>
+          <Label>Item Name</Label>
           <Input value={title} onChange={(e) => setTitle(e.target.value)} required />
         </div>
 
@@ -81,7 +81,7 @@ export default function ReportLostFoundPage() {
 
         <div className="space-y-2">
           <Label>Location</Label>
-          <Input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Jaise: Library, 2nd floor" />
+          <Input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Eg-: Library, 2nd floor" />
         </div>
 
         <div className="space-y-2">
@@ -92,7 +92,7 @@ export default function ReportLostFoundPage() {
         {type === "LOST" && (
           <div className="space-y-2">
             <Label>Reward (optional)</Label>
-            <Input value={reward} onChange={(e) => setReward(e.target.value)} placeholder="Jaise: ₹100" />
+            <Input value={reward} onChange={(e) => setReward(e.target.value)} placeholder="Eg-:₹100" />
           </div>
         )}
 
@@ -102,7 +102,7 @@ export default function ReportLostFoundPage() {
         </div>
 
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Post ho raha hai..." : "Report Karo"}
+          {loading ? "Posting..." : "Report"}
         </Button>
       </form>
     </div>

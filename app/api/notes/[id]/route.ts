@@ -19,7 +19,7 @@ export async function GET(
   })
 
   if (!note) {
-    return NextResponse.json({ error: "Note nahi mila" }, { status: 404 })
+    return NextResponse.json({ error: "Note not found" }, { status: 404 })
   }
 
   return NextResponse.json(note)

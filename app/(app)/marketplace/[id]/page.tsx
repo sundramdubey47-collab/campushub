@@ -118,7 +118,7 @@ export default function ListingDetailPage() {
         {error && <p className="text-sm text-red-500">{error}</p>}
 
         {!isOwner && listing.status === "AVAILABLE" && (
-          <Button onClick={handleBuy}>Buy Karo</Button>
+          <Button onClick={handleBuy}>Buy </Button>
         )}
       </div>
 
@@ -127,7 +127,7 @@ export default function ListingDetailPage() {
 
         <div className="border rounded-lg p-3 h-64 overflow-y-auto space-y-2">
           {messages.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Koi message nahi hai abhi</p>
+            <p className="text-sm text-muted-foreground">No message available yet, check back after somw time</p>
           ) : (
             messages.map((m) => (
               <div key={m.id} className="text-sm">
@@ -141,11 +141,11 @@ export default function ListingDetailPage() {
 
         <form onSubmit={handleSendMessage} className="flex gap-2">
           <Input
-            placeholder="Message likho..."
+            placeholder="Message..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
           />
-          <Button type="submit">Bhejo</Button>
+          <Button type="submit">Send</Button>
         </form>
       </div>
     </div>

@@ -7,13 +7,13 @@ export async function POST(req: Request) {
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
 
   if (!dbUser?.collegeId) {
-    return NextResponse.json({ error: "Pehle onboarding complete karo" }, { status: 400 })
+    return NextResponse.json({ error: "frist complete your onboarding" }, { status: 400 })
   }
 
   const formData = await req.formData()
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
   const file = formData.get("file") as File | null
 
   if (!type || !title) {
-    return NextResponse.json({ error: "Type aur Title zaroori hai" }, { status: 400 })
+    return NextResponse.json({ error: "Type and Title are required" }, { status: 400 })
   }
 
   let imageUrl = null

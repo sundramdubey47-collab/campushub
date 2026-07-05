@@ -51,7 +51,7 @@ export default function OnboardingPage() {
     setError("")
 
     if (!collegeId || !departmentId || !courseId || !semesterId) {
-      setError("Sab fields select karna zaroori hai")
+      setError("please fill all fileds")
       return
     }
 
@@ -66,7 +66,7 @@ export default function OnboardingPage() {
     setLoading(false)
 
     if (!res.ok) {
-      setError("Kuch galat ho gaya")
+      setError("somthing went wrong")
       return
     }
 
@@ -76,7 +76,7 @@ export default function OnboardingPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-4 border rounded-lg p-6">
-        <h1 className="text-2xl font-bold text-center">Apna College Chuno</h1>
+        <h1 className="text-2xl font-bold text-center">your College</h1>
 
         {error && <p className="text-sm text-red-500 text-center">{error}</p>}
 
@@ -84,7 +84,7 @@ export default function OnboardingPage() {
           setUniversityId(v); setCollegeId(""); setDepartmentId(""); setCourseId(""); setSemesterId("")
         }}>
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="University chuno" />
+            <SelectValue placeholder="University" />
           </SelectTrigger>
           <SelectContent>
             {universities.map((u) => (
@@ -97,7 +97,7 @@ export default function OnboardingPage() {
           setCollegeId(v); setDepartmentId(""); setCourseId(""); setSemesterId("")
         }} disabled={!universityId}>
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="College chuno" />
+            <SelectValue placeholder="College" />
           </SelectTrigger>
           <SelectContent>
             {colleges.map((c) => (
@@ -110,7 +110,7 @@ export default function OnboardingPage() {
           setDepartmentId(v); setCourseId(""); setSemesterId("")
         }} disabled={!collegeId}>
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Department chuno" />
+            <SelectValue placeholder="Department" />
           </SelectTrigger>
           <SelectContent>
             {departments.map((d) => (
@@ -123,7 +123,7 @@ export default function OnboardingPage() {
           setCourseId(v); setSemesterId("")
         }} disabled={!departmentId}>
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Course chuno" />
+            <SelectValue placeholder="Course" />
           </SelectTrigger>
           <SelectContent>
             {courses.map((c) => (
@@ -134,7 +134,7 @@ export default function OnboardingPage() {
 
         <Select value={semesterId} onValueChange={setSemesterId} disabled={!courseId}>
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Semester chuno" />
+            <SelectValue placeholder="Semester" />
           </SelectTrigger>
           <SelectContent>
             {semesters.map((s) => (
@@ -144,7 +144,7 @@ export default function OnboardingPage() {
         </Select>
 
         <Button className="w-full" onClick={handleSubmit} disabled={loading}>
-          {loading ? "Save ho raha hai..." : "Continue"}
+          {loading ? "please wait while we saving your details..." : "Continue"}
         </Button>
       </div>
     </main>

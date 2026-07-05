@@ -9,11 +9,11 @@ export async function POST(
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
-  if (!dbUser) return NextResponse.json({ error: "User nahi mila" }, { status: 400 })
+  if (!dbUser) return NextResponse.json({ error: "User not found" }, { status: 400 })
 
   const { id } = await params
 
@@ -22,7 +22,7 @@ export async function POST(
     include: { questions: { select: { id: true, questionText: true, options: true } } },
   })
 
-  if (!test) return NextResponse.json({ error: "Test nahi mila" }, { status: 404 })
+  if (!test) return NextResponse.json({ error: "Test not found" }, { status: 404 })
 
   // Access check
   let hasAccess = !test.isPremium
@@ -37,7 +37,7 @@ export async function POST(
   }
 
   if (!hasAccess) {
-    return NextResponse.json({ error: "Ye test premium/paid hai, pehle unlock karo" }, { status: 403 })
+    return NextResponse.json({ error: "Unlock this Premium test and leval up your preparation📚" }, { status: 403 })
   }
 
   const attempt = await prisma.testAttempt.create({

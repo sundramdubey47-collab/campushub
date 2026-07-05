@@ -9,20 +9,20 @@ export async function POST(
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
-  if (!dbUser) return NextResponse.json({ error: "User nahi mila" }, { status: 400 })
+  if (!dbUser) return NextResponse.json({ error: "User not found" }, { status: 400 })
 
   const { id } = await params
 
   const item = await prisma.lostFoundItem.findUnique({ where: { id: Number(id) } })
 
-  if (!item) return NextResponse.json({ error: "Item nahi mila" }, { status: 404 })
+  if (!item) return NextResponse.json({ error: " No availableItem " }, { status: 404 })
 
   if (item.reportedById !== dbUser.id) {
-    return NextResponse.json({ error: "Sirf report karne wala hi isse resolve kar sakta hai" }, { status: 403 })
+    return NextResponse.json({ error: "only reporter can solve issue" }, { status: 403 })
   }
 
   await prisma.lostFoundItem.update({

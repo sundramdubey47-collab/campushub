@@ -8,12 +8,12 @@ export async function POST(
 ) {
   const session = await auth()
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
   if (!dbUser) {
-    return NextResponse.json({ error: "User nahi mila" }, { status: 400 })
+    return NextResponse.json({ error: "User not found" }, { status: 400 })
   }
 
   const { id } = await params
@@ -21,7 +21,7 @@ export async function POST(
   const value = Number(body.value)
 
   if (value < 1 || value > 5) {
-    return NextResponse.json({ error: "Rating 1 se 5 ke beech honi chahiye" }, { status: 400 })
+    return NextResponse.json({ error: "Rating must be b/w 1 to 5" }, { status: 400 })
   }
 
   await prisma.rating.upsert({

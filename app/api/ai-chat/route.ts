@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   })
 
   if (!dbUser) {
-    return NextResponse.json({ error: "User nahi mila" }, { status: 400 })
+    return NextResponse.json({ error: "User not found" }, { status: 400 })
   }
 
   // Rate limiting - aaj kitne messages bheje
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
 
   if (todayMessageCount >= DAILY_MESSAGE_LIMIT) {
     return NextResponse.json(
-      { error: `Aaj ka limit (${DAILY_MESSAGE_LIMIT} messages) khatam ho gaya, kal try karo` },
+      { error: `Today's Limites (${DAILY_MESSAGE_LIMIT} messages)it's over - try again tomorrow` },
       { status: 429 }
     )
   }
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
   const { sessionId, message } = body
 
   if (!message?.trim()) {
-    return NextResponse.json({ error: "Message khaali nahi ho sakta" }, { status: 400 })
+    return NextResponse.json({ error: "You can't send an empty message, Ask Somthing about your Futures/Academic" }, { status: 400 })
   }
 
   // Session banao ya existing use karo
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
   if (sessionId) {
     chatSession = await prisma.chatSession.findUnique({ where: { id: Number(sessionId) } })
     if (!chatSession || chatSession.userId !== dbUser.id) {
-      return NextResponse.json({ error: "Session nahi mila" }, { status: 404 })
+      return NextResponse.json({ error: "Session expired or not availabe" }, { status: 404 })
     }
   } else {
     chatSession = await prisma.chatSession.create({

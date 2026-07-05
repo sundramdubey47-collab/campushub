@@ -161,12 +161,12 @@ export default function NoteDetailPage() {
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
           />
-          <Button type="submit" size="sm">Post Karo</Button>
+          <Button type="submit" size="sm">Post</Button>
         </form>
 
         <div className="space-y-3">
           {comments.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Koi comment nahi hai abhi</p>
+            <p className="text-sm text-muted-foreground">No comments available yet,check after some time</p>
           ) : (
             comments.map((c) => (
               <div key={c.id} className="border rounded-lg p-3">

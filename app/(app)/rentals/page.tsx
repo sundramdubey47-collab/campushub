@@ -2,8 +2,13 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { PageHeader } from "@/components/page-header"
+import { EmptyState } from "@/components/empty-state"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Package, Plus, History } from "lucide-react"
 
 type Item = {
   id: number
@@ -27,12 +32,10 @@ function BookingForm({ item, onDone }: { item: Item; onDone: () => void }) {
 
   async function handleBook() {
     setError("")
-
     if (!startDate || !expectedReturnDate) {
-      setError("Dono dates zaroori hain")
+      setError("Please select both dates")
       return
     }
-
     setLoading(true)
 
     const res = await fetch(`/api/rentals/${item.id}/book`, {
@@ -54,29 +57,29 @@ function BookingForm({ item, onDone }: { item: Item; onDone: () => void }) {
 
   if (!showForm) {
     return (
-      <Button className="w-full" onClick={() => setShowForm(true)}>
-        Book Karo
+      <Button size="sm" className="w-full" onClick={() => setShowForm(true)}>
+        Rent Now
       </Button>
     )
   }
 
   return (
     <div className="space-y-2 pt-2 border-t">
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && <p className="text-xs text-red-500">{error}</p>}
       <div>
-        <label className="text-xs text-muted-foreground">Start Date</label>
+        <label className="text-[11px] text-muted-foreground">Start Date</label>
         <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
       </div>
       <div>
-        <label className="text-xs text-muted-foreground">Return Date</label>
+        <label className="text-[11px] text-muted-foreground">Return By</label>
         <Input type="date" value={expectedReturnDate} onChange={(e) => setExpectedReturnDate(e.target.value)} />
       </div>
       <div>
-        <label className="text-xs text-muted-foreground">Coupon Code (optional)</label>
+        <label className="text-[11px] text-muted-foreground">Coupon Code (optional)</label>
         <Input value={couponCode} onChange={(e) => setCouponCode(e.target.value)} placeholder="CH-XXXXXXXX" />
       </div>
-      <Button className="w-full" onClick={handleBook} disabled={loading}>
-        {loading ? "Book ho raha hai..." : "Confirm Karo"}
+      <Button size="sm" className="w-full" onClick={handleBook} disabled={loading}>
+        {loading ? "Booking..." : "Confirm Booking"}
       </Button>
     </div>
   )
@@ -99,44 +102,66 @@ export default function RentalsPage() {
   }, [])
 
   return (
-    <div className="space-y-6">
-<div className="flex items-center justify-between">
-  <h1 className="text-2xl font-bold">Rentals</h1>
-  <div className="flex gap-2">
-    <Link href="/rentals/my-bookings">
-      <Button variant="outline">Meri Rentals</Button>
-    </Link>
-    <Link href="/rentals/create">
-      <Button>Item Rent Pe Do</Button>
-    </Link>
-  </div>
-</div>
+    <div className="space-y-5">
+      <PageHeader
+        title="Rentals"
+        description="Borrow what you need — books, gear, and more, without buying"
+        action={
+          <div className="flex gap-2">
+            <Link href="/rentals/my-bookings">
+              <Button variant="outline" size="sm"><History className="h-4 w-4 mr-1.5" /> My Rentals</Button>
+            </Link>
+            <Link href="/rentals/create">
+              <Button size="sm"><Plus className="h-4 w-4 mr-1.5" /> List an Item</Button>
+            </Link>
+          </div>
+        }
+      />
 
       {loading ? (
-        <p className="text-muted-foreground">Load ho raha hai...</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-72 rounded-xl" />)}
+        </div>
       ) : items.length === 0 ? (
-        <p className="text-muted-foreground">Koi item nahi hai</p>
+        <EmptyState
+          icon={Package}
+          title="No items available for rent"
+          description="Have something others could use? List it and start earning"
+          action={
+            <Link href="/rentals/create">
+              <Button size="sm"><Plus className="h-4 w-4 mr-1.5" /> List an Item</Button>
+            </Link>
+          }
+        />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {items.map((item) => (
-            <div key={item.id} className="border rounded-lg overflow-hidden">
+          {items.map((item, i) => (
+            <motion.div
+              key={item.id}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25, delay: Math.min(i * 0.04, 0.3) }}
+              className="rounded-xl border bg-card overflow-hidden shadow-sm"
+            >
               {item.imageUrl && (
-                <img src={item.imageUrl} alt={item.title} className="w-full h-40 object-cover" />
+                <div className="aspect-video bg-muted overflow-hidden">
+                  <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                </div>
               )}
               <div className="p-4 space-y-2">
-                <h2 className="font-semibold">{item.title}</h2>
-                {item.description && <p className="text-sm text-muted-foreground">{item.description}</p>}
-                <p className="font-bold">
-                  ₹{item.price} / {item.pricingType.toLowerCase()}
+                <h2 className="font-semibold text-sm">{item.title}</h2>
+                {item.description && <p className="text-xs text-muted-foreground line-clamp-2">{item.description}</p>}
+                <p className="font-bold text-sm">
+                  ₹{item.price} <span className="font-normal text-muted-foreground">/ {item.pricingType.toLowerCase()}</span>
                 </p>
                 {item.securityDeposit > 0 && (
-                  <p className="text-xs text-muted-foreground">Deposit: ₹{item.securityDeposit}</p>
+                  <p className="text-[11px] text-muted-foreground">Refundable deposit: ₹{item.securityDeposit}</p>
                 )}
-                <p className="text-xs text-muted-foreground">By {item.owner.name}</p>
+                <p className="text-[11px] text-muted-foreground">Owned by {item.owner.name}</p>
 
                 <BookingForm item={item} onDone={loadItems} />
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       )}

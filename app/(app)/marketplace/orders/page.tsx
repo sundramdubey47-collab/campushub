@@ -29,12 +29,12 @@ export default function OrderHistoryPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Meri Orders</h1>
+      <h1 className="text-2xl font-bold">My Orders</h1>
 
       {loading ? (
-        <p className="text-muted-foreground">Load ho raha hai...</p>
+        <p className="text-muted-foreground">Loading...</p>
       ) : orders.length === 0 ? (
-        <p className="text-muted-foreground">Koi order nahi hai abhi</p>
+        <p className="text-muted-foreground">No order available yet, check after some time</p>
       ) : (
         <div className="space-y-3">
           {orders.map((order) => (

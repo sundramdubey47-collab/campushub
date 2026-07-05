@@ -13,7 +13,7 @@ export async function POST(
   const note = await prisma.note.findUnique({ where: { id: Number(id) } })
 
   if (!note) {
-    return NextResponse.json({ error: "Note nahi mila" }, { status: 404 })
+    return NextResponse.json({ error: "not found Note " }, { status: 404 })
   }
 
   if (action === "view") {
@@ -28,18 +28,18 @@ export async function POST(
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
 
   if (!dbUser) {
-    return NextResponse.json({ error: "User nahi mila" }, { status: 400 })
+    return NextResponse.json({ error: "User not found" }, { status: 400 })
   }
 
   if (note.isPremium && !dbUser.isPremium) {
     return NextResponse.json(
-      { error: "PREMIUM_REQUIRED", message: "Ye note sirf Premium members download kar sakte hain" },
+      { error: "PREMIUM_REQUIRED", message: "Unlock Premium to access exclusive notes for your upcoming exams" },
       { status: 403 }
     )
   }

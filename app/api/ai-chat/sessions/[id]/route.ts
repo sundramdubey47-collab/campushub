@@ -9,11 +9,11 @@ export async function GET(
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
-  if (!dbUser) return NextResponse.json({ error: "User nahi mila" }, { status: 400 })
+  if (!dbUser) return NextResponse.json({ error: "User not found" }, { status: 400 })
 
   const { id } = await params
 
@@ -23,7 +23,7 @@ export async function GET(
   })
 
   if (!chatSession || chatSession.userId !== dbUser.id) {
-    return NextResponse.json({ error: "Session nahi mila" }, { status: 404 })
+    return NextResponse.json({ error: "Session expired or not available " }, { status: 404 })
   }
 
   return NextResponse.json(chatSession)

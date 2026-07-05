@@ -8,11 +8,11 @@ export async function POST(
 ) {
   const session = await auth()
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
-  if (!dbUser) return NextResponse.json({ error: "User nahi mila" }, { status: 400 })
+  if (!dbUser) return NextResponse.json({ error: "User not found" }, { status: 400 })
 
   const { id } = await params
   const body = await req.json()
@@ -20,9 +20,9 @@ export async function POST(
 
   const listing = await prisma.listing.findUnique({ where: { id: Number(id) } })
 
-  if (!listing) return NextResponse.json({ error: "Listing nahi mili" }, { status: 404 })
-  if (listing.status !== "AVAILABLE") return NextResponse.json({ error: "Ye item ab available nahi hai" }, { status: 400 })
-  if (listing.sellerId === dbUser.id) return NextResponse.json({ error: "Apna khud ka item nahi khareed sakte" }, { status: 400 })
+  if (!listing) return NextResponse.json({ error: " No Listing available " }, { status: 404 })
+  if (listing.status !== "AVAILABLE") return NextResponse.json({ error: "This item is no longer available, coming soon" }, { status: 400 })
+  if (listing.sellerId === dbUser.id) return NextResponse.json({ error: "OOps it is alredy your item😂" }, { status: 400 })
 
   const order = await prisma.order.create({
     data: { buyerId: dbUser.id, listingId: Number(id), finalPrice: finalPrice || listing.price },

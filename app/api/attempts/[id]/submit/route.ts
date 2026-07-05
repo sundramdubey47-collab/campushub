@@ -9,11 +9,11 @@ export async function POST(
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
-  if (!dbUser) return NextResponse.json({ error: "User nahi mila" }, { status: 400 })
+  if (!dbUser) return NextResponse.json({ error: "User not found" }, { status: 400 })
 
   const { id } = await params
   const body = await req.json()
@@ -25,11 +25,11 @@ export async function POST(
   })
 
   if (!attempt || attempt.userId !== dbUser.id) {
-    return NextResponse.json({ error: "Attempt nahi mila" }, { status: 404 })
+    return NextResponse.json({ error: "Attempt not found" }, { status: 404 })
   }
 
   if (attempt.submittedAt) {
-    return NextResponse.json({ error: "Ye attempt pehle se submit ho chuka hai" }, { status: 400 })
+    return NextResponse.json({ error: "This attempt is alredy exist" }, { status: 400 })
   }
 
   const questions = await prisma.testQuestion.findMany({

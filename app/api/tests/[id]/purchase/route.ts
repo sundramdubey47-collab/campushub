@@ -11,17 +11,17 @@ export async function POST(
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
-  if (!dbUser) return NextResponse.json({ error: "User nahi mila" }, { status: 400 })
+  if (!dbUser) return NextResponse.json({ error: "User not found" }, { status: 400 })
 
   const { id } = await params
   const test = await prisma.test.findUnique({ where: { id: Number(id) } })
 
   if (!test || !test.isPremium || !test.price) {
-    return NextResponse.json({ error: "Ye test purchase karne wala nahi hai" }, { status: 400 })
+    return NextResponse.json({ error: "This is a premium test. Unlock Premium to access it and all exclusive studty resources✨" }, { status: 400 })
   }
 
   const razorpayOrder = await razorpay.orders.create({

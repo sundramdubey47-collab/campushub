@@ -35,7 +35,7 @@ export default function CreateEventPage() {
     setError("")
 
     if (!title || !eventDate) {
-      setError("Title aur Event Date zaroori hai")
+      setError("Title and event date are required")
       return
     }
 
@@ -68,7 +68,7 @@ export default function CreateEventPage() {
 
   return (
     <div className="max-w-lg space-y-4">
-      <h1 className="text-2xl font-bold">Event Banao</h1>
+      <h1 className="text-2xl font-bold"> Create Event </h1>
 
       <form onSubmit={handleSubmit} className="space-y-4 border rounded-lg p-6">
         {error && <p className="text-sm text-red-500">{error}</p>}
