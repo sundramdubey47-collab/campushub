@@ -8,16 +8,16 @@ import { LayoutDashboard, FileText, Bell, ShoppingBag, User, Calendar, Search, P
 
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/notes", label: "Notes", icon: FileText },
+  { href: "/notes", label: "Resources", icon: FileText },
   { href: "/notices", label: "Notices", icon: Bell },
   { href: "/events", label: "Events", icon: Calendar },
   { href: "/marketplace", label: "Marketplace", icon: ShoppingBag },
   { href: "/rentals", label: "Rentals", icon: Package },
   { href: "/lost-found", label: "Lost & Found", icon: Search },
-  { href: "/profile", label: "Profile", icon: User },
-  { href: "/premium", label: "Premium", icon: Crown },
+  { href: "/tests", label: "AI Tests", icon: Brain },
   { href: "/ai-assistant", label: "AI Assistant", icon: MessageCircle },
-  { href: "/tests", label: "AI Tests", icon: FileText },
+  { href: "/premium", label: "Premium", icon: Crown },
+  { href: "/profile", label: "Profile", icon: User },
 ]
 
 export function SidebarNav() {
@@ -28,11 +28,12 @@ export function SidebarNav() {
   const isAdmin = ["ADMIN", "SUPER_ADMIN"].includes(role)
   const isSuperAdmin = role === "SUPER_ADMIN"
 
- let allLinks = links
-if (isAdmin) allLinks = [...allLinks, { href: "/admin", label: "Admin Panel", icon: ShieldCheck }]
-if (isSuperAdmin) allLinks = [...allLinks, { href: "/super-admin", label: "Super Admin", icon: Crown }]
+  let allLinks = links
+  if (isAdmin) allLinks = [...allLinks, { href: "/admin", label: "Admin Panel", icon: ShieldCheck }]
+  if (isSuperAdmin) allLinks = [...allLinks, { href: "/super-admin", label: "Super Admin", icon: Crown }]
+
   return (
-    <nav className="flex flex-col gap-1 p-4">
+    <nav className="flex flex-col gap-0.5 p-3">
       {allLinks.map((link) => {
         const Icon = link.icon
         const active = pathname === link.href

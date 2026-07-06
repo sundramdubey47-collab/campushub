@@ -57,6 +57,9 @@ export default function SuperAdminDashboardPage() {
             <Link href="/super-admin/colleges" className="text-sm text-primary font-medium underline underline-offset-2 flex items-center gap-1">
               Colleges <ArrowRight className="h-3.5 w-3.5" />
             </Link>
+            <Link href="/super-admin/structure" className="text-sm text-primary font-medium underline underline-offset-2 flex items-center gap-1">
+  Academic Structure <ArrowRight className="h-3.5 w-3.5" />
+</Link>
           </div>
         }
       />
