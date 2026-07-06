@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import cloudinary from "@/lib/cloudinary"
+import { validateFile, ALLOWED_IMAGE_TYPES } from "@/lib/file-validation"
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -32,6 +33,10 @@ export async function POST(req: Request) {
   let imageUrl = null
 
   if (file && file.size > 0) {
+    const fileError = validateFile(file, ALLOWED_IMAGE_TYPES)
+if (fileError) {
+  return NextResponse.json({ error: fileError }, { status: 400 })
+}
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 

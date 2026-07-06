@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import cloudinary from "@/lib/cloudinary"
+import { validateFile, ALLOWED_DOCUMENT_TYPES } from "@/lib/file-validation"
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -45,7 +46,10 @@ export async function POST(req: Request) {
       { status: 400 }
     )
   }
-
+const fileError = validateFile(file, ALLOWED_DOCUMENT_TYPES)
+  if (fileError) {
+    return NextResponse.json({ error: fileError }, { status: 400 })
+  }
   // Security check: semester usी college ki hi branch ka hona chahiye
   const course = await prisma.course.findUnique({
     where: { id: Number(courseId) },

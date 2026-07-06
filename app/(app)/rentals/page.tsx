@@ -144,10 +144,10 @@ export default function RentalsPage() {
               className="rounded-xl border bg-card overflow-hidden shadow-sm"
             >
               {item.imageUrl && (
-                <div className="aspect-video bg-muted overflow-hidden">
-                  <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
-                </div>
-              )}
+  <div className="aspect-video bg-muted overflow-hidden flex items-center justify-center">
+    <img src={item.imageUrl} alt={item.title} className="w-full h-full object-contain" />
+  </div>
+)}
               <div className="p-4 space-y-2">
                 <h2 className="font-semibold text-sm">{item.title}</h2>
                 {item.description && <p className="text-xs text-muted-foreground line-clamp-2">{item.description}</p>}

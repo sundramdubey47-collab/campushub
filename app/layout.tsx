@@ -14,8 +14,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CampusHub",
-  description: "One Platform For Every College Student",
+  title: "CampusHub — One Platform For Every College Student",
+  description: "Notes, notices, events, marketplace, AI tutoring, and more — everything your college life needs, in one place.",
+  keywords: ["campus", "college", "student", "notes", "notices", "events", "marketplace", "AI assistant"],
+  openGraph: {
+    title: "CampusHub — One Platform For Every College Student",
+    description: "Notes, notices, events, marketplace, AI tutoring, and more — everything your college life needs, in one place.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CampusHub — One Platform For Every College Student",
+    description: "Notes, notices, events, marketplace, AI tutoring, and more — everything your college life needs, in one place.",
+  },
 };
 
 export default function RootLayout({

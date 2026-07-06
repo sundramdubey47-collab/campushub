@@ -114,10 +114,10 @@ export default function MarketplacePage() {
             >
               <Link href={`/marketplace/${item.id}`}>
                 <div className="rounded-xl border bg-card overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                  <div className="aspect-square bg-muted overflow-hidden">
-                    {item.imageUrl ? (
-                      <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
-                    ) : (
+<div className="aspect-square bg-muted overflow-hidden flex items-center justify-center">
+  {item.imageUrl ? (
+    <img src={item.imageUrl} alt={item.title} className="w-full h-full object-contain" />
+  ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <ShoppingBag className="h-8 w-8 text-muted-foreground/30" />
                       </div>

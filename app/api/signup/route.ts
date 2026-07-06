@@ -1,8 +1,18 @@
 import { NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
+import { checkRateLimit } from "@/lib/rate-limit"
 
 export async function POST(req: Request) {
+const ip = req.headers.get("x-forwarded-for") ?? "unknown"
+const allowed = checkRateLimit(`signup:${ip}`, 5, 60 * 60 * 1000) // 5 signups per hour per IP
+
+if (!allowed) {
+  return NextResponse.json(
+    { error: "Too many signup attempts. Please try again later." },
+    { status: 429 }
+  )
+}  
   try {
     const body = await req.json()
     const { name, email, password } = body

@@ -81,11 +81,11 @@ export default function LostFoundPage() {
             >
               {item.imageUrl && (
                 <div className="aspect-video bg-muted overflow-hidden">
-                  <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                  <img src={item.imageUrl} alt={item.title} className="w-full h-full object-contain" />
                 </div>
               )}
               <div className="p-4 space-y-2">
-                <div className="flex items-center justify-between gap-2">
+                <div className="justify-center justify-between gap-2">
                   <h2 className="font-semibold text-sm">{item.title}</h2>
                   <span
                     className={`shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-full ${
