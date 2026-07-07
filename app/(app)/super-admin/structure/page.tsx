@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Autocomplete } from "@/components/autocomplete"
 import { Plus } from "lucide-react"
+import Papa from "papaparse"
+import { Upload, Download, Trash2 } from "lucide-react"
 
 type Item = { id: number; name?: string; number?: number }
 
@@ -31,8 +33,9 @@ export default function StructureManagementPage() {
   const [semNumber, setSemNumber] = useState("")
   const [subjName, setSubjName] = useState("")
   const [subjCode, setSubjCode] = useState("")
-
   const [message, setMessage] = useState("")
+  const [csvFile, setCsvFile] = useState<File | null>(null)
+const [importing, setImporting] = useState(false)
 
   useEffect(() => {
     fetch("/api/super-admin/colleges").then((r) => r.json()).then(setColleges)
@@ -57,6 +60,52 @@ export default function StructureManagementPage() {
     if (!semesterId) { setSubjects([]); return }
     fetch(`/api/super-admin/subjects?semesterId=${semesterId}`).then((r) => r.json()).then(setSubjects)
   }, [semesterId])
+
+  function downloadTemplate() {
+  const csvContent = "Department,BranchName,BranchCode,DurationYears,SemesterNumber,SubjectName,SubjectCode\nEngineering,Computer Science,CSE,4,1,Mathematics I,MA101\nEngineering,Computer Science,CSE,4,1,Physics,PH101\nEngineering,Computer Science,CSE,4,2,Data Structures,CS201"
+  const blob = new Blob([csvContent], { type: "text/csv" })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement("a")
+  a.href = url
+  a.download = "campushub-structure-template.csv"
+  a.click()
+}
+
+async function handleBulkImport() {
+  if (!csvFile || !collegeId) {
+    setMessage("❌ Please select a college and a CSV file")
+    return
+  }
+
+  setImporting(true)
+  setMessage("")
+
+  Papa.parse(csvFile, {
+    header: true,
+    skipEmptyLines: true,
+    complete: async (results) => {
+      const res = await fetch("/api/super-admin/bulk-import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ collegeId, rows: results.data }),
+      })
+      const data = await res.json()
+      setImporting(false)
+
+      if (!res.ok) {
+        setMessage("❌ " + data.error)
+        return
+      }
+
+      setMessage(
+        `✅ Imported: ${data.created.departments} departments, ${data.created.courses} branches, ${data.created.semesters} semesters, ${data.created.subjects} subjects`
+      )
+      setCsvFile(null)
+      // Refresh lists
+      fetch(`/api/super-admin/departments?collegeId=${collegeId}`).then((r) => r.json()).then(setDepartments)
+    },
+  })
+}
 
   async function addDepartment() {
     setMessage("")
@@ -131,14 +180,53 @@ export default function StructureManagementPage() {
         />
       </div>
 
+{collegeId && (
+  <div className="rounded-xl border bg-card p-4 space-y-3">
+    <div className="flex items-center justify-between">
+      <h3 className="font-semibold text-sm">Bulk Import (CSV)</h3>
+      <button onClick={downloadTemplate} className="text-xs text-primary underline flex items-center gap-1">
+        <Download className="h-3 w-3" /> Download Template
+      </button>
+    </div>
+    <p className="text-xs text-muted-foreground">
+      Import all departments, branches, semesters, and subjects at once using a CSV file
+    </p>
+    <div className="flex gap-2">
+      <input
+        type="file"
+        accept=".csv"
+        onChange={(e) => setCsvFile(e.target.files?.[0] ?? null)}
+        className="text-xs flex-1"
+      />
+      <Button size="sm" onClick={handleBulkImport} disabled={importing || !csvFile}>
+        <Upload className="h-3.5 w-3.5 mr-1.5" /> {importing ? "Importing..." : "Import"}
+      </Button>
+    </div>
+  </div>
+)}
       {collegeId && (
         <div className="rounded-xl border bg-card p-4 space-y-3">
           <h3 className="font-semibold text-sm">Departments</h3>
           <div className="flex gap-2 flex-wrap">
-            {departments.map((d: any) => (
-              <span key={d.id} className="text-xs bg-muted px-2 py-1 rounded-full">{d.name}</span>
-            ))}
-          </div>
+  {departments.map((d: any) => (
+    <span key={d.id} className="text-xs bg-muted px-2 py-1 rounded-full flex items-center gap-1.5">
+      {d.name}
+      <button
+        onClick={async () => {
+          if (!confirm(`Delete "${d.name}"? This will fail if it has branches inside.`)) return
+          const res = await fetch(`/api/super-admin/departments/${d.id}`, { method: "DELETE" })
+          if (res.ok) {
+            fetch(`/api/super-admin/departments?collegeId=${collegeId}`).then((r) => r.json()).then(setDepartments)
+          } else {
+            alert("Cannot delete — remove branches inside it first")
+          }
+        }}
+      >
+        <Trash2 className="h-3 w-3 text-red-500" />
+      </button>
+    </span>
+  ))}
+</div>
           <div className="flex gap-2">
             <Input placeholder="Department name" value={deptName} onChange={(e) => setDeptName(e.target.value)} />
             <Input placeholder="Code" className="w-24" value={deptCode} onChange={(e) => setDeptCode(e.target.value)} />
@@ -160,11 +248,26 @@ export default function StructureManagementPage() {
       {departmentId && (
         <div className="rounded-xl border bg-card p-4 space-y-3">
           <h3 className="font-semibold text-sm">Branches / Courses</h3>
-          <div className="flex gap-2 flex-wrap">
-            {courses.map((c: any) => (
-              <span key={c.id} className="text-xs bg-muted px-2 py-1 rounded-full">{c.name}</span>
-            ))}
-          </div>
+           <div className="flex gap-2 flex-wrap">
+  {courses.map((c: any) => (
+    <span key={c.id} className="text-xs bg-muted px-2 py-1 rounded-full flex items-center gap-1.5">
+      {c.name}
+      <button
+        onClick={async () => {
+          if (!confirm(`Delete "${c.name}"? This will fail if it has semesters inside.`)) return
+          const res = await fetch(`/api/super-admin/courses/${c.id}`, { method: "DELETE" })
+          if (res.ok) {
+            fetch(`/api/super-admin/courses?departmentId=${departmentId}`).then((r) => r.json()).then(setCourses)
+          } else {
+            alert("Cannot delete — remove semesters inside it first")
+          }
+        }}
+      >
+        <Trash2 className="h-3 w-3 text-red-500" />
+      </button>
+    </span>
+  ))}
+</div>
           <div className="flex gap-2">
             <Input placeholder="Branch name" value={courseName} onChange={(e) => setCourseName(e.target.value)} />
             <Input placeholder="Code" className="w-20" value={courseCode} onChange={(e) => setCourseCode(e.target.value)} />
@@ -187,11 +290,26 @@ export default function StructureManagementPage() {
       {courseId && (
         <div className="rounded-xl border bg-card p-4 space-y-3">
           <h3 className="font-semibold text-sm">Semesters</h3>
-          <div className="flex gap-2 flex-wrap">
-            {semesters.map((s: any) => (
-              <span key={s.id} className="text-xs bg-muted px-2 py-1 rounded-full">Sem {s.number}</span>
-            ))}
-          </div>
+         <div className="flex gap-2 flex-wrap">
+  {semesters.map((s: any) => (
+    <span key={s.id} className="text-xs bg-muted px-2 py-1 rounded-full flex items-center gap-1.5">
+      Sem {s.number}
+      <button
+        onClick={async () => {
+          if (!confirm(`Delete Semester ${s.number}? This will fail if it has subjects inside.`)) return
+          const res = await fetch(`/api/super-admin/semesters/${s.id}`, { method: "DELETE" })
+          if (res.ok) {
+            fetch(`/api/super-admin/semesters?courseId=${courseId}`).then((r) => r.json()).then(setSemesters)
+          } else {
+            alert("Cannot delete — remove subjects inside it first")
+          }
+        }}
+      >
+        <Trash2 className="h-3 w-3 text-red-500" />
+      </button>
+    </span>
+  ))}
+</div>
           <div className="flex gap-2">
             <Input placeholder="Semester number (e.g. 1)" type="number" value={semNumber} onChange={(e) => setSemNumber(e.target.value)} />
             <Button size="sm" onClick={addSemester}><Plus className="h-4 w-4" /></Button>
@@ -212,11 +330,26 @@ export default function StructureManagementPage() {
       {semesterId && (
         <div className="rounded-xl border bg-card p-4 space-y-3">
           <h3 className="font-semibold text-sm">Subjects</h3>
-          <div className="flex gap-2 flex-wrap">
-            {subjects.map((s: any) => (
-              <span key={s.id} className="text-xs bg-muted px-2 py-1 rounded-full">{s.name}</span>
-            ))}
-          </div>
+            <div className="flex gap-2 flex-wrap">
+  {subjects.map((s: any) => (
+    <span key={s.id} className="text-xs bg-muted px-2 py-1 rounded-full flex items-center gap-1.5">
+      {s.name}
+      <button
+        onClick={async () => {
+          if (!confirm(`Delete "${s.name}"?`)) return
+          const res = await fetch(`/api/super-admin/subjects/${s.id}`, { method: "DELETE" })
+          if (res.ok) {
+            fetch(`/api/super-admin/subjects?semesterId=${semesterId}`).then((r) => r.json()).then(setSubjects)
+          } else {
+            alert("Could not delete")
+          }
+        }}
+      >
+        <Trash2 className="h-3 w-3 text-red-500" />
+      </button>
+    </span>
+  ))}
+</div>
           <div className="flex gap-2">
             <Input placeholder="Subject name" value={subjName} onChange={(e) => setSubjName(e.target.value)} />
             <Input placeholder="Code" className="w-24" value={subjCode} onChange={(e) => setSubjCode(e.target.value)} />
