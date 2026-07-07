@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/empty-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useSession } from "next-auth/react"
 import { Search, Plus, Phone, MapPin, Gift, CheckCircle2 } from "lucide-react"
+import { ReportButton } from "@/components/report-button"
 
 type Item = {
   id: number
@@ -115,7 +116,7 @@ export default function LostFoundPage() {
                 </div>
 
                 <p className="text-[11px] text-muted-foreground pt-1 border-t">Reported by {item.reportedBy.name}</p>
-
+<ReportButton type="LOST_FOUND_ITEM" targetId={item.id} />
                 {item.reportedBy.id.toString() === currentUserId && (
                   <Button size="sm" variant="outline" className="w-full" onClick={() => handleResolve(item.id)}>
                     <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" /> Mark as Resolved

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Heart, HeartOff } from "lucide-react"
 import { useSession } from "next-auth/react"
+import { ReportButton } from "@/components/report-button"
 
 type Listing = {
   id: number
@@ -114,7 +115,7 @@ export default function ListingDetailPage() {
         {listing.price && <p className="text-xl font-bold">₹{listing.price}</p>}
         {listing.location && <p className="text-sm text-muted-foreground">Location: {listing.location}</p>}
         <p className="text-sm text-muted-foreground">Seller: {listing.seller.name}</p>
-
+<ReportButton type="LISTING" targetId={listing.id} />
         {error && <p className="text-sm text-red-500">{error}</p>}
 
         {!isOwner && listing.status === "AVAILABLE" && (

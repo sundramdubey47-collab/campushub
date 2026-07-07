@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
 
   if (!dbUser?.collegeId) {
-    return NextResponse.json({ error: "frist complete your onbording" }, { status: 400 })
+    return NextResponse.json({ error: "first complete your onboarding" }, { status: 400 }) // spelling fix
   }
 
   const formData = await req.formData()
@@ -32,14 +32,13 @@ export async function POST(req: Request) {
 
   let imageUrl = null
 
-  if (file && file.size > 0) {
-    if (file && file.size > 0) {
-  const fileError = validateFile(file, ALLOWED_IMAGE_TYPES)
-  if (fileError) {
-    return NextResponse.json({ error: fileError }, { status: 400 })
-  }
+  if (file && file.size > 0) { // sirf 1 baar check
+    const fileError = validateFile(file, ALLOWED_IMAGE_TYPES)
+    if (fileError) {
+      return NextResponse.json({ error: fileError }, { status: 400 })
+    }
 
-  // ... baaki code waisa hi rahega
+    // yahan tak if ke andar hi rahega
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
@@ -53,7 +52,7 @@ export async function POST(req: Request) {
     })
 
     imageUrl = uploadResult.secure_url
-  }
+  } // if yahan band hoga
 
   const listing = await prisma.listing.create({
     data: {
@@ -107,5 +106,4 @@ export async function GET(req: Request) {
   })
 
   return NextResponse.json(listings)
-}
 }

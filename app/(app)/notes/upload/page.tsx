@@ -44,6 +44,7 @@ export default function UploadResourcePage() {
   const [semesterId, setSemesterId] = useState("")
   const [subjectId, setSubjectId] = useState("")
   const [category, setCategory] = useState("")
+  const [isPremium, setIsPremium] = useState(false)
   const [unit, setUnit] = useState("")
 
   const [loading, setLoading] = useState(false)
@@ -96,6 +97,7 @@ export default function UploadResourcePage() {
     formData.append("semesterId", semesterId)
     formData.append("subjectId", subjectId)
     formData.append("category", category)
+    formData.append("isPremium", isPremium ? "true" : "false")
     formData.append("unit", unit)
 
     const res = await fetch("/api/notes/upload", {
@@ -178,6 +180,15 @@ export default function UploadResourcePage() {
           />
         </div>
 
+<div className="flex items-center gap-2">
+  <input
+    type="checkbox"
+    id="isPremium"
+    checked={isPremium}
+    onChange={(e) => setIsPremium(e.target.checked)}
+  />
+  <Label htmlFor="isPremium">Mark as Premium (only Premium members can download)</Label>
+</div>
         <div className="space-y-2">
           <Label>File (PDF/Image)</Label>
           <Input

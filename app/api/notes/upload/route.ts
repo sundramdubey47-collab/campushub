@@ -38,6 +38,7 @@ export async function POST(req: Request) {
   const semesterId = formData.get("semesterId") as string
   const subjectId = formData.get("subjectId") as string
   const category = formData.get("category") as string
+  const isPremium = formData.get("isPremium") === "true"
   const unit = formData.get("unit") as string
 
   if (!file || !title || !courseId || !semesterId) {
@@ -87,6 +88,7 @@ const fileError = validateFile(file, ALLOWED_DOCUMENT_TYPES)
       fileUrl: uploadResult.secure_url,
       fileType: file.type,
       category: (category as any) || "NOTES",
+      isPremium,
       unit: unit || null,
       uploadedById: dbUser.id,
       universityId: college.universityId,
