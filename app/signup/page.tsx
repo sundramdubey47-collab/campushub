@@ -69,7 +69,11 @@ export default function SignupPage() {
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Creating account..." : "Create Account"}
           </Button>
-
+            <p className="text-xs text-muted-foreground text-center">
+  By signing up, you agree to our{" "}
+  <Link href="/terms" className="underline">Terms</Link> and{" "}
+  <Link href="/privacy" className="underline">Privacy Policy</Link>
+</p>
           <div className="relative py-1">
             <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
             <div className="relative flex justify-center text-xs"><span className="bg-card px-2 text-muted-foreground">or</span></div>

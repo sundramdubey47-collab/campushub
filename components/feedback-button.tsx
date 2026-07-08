@@ -34,7 +34,7 @@ export function FeedbackButton() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-40">
+    <div className="fixed bottom-20 right-4 z-40 sm:bottom-4">
       {open ? (
         <div className="w-72 rounded-xl border bg-card shadow-xl p-4 space-y-3">
           <div className="flex items-center justify-between">

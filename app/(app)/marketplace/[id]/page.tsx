@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Heart, HeartOff } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { ReportButton } from "@/components/report-button"
+import { WhatsAppShare } from "@/components/whatsapp-share"
 
 type Listing = {
   id: number
@@ -122,7 +123,10 @@ export default function ListingDetailPage() {
           <Button onClick={handleBuy}>Buy </Button>
         )}
       </div>
-
+<WhatsAppShare
+  text={`Check out "${listing.title}" on CampusHub Marketplace`}
+  url={typeof window !== "undefined" ? window.location.href : ""}
+/>
       <div className="space-y-3">
         <h2 className="font-semibold">Chat (Price Negotiation)</h2>
 
@@ -139,15 +143,16 @@ export default function ListingDetailPage() {
           )}
           <div ref={messagesEndRef} />
         </div>
-
-        <form onSubmit={handleSendMessage} className="flex gap-2">
-          <Input
-            placeholder="Message..."
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-          />
-          <Button type="submit">Send</Button>
-        </form>
+<form onSubmit={handleSendMessage} className="flex gap-2 items-center">
+  <Input
+    placeholder="Type a message..."
+    value={newMessage}
+    onChange={(e) => setNewMessage(e.target.value)}
+    className="h-9"
+  />
+  <Button type="submit" size="sm" className="shrink-0">Send</Button>
+</form>
+       
       </div>
     </div>
   )

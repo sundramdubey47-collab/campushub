@@ -5,6 +5,7 @@ import { useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Star, Bookmark, BookmarkCheck } from "lucide-react"
+import { WhatsAppShare } from "@/components/whatsapp-share"
 
 type Note = {
   id: number
@@ -135,7 +136,10 @@ export default function NoteDetailPage() {
           Preview / Download
         </Button>
       </div>
-
+<WhatsAppShare
+  text={`Check out "${note.title}" on CampusHub`}
+  url={typeof window !== "undefined" ? window.location.href : ""}
+/>
       <div className="space-y-2">
         <h2 className="font-semibold">Rating</h2>
         <div className="flex items-center gap-1">

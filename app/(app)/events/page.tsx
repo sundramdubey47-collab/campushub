@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/empty-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useSession } from "next-auth/react"
 import { QrCode, Calendar, Plus, MapPin, Clock, Users } from "lucide-react"
+import { WhatsAppShare } from "@/components/whatsapp-share"
 
 type Event = {
   id: number
@@ -175,6 +176,10 @@ function EventCard({ event, canManage, index }: { event: Event; canManage: boole
           )}
         </div>
       </div>
+      <WhatsAppShare
+  text={`Check out this event: "${event.title}" on CampusHub`}
+  url={typeof window !== "undefined" ? window.location.href : ""}
+/>
     </motion.div>
   )
 }
