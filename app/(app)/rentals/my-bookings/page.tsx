@@ -7,6 +7,7 @@ type Booking = {
   id: number
   startDate: string
   expectedReturnDate: string
+  actualStartDate: string | null
   actualReturnDate: string | null
   status: string
   rentAmount: number
@@ -14,6 +15,27 @@ type Booking = {
   lateFee: number
   item: { title: string; imageUrl: string | null }
   renter?: { name: string }
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  PENDING: "Waiting for owner's approval",
+  APPROVED: "Approved — waiting for pickup",
+  REJECTED: "Request declined",
+  ACTIVE: "Currently rented",
+  RETURNED: "Returned",
+}
+
+const STATUS_COLORS: Record<string, string> = {
+  PENDING: "bg-yellow-500/15 text-yellow-600",
+  APPROVED: "bg-blue-500/15 text-blue-600",
+  REJECTED: "bg-red-500/15 text-red-600",
+  ACTIVE: "bg-[oklch(var(--success)/0.15)] text-[oklch(var(--success))]",
+  RETURNED: "bg-muted text-muted-foreground",
+}
+
+function daysSince(date: string) {
+  const diff = Date.now() - new Date(date).getTime()
+  return Math.floor(diff / (1000 * 60 * 60 * 24))
 }
 
 export default function MyRentalBookingsPage() {
@@ -35,7 +57,21 @@ export default function MyRentalBookingsPage() {
     load()
   }, [])
 
-  async function handleReturn(bookingId: number) {
+  async function respond(bookingId: number, action: "approve" | "reject") {
+    await fetch(`/api/rental-bookings/${bookingId}/respond`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action }),
+    })
+    load()
+  }
+
+  async function confirmReceived(bookingId: number) {
+    await fetch(`/api/rental-bookings/${bookingId}/confirm-received`, { method: "POST" })
+    load()
+  }
+
+  async function confirmReturn(bookingId: number) {
     setMessage("")
     const res = await fetch(`/api/rental-bookings/${bookingId}/return`, { method: "POST" })
     const data = await res.json()
@@ -45,7 +81,7 @@ export default function MyRentalBookingsPage() {
       return
     }
 
-    setMessage(data.lateFee > 0 ? `Returned successfully. Late fee: ₹${data.lateFee}` : "Returned on time- No late fee applied!")
+    setMessage(data.lateFee > 0 ? `Item returned. Late fee: ₹${data.lateFee}` : "Item returned, no late fee!")
     load()
   }
 
@@ -57,29 +93,39 @@ export default function MyRentalBookingsPage() {
 
       {message && <p className="text-sm font-medium border rounded-lg p-3">{message}</p>}
 
+      {/* As Renter (B) */}
       <div className="space-y-3">
-        <h2 className="font-semibold text-lg">My Rentls</h2>
+        <h2 className="font-semibold text-lg">Items I'm Renting</h2>
         {asRenter.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No rentals yet-Start exploring items to rent</p>
+          <p className="text-sm text-muted-foreground">No rentals yet</p>
         ) : (
           asRenter.map((b) => (
-            <div key={b.id} className="border rounded-lg p-4 space-y-1">
+            <div key={b.id} className="border rounded-xl p-4 space-y-2">
               <div className="flex items-center justify-between">
                 <h3 className="font-medium">{b.item.title}</h3>
-                <span className={`text-xs px-2 py-1 rounded ${b.status === "RETURNED" ? "bg-muted" : "bg-yellow-500/20 text-yellow-600"}`}>
-                  {b.status}
+                <span className={`text-xs px-2 py-1 rounded-full ${STATUS_COLORS[b.status]}`}>
+                  {STATUS_LABELS[b.status]}
                 </span>
               </div>
+
               <p className="text-sm text-muted-foreground">
-                {new Date(b.startDate).toLocaleDateString()} → {new Date(b.expectedReturnDate).toLocaleDateString()}
+                Requested: {new Date(b.startDate).toLocaleDateString()} → {new Date(b.expectedReturnDate).toLocaleDateString()}
               </p>
+
+              {b.status === "ACTIVE" && b.actualStartDate && (
+                <p className="text-sm text-primary font-medium">
+                  You've had this since {new Date(b.actualStartDate).toLocaleDateString()} — {daysSince(b.actualStartDate)} day(s) so far
+                </p>
+              )}
+
               <p className="text-sm text-muted-foreground">
                 Rent: ₹{b.rentAmount} • Deposit: ₹{b.securityDeposit}
                 {b.lateFee > 0 && ` • Late Fee: ₹${b.lateFee}`}
               </p>
-              {b.status !== "RETURNED" && (
-                <Button size="sm" onClick={() => handleReturn(b.id)}>
-                  Return Now
+
+              {b.status === "APPROVED" && (
+                <Button size="sm" onClick={() => confirmReceived(b.id)}>
+                  I've Received the Item
                 </Button>
               )}
             </div>
@@ -87,23 +133,44 @@ export default function MyRentalBookingsPage() {
         )}
       </div>
 
+      {/* As Owner (A) */}
       <div className="space-y-3">
-        <h2 className="font-semibold text-lg"> my Items rented by others</h2>
+        <h2 className="font-semibold text-lg">Items I've Listed</h2>
         {asOwner.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No active rentals from your side</p>
+          <p className="text-sm text-muted-foreground">No rental requests yet</p>
         ) : (
           asOwner.map((b) => (
-            <div key={b.id} className="border rounded-lg p-4 space-y-1">
+            <div key={b.id} className="border rounded-xl p-4 space-y-2">
               <div className="flex items-center justify-between">
                 <h3 className="font-medium">{b.item.title}</h3>
-                <span className={`text-xs px-2 py-1 rounded ${b.status === "RETURNED" ? "bg-muted" : "bg-yellow-500/20 text-yellow-600"}`}>
-                  {b.status}
+                <span className={`text-xs px-2 py-1 rounded-full ${STATUS_COLORS[b.status]}`}>
+                  {STATUS_LABELS[b.status]}
                 </span>
               </div>
-              <p className="text-sm text-muted-foreground">Renter: {b.renter?.name}</p>
+
+              <p className="text-sm text-muted-foreground">Requested by {b.renter?.name}</p>
               <p className="text-sm text-muted-foreground">
                 {new Date(b.startDate).toLocaleDateString()} → {new Date(b.expectedReturnDate).toLocaleDateString()}
               </p>
+
+              {b.status === "ACTIVE" && b.actualStartDate && (
+                <p className="text-sm text-primary font-medium">
+                  Rented out since {new Date(b.actualStartDate).toLocaleDateString()} — {daysSince(b.actualStartDate)} day(s) so far
+                </p>
+              )}
+
+              {b.status === "PENDING" && (
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={() => respond(b.id, "approve")}>Approve</Button>
+                  <Button size="sm" variant="outline" onClick={() => respond(b.id, "reject")}>Reject</Button>
+                </div>
+              )}
+
+              {b.status === "ACTIVE" && (
+                <Button size="sm" onClick={() => confirmReturn(b.id)}>
+                  I've Received the Item Back
+                </Button>
+              )}
             </div>
           ))
         )}

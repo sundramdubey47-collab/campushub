@@ -518,19 +518,21 @@ model RentalItem {
 
   bookings       RentalBooking[]
 }
-
 enum RentalBookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
   ACTIVE
   RETURNED
   OVERDUE
 }
-
 model RentalBooking {
   id             Int                 @id @default(autoincrement())
   startDate      DateTime
   expectedReturnDate DateTime
+  actualStartDate    DateTime?
   actualReturnDate   DateTime?
-  status         RentalBookingStatus @default(ACTIVE)
+  status         RentalBookingStatus @default(PENDING)
 
   rentAmount     Int
   securityDeposit Int

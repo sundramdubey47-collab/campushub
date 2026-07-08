@@ -165,25 +165,4 @@
 
 @layer components {
   /* Signature element: notebook-jaisi double ruled line, top of card */
-  .ch-notebook-line {
-    position: relative;
-  }
-  .ch-notebook-line::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: repeating-linear-gradient(
-      to right,
-      var(--primary) 0px,
-      var(--primary) 6px,
-      transparent 6px,
-      transparent 10px
-    );
-    opacity: 0.5;
-    border-top-left-radius: var(--radius-lg);
-    border-top-right-radius: var(--radius-lg);
-  }
 }

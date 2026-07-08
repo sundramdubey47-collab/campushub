@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/empty-state"
 import { StatCard } from "@/components/stat-card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { FileUp, Download, Ticket, ShoppingBag, Bookmark, Crown, Tag } from "lucide-react"
+import { LogoutButton } from "@/components/logout-button"
 
 type Profile = {
   name: string
@@ -67,6 +68,9 @@ export default function ProfilePage() {
             {profile.semester && <span className="text-[10px] bg-muted px-2 py-0.5 rounded-full">Sem {profile.semester.number}</span>}
           </div>
         </div>
+             <div className="flex justify-end">
+  <LogoutButton />
+</div>
       </div>
 
       {!profile.isPremium && (

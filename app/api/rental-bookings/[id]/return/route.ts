@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 
-const LATE_FEE_PER_DAY = 20 // ₹20 per din late hone par
+const LATE_FEE_PER_DAY = 20
 
 export async function POST(
   req: Request,
@@ -11,7 +11,7 @@ export async function POST(
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
+    return NextResponse.json({ error: "Login is required" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
@@ -26,12 +26,12 @@ export async function POST(
 
   if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 404 })
 
-  if (booking.renterId !== dbUser.id && booking.item.ownerId !== dbUser.id) {
-    return NextResponse.json({ error: "Access denied!" }, { status: 403 })
+  if (booking.item.ownerId !== dbUser.id) {
+    return NextResponse.json({ error: "Only the owner can confirm the return" }, { status: 403 })
   }
 
-  if (booking.status === "RETURNED") {
-    return NextResponse.json({ error: "This item has been alredy returned" }, { status: 400 })
+  if (booking.status !== "ACTIVE") {
+    return NextResponse.json({ error: "This item is not currently rented out" }, { status: 400 })
   }
 
   const now = new Date()
