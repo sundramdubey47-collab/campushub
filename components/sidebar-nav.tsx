@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, FileText, Bell, ShoppingBag, User, Calendar, Search, Package, ShieldCheck, Crown, MessageCircle, Brain } from "lucide-react"
+import { LayoutDashboard, FileText, Bell, ShoppingBag, User, Calendar, Search, Package, ShieldCheck, Crown, MessageCircle, Brain, Gift } from "lucide-react"
 
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -18,6 +18,7 @@ const links = [
   { href: "/ai-assistant", label: "AI Assistant", icon: MessageCircle },
   { href: "/premium", label: "Premium", icon: Crown },
   { href: "/profile", label: "Profile", icon: User },
+  { href: "/referrals", label: "Invite Friends", icon: Gift },
 ]
 
 export function SidebarNav() {

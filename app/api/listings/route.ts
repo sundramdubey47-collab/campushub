@@ -8,13 +8,13 @@ export async function POST(req: Request) {
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
+    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
 
   if (!dbUser?.collegeId) {
-    return NextResponse.json({ error: "first complete your onboarding" }, { status: 400 }) // spelling fix
+    return NextResponse.json({ error: "Pehle onboarding complete karo" }, { status: 400 })
   }
 
   const formData = await req.formData()
@@ -24,35 +24,36 @@ export async function POST(req: Request) {
   const type = formData.get("type") as string
   const price = formData.get("price") as string
   const location = formData.get("location") as string
-  const file = formData.get("file") as File | null
+  const files = formData.getAll("files") as File[]
 
   if (!title || !category) {
-    return NextResponse.json({ error: "Title and Category are required" }, { status: 400 })
+    return NextResponse.json({ error: "Title aur Category zaroori hai" }, { status: 400 })
   }
 
-  let imageUrl = null
+  const uploadedUrls: string[] = []
 
-  if (file && file.size > 0) { // sirf 1 baar check
-    const fileError = validateFile(file, ALLOWED_IMAGE_TYPES)
-    if (fileError) {
-      return NextResponse.json({ error: fileError }, { status: 400 })
+  for (const file of files) {
+    if (file && file.size > 0) {
+      const fileError = validateFile(file, ALLOWED_IMAGE_TYPES)
+      if (fileError) {
+        return NextResponse.json({ error: fileError }, { status: 400 })
+      }
+
+      const bytes = await file.arrayBuffer()
+      const buffer = Buffer.from(bytes)
+
+      const uploadResult = await new Promise<any>((resolve, reject) => {
+        cloudinary.uploader
+          .upload_stream({ resource_type: "image", folder: "campushub-marketplace" }, (err, result) => {
+            if (err) reject(err)
+            else resolve(result)
+          })
+          .end(buffer)
+      })
+
+      uploadedUrls.push(uploadResult.secure_url)
     }
-
-    // yahan tak if ke andar hi rahega
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-
-    const uploadResult = await new Promise<any>((resolve, reject) => {
-      cloudinary.uploader
-        .upload_stream({ resource_type: "image", folder: "campushub-marketplace" }, (err, result) => {
-          if (err) reject(err)
-          else resolve(result)
-        })
-        .end(buffer)
-    })
-
-    imageUrl = uploadResult.secure_url
-  } // if yahan band hoga
+  }
 
   const listing = await prisma.listing.create({
     data: {
@@ -62,9 +63,12 @@ export async function POST(req: Request) {
       type: (type as any) || "SELL",
       price: price ? Number(price) : null,
       location,
-      imageUrl,
+      imageUrl: uploadedUrls[0] || null,
       sellerId: dbUser.id,
       collegeId: dbUser.collegeId,
+      images: {
+        create: uploadedUrls.map((url) => ({ imageUrl: url })),
+      },
     },
   })
 

@@ -150,7 +150,10 @@ model User {
   // Admin ke liye — sirf ek college manage karta hai
   managedCollegeId Int?    @unique
   managedCollege   College? @relation("CollegeAdmin", fields: [managedCollegeId], references: [id])
-
+  referralCode String? @unique
+  referredById Int?
+  referredBy   User?   @relation("Referrals", fields: [referredById], references: [id])
+  referrals    User[]  @relation("Referrals")
   uploadedNotes Note[] @relation("UploadedNotes")
   ratings   Rating[]
   bookmarks Bookmark[]
@@ -384,6 +387,7 @@ model Listing {
   type        ListingType     @default(SELL)
   price       Int?
   imageUrl    String?
+  images ListingImage[]
   location    String?
   status      ListingStatus   @default(AVAILABLE)
 
@@ -399,6 +403,14 @@ model Listing {
   wishlistedBy Wishlist[]
   messages     ChatMessage[]
   orders       Order[]
+}
+model ListingImage {
+  id        Int      @id @default(autoincrement())
+  imageUrl  String
+  createdAt DateTime @default(now())
+
+  listingId Int
+  listing   Listing  @relation(fields: [listingId], references: [id])
 }
 
 model Wishlist {

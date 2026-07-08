@@ -17,6 +17,7 @@ type Listing = {
   type: string
   price: number | null
   imageUrl: string | null
+  images: { id: number; imageUrl: string }[]
   location: string | null
   status: string
   seller: { id: number; name: string }
@@ -100,11 +101,21 @@ export default function ListingDetailPage() {
             {wishlisted ? <Heart className="h-4 w-4 fill-red-500 text-red-500" /> : <Heart className="h-4 w-4" />}
           </Button>
         </div>
-
-        {listing.imageUrl && (
-          <img src={listing.imageUrl} alt={listing.title} className="w-full max-h-80 object-cover rounded-lg" />
-        )}
-
+{listing.images && listing.images.length > 0 ? (
+  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+    {listing.images.map((img) => (
+      <img
+        key={img.id}
+        src={img.imageUrl}
+        alt={listing.title}
+        className="w-full aspect-square object-cover rounded-lg border"
+      />
+    ))}
+  </div>
+) : listing.imageUrl ? (
+  <img src={listing.imageUrl} alt={listing.title} className="w-full max-h-80 object-cover rounded-lg" />
+) : null}
+       
         {listing.description && <p className="text-muted-foreground">{listing.description}</p>}
 
         <div className="flex flex-wrap gap-1">

@@ -32,7 +32,7 @@ export default function CreateListingPage() {
   const [type, setType] = useState("SELL")
   const [price, setPrice] = useState("")
   const [location, setLocation] = useState("")
-  const [file, setFile] = useState<File | null>(null)
+const [files, setFiles] = useState<File[]>([])
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
@@ -41,7 +41,7 @@ export default function CreateListingPage() {
     setError("")
 
     if (!title || !category) {
-      setError("Title aur Category zaroori hai")
+      setError("Title and Category are need ")
       return
     }
 
@@ -54,7 +54,7 @@ export default function CreateListingPage() {
     formData.append("type", type)
     formData.append("price", price)
     formData.append("location", location)
-    if (file) formData.append("file", file)
+   files.forEach((f) => formData.append("files", f))
 
     const res = await fetch("/api/listings", { method: "POST", body: formData })
     const data = await res.json()
@@ -107,11 +107,18 @@ export default function CreateListingPage() {
           <Input value={location} onChange={(e) => setLocation(e.target.value)} />
         </div>
 
-        <div className="space-y-2">
-          <Label>Photo</Label>
-          <Input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-        </div>
-
+       <div className="space-y-2">
+  <Label>Photos (up to 5)</Label>
+  <Input
+    type="file"
+    accept="image/*"
+    multiple
+    onChange={(e) => setFiles(Array.from(e.target.files ?? []).slice(0, 5))}
+  />
+  {files.length > 0 && (
+    <p className="text-xs text-muted-foreground">{files.length} photo(s) selected</p>
+  )}
+</div>
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? "Posting..." : "List item"}
         </Button>

@@ -6,12 +6,13 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-
-  const listing = await prisma.listing.findUnique({
-    where: { id: Number(id) },
-    include: { seller: { select: { id: true, name: true } } },
-  })
-
+const listing = await prisma.listing.findUnique({
+  where: { id: Number(id) },
+  include: {
+    seller: { select: { id: true, name: true } },
+    images: true,
+  },
+})
   if (!listing) {
     return NextResponse.json({ error: "Listing not found" }, { status: 404 })
   }
