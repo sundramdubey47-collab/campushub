@@ -1,29 +1,13 @@
-"use client"
-
-import { useEffect, useState } from "react"
 import Link from "next/link"
-import { motion } from "framer-motion"
+import { auth } from "@/auth"
+import { prisma } from "@/lib/prisma"
 import { EmptyState } from "@/components/empty-state"
-import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import {
   FileUp, Ticket, Download, Crown, Bell, Calendar,
   FileText, ShoppingBag, Package, Search, MessageCircle,
   Sparkles, ShieldCheck, Zap, Users, ArrowRight, Brain,
 } from "lucide-react"
-
-type DashboardData = {
-  name: string
-  role: string
-  isPremium: boolean
-  premiumUntil: string | null
-  collegeName: string | null
-  uploadsCount: number
-  couponsCount: number
-  downloadsReceived: number
-  recentNotices: { id: number; title: string; createdAt: string; isPinned: boolean }[]
-  upcomingEvents: { id: number; title: string; eventDate: string }[]
-}
 
 const quickLinks = [
   { href: "/notes", label: "Resources", icon: FileText, color: "oklch(0.55 0.15 278)" },
@@ -43,40 +27,48 @@ const features = [
   { icon: ShieldCheck, title: "Safe & Verified Community", description: "Your campus, your college — every interaction stays within your verified student community." },
 ]
 
-const statCards = [
-  { key: "uploadsCount", label: "Uploads", icon: FileUp, color: "oklch(0.55 0.15 278)" },
-  { key: "downloadsReceived", label: "Downloads", icon: Download, color: "oklch(0.55 0.13 145)" },
-  { key: "couponsCount", label: "Coupons", icon: Ticket, color: "oklch(0.72 0.15 60)" },
-] as const
+export default async function DashboardPage() {
+  const session = await auth()
 
-export default function DashboardPage() {
-  const [data, setData] = useState<DashboardData | null>(null)
+  const dbUser = await prisma.user.findUnique({
+    where: { email: session?.user?.email ?? "" },
+    include: {
+      college: { select: { name: true } },
+      _count: { select: { uploadedNotes: true, coupons: true } },
+    },
+  })
 
-  useEffect(() => {
-    fetch("/api/dashboard").then((r) => r.json()).then(setData)
-  }, [])
-
-  if (!data) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-36 w-full rounded-2xl" />
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-20 sm:h-24 rounded-xl" />)}
-        </div>
-        <Skeleton className="h-40 rounded-xl" />
-      </div>
-    )
+  if (!dbUser) {
+    return <p className="text-red-500 text-sm">Could not load dashboard</p>
   }
+
+  const [recentNotices, upcomingEvents, totalDownloadsReceived] = await Promise.all([
+    prisma.notice.findMany({
+      where: { collegeId: dbUser.collegeId ?? 0, isArchived: false },
+      orderBy: [{ isPinned: "desc" }, { createdAt: "desc" }],
+      take: 3,
+      select: { id: true, title: true, createdAt: true, isPinned: true },
+    }),
+    prisma.event.findMany({
+      where: { collegeId: dbUser.collegeId ?? 0, eventDate: { gte: new Date() } },
+      orderBy: { eventDate: "asc" },
+      take: 3,
+      select: { id: true, title: true, eventDate: true },
+    }),
+    prisma.note.aggregate({
+      where: { uploadedById: dbUser.id },
+      _sum: { downloads: true },
+    }),
+  ])
+
+  const uploadsCount = dbUser._count.uploadedNotes
+  const couponsCount = dbUser._count.coupons
+  const downloadsReceived = totalDownloadsReceived._sum.downloads ?? 0
 
   return (
     <div className="space-y-8 sm:space-y-10">
       {/* Hero */}
-      <motion.div
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="relative overflow-hidden rounded-2xl border bg-primary text-primary-foreground p-6 sm:p-10"
-      >
+      <div className="relative overflow-hidden rounded-2xl border bg-primary text-primary-foreground p-6 sm:p-10">
         <div className="absolute inset-0 opacity-15 pointer-events-none">
           <svg viewBox="0 0 400 120" className="absolute bottom-0 w-full h-24" preserveAspectRatio="none">
             <rect x="0" y="40" width="50" height="80" fill="currentColor" />
@@ -94,10 +86,10 @@ export default function DashboardPage() {
         <div className="relative flex flex-col sm:flex-row sm:items-end justify-between gap-6">
           <div>
             <p className="text-xs font-medium uppercase tracking-wide mb-2 opacity-80">
-              {data.collegeName ?? "CampusHub"}
+              {dbUser.college?.name ?? "CampusHub"}
             </p>
             <h1 className="text-2xl sm:text-4xl font-bold tracking-tight">
-              Welcome back, {data.name.split(" ")[0]} 👋
+              Welcome back, {dbUser.name.split(" ")[0]} 👋
             </h1>
             <p className="text-sm sm:text-base opacity-85 mt-2">One platform for every part of your college life</p>
           </div>
@@ -107,7 +99,7 @@ export default function DashboardPage() {
                 Explore Events <ArrowRight className="h-4 w-4 ml-1.5" />
               </Button>
             </Link>
-            {!data.isPremium && (
+            {!dbUser.isPremium && (
               <Link href="/premium">
                 <Button className="bg-[oklch(var(--premium))] text-[oklch(var(--premium-foreground))] hover:opacity-90 whitespace-nowrap">
                   <Crown className="h-4 w-4 mr-1.5" /> Go Premium
@@ -116,125 +108,108 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Stats */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.1 }}
-        className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4"
-      >
-        {statCards.map((s) => {
-          const Icon = s.icon
-          return (
-            <div key={s.key} className="ch-notebook-line rounded-xl border bg-card p-4 sm:p-5 space-y-2">
-              <div className="rounded-lg p-2 w-fit" style={{ backgroundColor: `${s.color}1f` }}>
-                <Icon className="h-4 w-4" style={{ color: s.color }} />
-              </div>
-              <p className="text-2xl sm:text-3xl font-bold tracking-tight">{data[s.key as keyof DashboardData] as number}</p>
-              <p className="text-xs text-muted-foreground">{s.label}</p>
-            </div>
-          )
-        })}
-        <div className="ch-notebook-line rounded-xl border bg-card p-4 sm:p-5 space-y-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <div className="rounded-xl border bg-card p-4 sm:p-5 space-y-2">
+          <div className="rounded-lg p-2 w-fit" style={{ backgroundColor: "oklch(0.55 0.15 278 / 0.12)" }}>
+            <FileUp className="h-4 w-4" style={{ color: "oklch(0.55 0.15 278)" }} />
+          </div>
+          <p className="text-2xl sm:text-3xl font-bold tracking-tight">{uploadsCount}</p>
+          <p className="text-xs text-muted-foreground">Uploads</p>
+        </div>
+        <div className="rounded-xl border bg-card p-4 sm:p-5 space-y-2">
+          <div className="rounded-lg p-2 w-fit" style={{ backgroundColor: "oklch(0.55 0.13 145 / 0.12)" }}>
+            <Download className="h-4 w-4" style={{ color: "oklch(0.55 0.13 145)" }} />
+          </div>
+          <p className="text-2xl sm:text-3xl font-bold tracking-tight">{downloadsReceived}</p>
+          <p className="text-xs text-muted-foreground">Downloads</p>
+        </div>
+        <div className="rounded-xl border bg-card p-4 sm:p-5 space-y-2">
+          <div className="rounded-lg p-2 w-fit" style={{ backgroundColor: "oklch(0.72 0.15 60 / 0.12)" }}>
+            <Ticket className="h-4 w-4" style={{ color: "oklch(0.72 0.15 60)" }} />
+          </div>
+          <p className="text-2xl sm:text-3xl font-bold tracking-tight">{couponsCount}</p>
+          <p className="text-xs text-muted-foreground">Coupons</p>
+        </div>
+        <div className="rounded-xl border bg-card p-4 sm:p-5 space-y-2">
           <div className="rounded-lg p-2 w-fit" style={{ backgroundColor: "oklch(var(--premium)/0.15)" }}>
             <Crown className="h-4 w-4" style={{ color: "oklch(var(--premium))" }} />
           </div>
-          <p className="text-2xl sm:text-3xl font-bold tracking-tight">{data.isPremium ? "Premium" : "Free"}</p>
+          <p className="text-2xl sm:text-3xl font-bold tracking-tight">{dbUser.isPremium ? "Premium" : "Free"}</p>
           <p className="text-xs text-muted-foreground">Your Plan</p>
         </div>
-      </motion.div>
+      </div>
 
       {/* Quick Access */}
       <div className="space-y-3">
         <h2 className="font-semibold text-sm sm:text-base">Quick Access</h2>
         <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3">
-          {quickLinks.map((link, i) => {
+          {quickLinks.map((link) => {
             const Icon = link.icon
             return (
-              <motion.div
+              <Link
                 key={link.href}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25, delay: 0.04 * i }}
+                href={link.href}
+                className="flex flex-col items-center gap-1.5 sm:gap-2 rounded-xl border bg-card p-3 sm:p-4 hover:-translate-y-0.5 hover:shadow-md transition-all"
               >
-                <Link
-                  href={link.href}
-                  className="flex flex-col items-center gap-1.5 sm:gap-2 rounded-xl border bg-card p-3 sm:p-4 hover:-translate-y-0.5 hover:shadow-md transition-all"
-                >
-                  <div className="rounded-lg p-1.5" style={{ backgroundColor: `${link.color}1f` }}>
-                    <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" style={{ color: link.color }} />
-                  </div>
-                  <span className="text-[10px] sm:text-xs font-medium text-center leading-tight">{link.label}</span>
-                </Link>
-              </motion.div>
+                <div className="rounded-lg p-1.5" style={{ backgroundColor: `${link.color}1f` }}>
+                  <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" style={{ color: link.color }} />
+                </div>
+                <span className="text-[10px] sm:text-xs font-medium text-center leading-tight">{link.label}</span>
+              </Link>
             )
           })}
         </div>
       </div>
 
-      {/* Notices + Events bento */}
+      {/* Notices + Events */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.05 }}
-          className="ch-notebook-line rounded-xl border bg-card p-4 sm:p-5 space-y-3"
-        >
+        <div className="rounded-xl border bg-card p-4 sm:p-5 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-sm sm:text-base flex items-center gap-2">
               <Bell className="h-4 w-4 text-muted-foreground" /> Recent Notices
             </h2>
             <Link href="/notices" className="text-xs text-primary underline">View all</Link>
           </div>
-          {data.recentNotices.length === 0 ? (
+          {recentNotices.length === 0 ? (
             <EmptyState icon={Bell} title="No notices yet" />
           ) : (
             <div className="space-y-1">
-              {data.recentNotices.map((n) => (
+              {recentNotices.map((n) => (
                 <Link key={n.id} href="/notices" className="block text-sm p-2 rounded-lg hover:bg-muted truncate">
                   {n.isPinned && "📌 "}{n.title}
                 </Link>
               ))}
             </div>
           )}
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.1 }}
-          className="ch-notebook-line rounded-xl border bg-card p-4 sm:p-5 space-y-3"
-        >
+        <div className="rounded-xl border bg-card p-4 sm:p-5 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-sm sm:text-base flex items-center gap-2">
               <Calendar className="h-4 w-4 text-muted-foreground" /> Upcoming Events
             </h2>
             <Link href="/events" className="text-xs text-primary underline">View all</Link>
           </div>
-          {data.upcomingEvents.length === 0 ? (
+          {upcomingEvents.length === 0 ? (
             <EmptyState icon={Calendar} title="No upcoming events" />
           ) : (
             <div className="space-y-1">
-              {data.upcomingEvents.map((e) => (
+              {upcomingEvents.map((e) => (
                 <Link key={e.id} href="/events" className="block text-sm p-2 rounded-lg hover:bg-muted truncate">
                   {e.title} — {new Date(e.eventDate).toLocaleDateString()}
                 </Link>
               ))}
             </div>
           )}
-        </motion.div>
+        </div>
       </div>
 
-      {/* Premium showcase (only if not premium) */}
-      {!data.isPremium && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="relative overflow-hidden rounded-2xl border border-[oklch(var(--premium)/0.4)] bg-gradient-to-r from-[oklch(var(--premium)/0.1)] to-transparent p-5 sm:p-6"
-        >
+      {/* Premium showcase */}
+      {!dbUser.isPremium && (
+        <div className="relative overflow-hidden rounded-2xl border border-[oklch(var(--premium)/0.4)] bg-gradient-to-r from-[oklch(var(--premium)/0.1)] to-transparent p-5 sm:p-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="rounded-full bg-[oklch(var(--premium)/0.2)] p-2.5 shrink-0">
@@ -251,7 +226,7 @@ export default function DashboardPage() {
               </Button>
             </Link>
           </div>
-        </motion.div>
+        </div>
       )}
 
       {/* Why Choose CampusHub */}
@@ -264,23 +239,16 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {features.map((feature, i) => {
+          {features.map((feature) => {
             const Icon = feature.icon
             return (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.3, delay: 0.05 * i }}
-                className="rounded-xl border bg-card p-5 space-y-2"
-              >
+              <div key={feature.title} className="rounded-xl border bg-card p-5 space-y-2">
                 <div className="rounded-lg bg-primary/10 p-2.5 w-fit">
                   <Icon className="h-5 w-5 text-primary" />
                 </div>
                 <h3 className="font-semibold text-sm">{feature.title}</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">{feature.description}</p>
-              </motion.div>
+              </div>
             )
           })}
         </div>
