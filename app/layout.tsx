@@ -13,11 +13,16 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
-
 export const metadata: Metadata = {
   title: "CampusHub — One Platform For Every College Student",
   description: "Notes, notices, events, marketplace, AI tutoring, and more — everything your college life needs, in one place.",
   keywords: ["campus", "college", "student", "notes", "notices", "events", "marketplace", "AI assistant"],
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "CampusHub",
+  },
   openGraph: {
     title: "CampusHub — One Platform For Every College Student",
     description: "Notes, notices, events, marketplace, AI tutoring, and more — everything your college life needs, in one place.",
@@ -28,6 +33,10 @@ export const metadata: Metadata = {
     title: "CampusHub — One Platform For Every College Student",
     description: "Notes, notices, events, marketplace, AI tutoring, and more — everything your college life needs, in one place.",
   },
+};
+
+export const viewport = {
+  themeColor: "#3730a3",
 };
 
 export default function RootLayout({

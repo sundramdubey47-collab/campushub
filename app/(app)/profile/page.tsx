@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { EmptyState } from "@/components/empty-state"
 import { StatCard } from "@/components/stat-card"
 import { LogoutButton } from "@/components/logout-button"
+import { PhoneEdit } from "@/components/phone-edit"
 import { FileUp, Download, Ticket, ShoppingBag, Bookmark, Crown, Tag } from "lucide-react"
 
 export default async function ProfilePage() {
@@ -48,6 +49,9 @@ export default async function ProfilePage() {
         <div className="min-w-0 flex-1">
           <h1 className="text-xl font-bold truncate">{dbUser.name}</h1>
           <p className="text-sm text-muted-foreground truncate">{dbUser.email}</p>
+          <div className="pt-1">
+  <PhoneEdit initialPhone={dbUser.phone} />
+</div>
           <div className="flex flex-wrap gap-1.5 pt-2">
             <span className="text-[10px] font-medium bg-muted px-2 py-0.5 rounded-full">{dbUser.role}</span>
             {dbUser.isPremium && (
