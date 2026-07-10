@@ -117,36 +117,48 @@ export default function HomePage() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="mt-14 sm:mt-20 max-w-4xl mx-auto"
         >
-          <div className="rounded-t-2xl border border-b-0 bg-card shadow-2xl overflow-hidden">
-            <div className="flex items-center gap-1.5 px-4 py-3 border-b bg-muted/40">
-              <div className="h-2.5 w-2.5 rounded-full bg-red-400" />
-              <div className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
-              <div className="h-2.5 w-2.5 rounded-full bg-green-400" />
-              <div className="ml-3 text-[10px] text-muted-foreground bg-background rounded px-2 py-0.5 border">campushub.app/dashboard</div>
-            </div>
-            <div className="p-4 sm:p-6 bg-gradient-to-br from-primary/5 to-transparent">
-              <div className="flex gap-3 mb-4">
-                <div className="hidden sm:flex flex-col gap-1.5 w-32 shrink-0">
-                  {[1,2,3,4,5].map((i) => (
-                    <div key={i} className={`h-7 rounded-lg ${i === 1 ? "bg-primary" : "bg-muted"}`} />
-                  ))}
-                </div>
-                <div className="flex-1 space-y-3">
-                  <div className="rounded-xl bg-primary text-primary-foreground p-4 text-left">
-                    <p className="text-[10px] opacity-70 uppercase">Your Campus</p>
-                    <p className="font-bold text-sm sm:text-base">Your Campus. Your Journey.</p>
-                  </div>
-                  <div className="grid grid-cols-4 gap-2">
-                    {[1,2,3,4].map((i) => <div key={i} className="h-14 rounded-lg bg-muted" />)}
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="h-20 rounded-lg bg-muted" />
-                    <div className="h-20 rounded-lg bg-muted" />
-                  </div>
-                </div>
-              </div>
-            </div>
+        <div className="p-4 sm:p-6 bg-gradient-to-br from-primary/5 to-transparent">
+  <div className="flex gap-3 mb-4">
+    <div className="hidden sm:flex flex-col gap-2 w-36 shrink-0">
+      <div className="h-8 rounded-lg bg-primary flex items-center px-2.5 gap-2">
+        <div className="h-2 w-2 rounded-full bg-white/60" />
+        <div className="h-1.5 w-14 rounded bg-white/60" />
+      </div>
+      {[16, 20, 12, 18, 14].map((w, i) => (
+        <div key={i} className="h-7 rounded-lg bg-muted flex items-center px-2.5 gap-2">
+          <div className="h-2 w-2 rounded-full bg-muted-foreground/30" />
+          <div className={`h-1.5 rounded bg-muted-foreground/20`} style={{ width: `${w * 4}px` }} />
+        </div>
+      ))}
+    </div>
+    <div className="flex-1 space-y-3">
+      <div className="rounded-xl bg-primary text-primary-foreground p-4 text-left relative overflow-hidden">
+        <div className="absolute -top-6 -right-6 h-20 w-20 rounded-full bg-white/10" />
+        <p className="text-[10px] opacity-70 uppercase relative">Your Campus</p>
+        <p className="font-bold text-sm sm:text-base relative">Your Campus. Your Journey.</p>
+      </div>
+      <div className="grid grid-cols-4 gap-2">
+        {["📄", "🔔", "📅", "🛍️"].map((emoji, i) => (
+          <div key={i} className="h-14 rounded-lg bg-muted flex items-center justify-center text-lg">
+            {emoji}
           </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div className="h-20 rounded-lg bg-muted p-2.5 space-y-1.5">
+          <div className="h-1.5 w-3/4 rounded bg-muted-foreground/25" />
+          <div className="h-1.5 w-1/2 rounded bg-muted-foreground/20" />
+          <div className="h-1.5 w-2/3 rounded bg-muted-foreground/20" />
+        </div>
+        <div className="h-20 rounded-lg bg-muted p-2.5 space-y-1.5">
+          <div className="h-1.5 w-2/3 rounded bg-muted-foreground/25" />
+          <div className="h-1.5 w-3/4 rounded bg-muted-foreground/20" />
+          <div className="h-1.5 w-1/2 rounded bg-muted-foreground/20" />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>  
         </motion.div>
       </section>
 {/* How It Works */}

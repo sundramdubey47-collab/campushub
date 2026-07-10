@@ -8,6 +8,7 @@ import {
   FileText, ShoppingBag, Package, Search, MessageCircle,
   Sparkles, ShieldCheck, Zap, Users, ArrowRight, Brain,
 } from "lucide-react"
+import { AnimatedCard } from "@/components/animated-card"
 
 const quickLinks = [
   { href: "/notes", label: "Resources", icon: FileText, color: "oklch(0.55 0.15 278)" },
@@ -110,37 +111,40 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <div className="rounded-xl border bg-card p-4 sm:p-5 space-y-2">
-          <div className="rounded-lg p-2 w-fit" style={{ backgroundColor: "oklch(0.55 0.15 278 / 0.12)" }}>
-            <FileUp className="h-4 w-4" style={{ color: "oklch(0.55 0.15 278)" }} />
-          </div>
-          <p className="text-2xl sm:text-3xl font-bold tracking-tight">{uploadsCount}</p>
-          <p className="text-xs text-muted-foreground">Uploads</p>
-        </div>
-        <div className="rounded-xl border bg-card p-4 sm:p-5 space-y-2">
-          <div className="rounded-lg p-2 w-fit" style={{ backgroundColor: "oklch(0.55 0.13 145 / 0.12)" }}>
-            <Download className="h-4 w-4" style={{ color: "oklch(0.55 0.13 145)" }} />
-          </div>
-          <p className="text-2xl sm:text-3xl font-bold tracking-tight">{downloadsReceived}</p>
-          <p className="text-xs text-muted-foreground">Downloads</p>
-        </div>
-        <div className="rounded-xl border bg-card p-4 sm:p-5 space-y-2">
-          <div className="rounded-lg p-2 w-fit" style={{ backgroundColor: "oklch(0.72 0.15 60 / 0.12)" }}>
-            <Ticket className="h-4 w-4" style={{ color: "oklch(0.72 0.15 60)" }} />
-          </div>
-          <p className="text-2xl sm:text-3xl font-bold tracking-tight">{couponsCount}</p>
-          <p className="text-xs text-muted-foreground">Coupons</p>
-        </div>
-        <div className="rounded-xl border bg-card p-4 sm:p-5 space-y-2">
-          <div className="rounded-lg p-2 w-fit" style={{ backgroundColor: "oklch(var(--premium)/0.15)" }}>
-            <Crown className="h-4 w-4" style={{ color: "oklch(var(--premium))" }} />
-          </div>
-          <p className="text-2xl sm:text-3xl font-bold tracking-tight">{dbUser.isPremium ? "Premium" : "Free"}</p>
-          <p className="text-xs text-muted-foreground">Your Plan</p>
-        </div>
-      </div>
+     {/* Stats */}
+<div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+  <AnimatedCard delay={0} className="rounded-xl border bg-card p-4 sm:p-5 space-y-2 cursor-default">
+    <div className="rounded-lg p-2 w-fit" style={{ backgroundColor: "oklch(0.55 0.15 278 / 0.12)" }}>
+      <FileUp className="h-4 w-4" style={{ color: "oklch(0.55 0.15 278)" }} />
+    </div>
+    <p className="text-2xl sm:text-3xl font-bold tracking-tight">{uploadsCount}</p>
+    <p className="text-xs text-muted-foreground">Uploads</p>
+  </AnimatedCard>
+
+  <AnimatedCard delay={0.05} className="rounded-xl border bg-card p-4 sm:p-5 space-y-2 cursor-default">
+    <div className="rounded-lg p-2 w-fit" style={{ backgroundColor: "oklch(0.55 0.13 145 / 0.12)" }}>
+      <Download className="h-4 w-4" style={{ color: "oklch(0.55 0.13 145)" }} />
+    </div>
+    <p className="text-2xl sm:text-3xl font-bold tracking-tight">{downloadsReceived}</p>
+    <p className="text-xs text-muted-foreground">Downloads</p>
+  </AnimatedCard>
+
+  <AnimatedCard delay={0.1} className="rounded-xl border bg-card p-4 sm:p-5 space-y-2 cursor-default">
+    <div className="rounded-lg p-2 w-fit" style={{ backgroundColor: "oklch(0.72 0.15 60 / 0.12)" }}>
+      <Ticket className="h-4 w-4" style={{ color: "oklch(0.72 0.15 60)" }} />
+    </div>
+    <p className="text-2xl sm:text-3xl font-bold tracking-tight">{couponsCount}</p>
+    <p className="text-xs text-muted-foreground">Coupons</p>
+  </AnimatedCard>
+
+  <AnimatedCard delay={0.15} className="rounded-xl border bg-card p-4 sm:p-5 space-y-2 cursor-default">
+    <div className="rounded-lg p-2 w-fit" style={{ backgroundColor: "oklch(var(--premium)/0.15)" }}>
+      <Crown className="h-4 w-4" style={{ color: "oklch(var(--premium))" }} />
+    </div>
+    <p className="text-2xl sm:text-3xl font-bold tracking-tight">{dbUser.isPremium ? "Premium" : "Free"}</p>
+    <p className="text-xs text-muted-foreground">Your Plan</p>
+  </AnimatedCard>
+</div>
 
       {/* Quick Access */}
       <div className="space-y-3">

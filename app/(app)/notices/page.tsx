@@ -52,7 +52,11 @@ export default async function NoticesPage() {
       </div>
 
       {serializedNotices.length === 0 ? (
-        <EmptyState icon={Bell} title="No notices yet" />
+        <EmptyState
+  icon={Bell}
+  title="No notices yet"
+  description="Notices from your college will show up here as soon as they're posted"
+/> 
       ) : (
         <div className="space-y-3">
           {serializedNotices.map((notice) => (
