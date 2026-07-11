@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { resend } from "@/lib/resend"
 import { checkRateLimit } from "@/lib/rate-limit"
+import { RATE_LIMITS } from "@/lib/rate-limit"
 
 export async function POST(req: Request) {
   const body = await req.json()
@@ -11,8 +12,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Email is required" }, { status: 400 })
   }
 
-  const allowed = checkRateLimit(`forgot-password:${email}`, 3, 15 * 60 * 1000)
-  if (!allowed) {
+ const result = checkRateLimit(`forgot-password:${email}`, RATE_LIMITS.AUTH_STRICT)
+if (!result.allowed) {
     return NextResponse.json({ error: "Too many attempts. Please try again later." }, { status: 429 })
   }
 

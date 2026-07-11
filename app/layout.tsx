@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import Script from "next/script"
+import { CookieBanner } from "@/components/cookie-banner"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,6 +19,10 @@ export const metadata: Metadata = {
   description: "Notes, notices, events, marketplace, AI tutoring, and more — everything your college life needs, in one place.",
   keywords: ["campus", "college", "student", "notes", "notices", "events", "marketplace", "AI assistant"],
   manifest: "/manifest.json",
+  metadataBase: new URL("https://campushub-nine-lake.vercel.app"),
+  alternates: {
+    canonical: "/",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -52,6 +57,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
+        <CookieBanner />
 <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
       </body>
     </html>

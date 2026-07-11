@@ -50,10 +50,28 @@ const fadeUp = {
     transition: { duration: 0.4, delay: i * 0.06 },
   }),
 }
-
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "CampusHub",
+  description: "One Platform For Every College Student — notes, notices, events, marketplace, and AI tutoring.",
+  url: "https://campushub-nine-lake.vercel.app",
+}
 export default function HomePage() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "CampusHub",
+    description: "One Platform For Every College Student — notes, notices, events, marketplace, and AI tutoring.",
+    url: "https://campushub-nine-lake.vercel.app",
+  }
+
   return (
     <main className="min-h-screen overflow-x-hidden">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Nav */}
       <header className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b">
         <div className="flex items-center justify-between px-6 py-3.5 max-w-6xl mx-auto">

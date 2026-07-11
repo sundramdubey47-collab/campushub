@@ -2,26 +2,35 @@ import { NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { generateReferralCode } from "@/lib/referral"
+import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit"
+import { signupSchema, formatZodError } from "@/lib/validations"
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json()
-    const { name, email, password, referralCode } = body
+    const ip = req.headers.get("x-forwarded-for") ?? "unknown"
+    const result = checkRateLimit(`signup:${ip}`, RATE_LIMITS.AUTH_STRICT)
 
-    if (!name || !email || !password) {
+    if (!result.allowed) {
       return NextResponse.json(
-        { error: "All Fields are required" },
-        { status: 400 }
+        { error: "Too many signup attempts. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil((result.retryAfterMs ?? 0) / 1000)) } }
       )
     }
 
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    })
+    const body = await req.json()
+    const parsed = signupSchema.safeParse(body)
+
+    if (!parsed.success) {
+      return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 })
+    }
+
+    const { name, email, password, referralCode } = parsed.data
+
+    const existingUser = await prisma.user.findUnique({ where: { email } })
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "This email is alredy exsit" },
+        { error: "An account with this email already exists" },
         { status: 400 }
       )
     }
@@ -35,7 +44,6 @@ export async function POST(req: Request) {
     const passwordHash = await bcrypt.hash(password, 10)
 
     let myReferralCode = generateReferralCode()
-    // Ensure uniqueness (bahut rare collision case handle karne ke liye)
     while (await prisma.user.findUnique({ where: { referralCode: myReferralCode } })) {
       myReferralCode = generateReferralCode()
     }
@@ -52,13 +60,13 @@ export async function POST(req: Request) {
     })
 
     return NextResponse.json(
-      { message: "Account Create Successfully", userId: user.id },
+      { message: "Account created successfully", userId: user.id },
       { status: 201 }
     )
   } catch (error) {
-    console.error(error)
+    console.error("[signup] Internal error:", error)
     return NextResponse.json(
-      { error: "Somthing went Wrong" },
+      { error: "Something went wrong. Please try again." },
       { status: 500 }
     )
   }

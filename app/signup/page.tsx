@@ -13,7 +13,7 @@ function SignupForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const referralCode = searchParams.get("ref")
-
+const [honeypot, setHoneypot] = useState("")
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -23,6 +23,9 @@ function SignupForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (honeypot) {
+  return // Bot detected — silently fail without telling it why
+}
     setError("")
 
     if (!agreed) {
@@ -98,7 +101,15 @@ function SignupForm() {
               <Link href="/privacy" className="underline text-primary">Privacy Policy</Link>
             </label>
           </div>
-
+<input
+  type="text"
+  name="website"
+  value={honeypot}
+  onChange={(e) => setHoneypot(e.target.value)}
+  style={{ position: "absolute", left: "-9999px" }}
+  tabIndex={-1}
+  autoComplete="off"
+/>
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Creating account..." : "Create Account"}
           </Button>

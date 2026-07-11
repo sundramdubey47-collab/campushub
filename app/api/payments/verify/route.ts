@@ -42,7 +42,9 @@ export async function POST(req: Request) {
   if (!payment || payment.userId !== dbUser.id) {
     return NextResponse.json({ error: " No Payment record found " }, { status: 400 })
   }
-
+if (payment.status === "PAID") {
+  return NextResponse.json({ error: "This payment has already been processed" }, { status: 400 })
+}
   await prisma.payment.update({
     where: { id: payment.id },
     data: { status: "PAID", razorpayPaymentId: razorpay_payment_id },
