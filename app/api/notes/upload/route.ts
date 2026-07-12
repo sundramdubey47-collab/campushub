@@ -2,13 +2,13 @@ import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import cloudinary from "@/lib/cloudinary"
-import { validateFile, ALLOWED_DOCUMENT_TYPES } from "@/lib/file-validation"
+import { validateFile, validateFileSignature, ALLOWED_DOCUMENT_TYPES } from "@/lib/file-validation"
 
 export async function POST(req: Request) {
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login to contiue" }, { status: 401 })
+    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({
@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
   if (!dbUser || !dbUser.collegeId) {
     return NextResponse.json(
-      { error: "Frist complete your onboarding" },
+      { error: "First complete your onboarding" },
       { status: 400 }
     )
   }
@@ -43,14 +43,16 @@ export async function POST(req: Request) {
 
   if (!file || !title || !courseId || !semesterId) {
     return NextResponse.json(
-      { error: "Title, Branch, Semester and files are required" },
+      { error: "Title, Branch, Semester and file are required" },
       { status: 400 }
     )
   }
-const fileError = validateFile(file, ALLOWED_DOCUMENT_TYPES)
+
+  const fileError = validateFile(file, ALLOWED_DOCUMENT_TYPES)
   if (fileError) {
     return NextResponse.json({ error: fileError }, { status: 400 })
   }
+
   // Security check: semester usी college ki hi branch ka hona chahiye
   const course = await prisma.course.findUnique({
     where: { id: Number(courseId) },
@@ -58,7 +60,7 @@ const fileError = validateFile(file, ALLOWED_DOCUMENT_TYPES)
   })
 
   if (!course || course.department.collegeId !== dbUser.collegeId) {
-    return NextResponse.json({ error: "Select wrong branch" }, { status: 400 })
+    return NextResponse.json({ error: "Invalid branch selected" }, { status: 400 })
   }
 
   const semester = await prisma.semester.findUnique({
@@ -66,11 +68,15 @@ const fileError = validateFile(file, ALLOWED_DOCUMENT_TYPES)
   })
 
   if (!semester || semester.courseId !== Number(courseId)) {
-    return NextResponse.json({ error: "Select wrong branch" }, { status: 400 })
+    return NextResponse.json({ error: "Invalid semester selected" }, { status: 400 })
   }
 
   const bytes = await file.arrayBuffer()
   const buffer = Buffer.from(bytes)
+
+  if (!validateFileSignature(buffer, file.type)) {
+    return NextResponse.json({ error: "File content doesn't match its declared type" }, { status: 400 })
+  }
 
   const uploadResult = await new Promise<any>((resolve, reject) => {
     cloudinary.uploader

@@ -2,7 +2,9 @@ import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import cloudinary from "@/lib/cloudinary"
-import { validateFile, ALLOWED_IMAGE_TYPES } from "@/lib/file-validation"
+import { validateFile, validateFileSignature, ALLOWED_IMAGE_TYPES } from "@/lib/file-validation"
+
+
 export async function POST(req: Request) {
   const session = await auth()
 
@@ -38,6 +40,9 @@ if (fileError) {
 }
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
+    if (!validateFileSignature(buffer, file.type)) {
+  return NextResponse.json({ error: "File content doesn't match its declared type" }, { status: 400 })
+}
 
     const uploadResult = await new Promise<any>((resolve, reject) => {
       cloudinary.uploader
