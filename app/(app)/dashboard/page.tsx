@@ -1,281 +1,1782 @@
+"use server"
+
 import Link from "next/link"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+
 import { EmptyState } from "@/components/empty-state"
 import { Button } from "@/components/ui/button"
-import {
-  FileUp, Ticket, Download, Crown, Bell, Calendar,
-  FileText, ShoppingBag, Package, Search, MessageCircle,
-  Sparkles, ShieldCheck, Zap, Users, ArrowRight, Brain,
-} from "lucide-react"
 import { AnimatedCard } from "@/components/animated-card"
 
+import {
+  FileUp,
+  Ticket,
+  Download,
+  Crown,
+  Bell,
+  Calendar,
+  FileText,
+  ShoppingBag,
+  Package,
+  Search,
+  MessageCircle,
+  Brain,
+  Sparkles,
+  ShieldCheck,
+  Users,
+  Zap,
+  ArrowRight,
+  Rocket,
+  GraduationCap,
+  Star,
+} from "lucide-react"
+
+
+
 const quickLinks = [
-  { href: "/notes", label: "Resources", icon: FileText, color: "oklch(0.55 0.15 278)" },
-  { href: "/notices", label: "Notices", icon: Bell, color: "oklch(0.6 0.18 25)" },
-  { href: "/events", label: "Events", icon: Calendar, color: "oklch(0.72 0.15 60)" },
-  { href: "/marketplace", label: "Marketplace", icon: ShoppingBag, color: "oklch(0.55 0.13 145)" },
-  { href: "/rentals", label: "Rentals", icon: Package, color: "oklch(0.55 0.15 278)" },
-  { href: "/lost-found", label: "Lost & Found", icon: Search, color: "oklch(0.6 0.18 25)" },
-  { href: "/tests", label: "AI Tests", icon: Brain, color: "oklch(0.72 0.15 60)" },
-  { href: "/ai-assistant", label: "AI Assistant", icon: MessageCircle, color: "oklch(0.55 0.13 145)" },
+  {
+    href:"/notes",
+    label:"Resources",
+    icon:FileText,
+    color:"oklch(0.55 0.15 278)"
+  },
+  {
+    href:"/notices",
+    label:"Notices",
+    icon:Bell,
+    color:"oklch(0.6 0.18 25)"
+  },
+  {
+    href:"/events",
+    label:"Events",
+    icon:Calendar,
+    color:"oklch(0.72 0.15 60)"
+  },
+  {
+    href:"/marketplace",
+    label:"Marketplace",
+    icon:ShoppingBag,
+    color:"oklch(0.55 0.13 145)"
+  },
+  {
+    href:"/rentals",
+    label:"Rentals",
+    icon:Package,
+    color:"oklch(0.55 0.15 278)"
+  },
+  {
+    href:"/lost-found",
+    label:"Lost & Found",
+    icon:Search,
+    color:"oklch(0.6 0.18 25)"
+  },
+  {
+    href:"/tests",
+    label:"AI Tests",
+    icon:Brain,
+    color:"oklch(0.72 0.15 60)"
+  },
+  {
+    href:"/ai-assistant",
+    label:"AI Assistant",
+    icon:MessageCircle,
+    color:"oklch(0.55 0.13 145)"
+  },
 ]
+
+
 
 const features = [
-  { icon: Zap, title: "Everything in One Place", description: "Notes, notices, events, marketplace, and more — no more juggling ten different apps for college life." },
-  { icon: Sparkles, title: "AI That Actually Helps", description: "Get instant answers, generate practice tests, and study smarter with an AI assistant built for students." },
-  { icon: Users, title: "Built by Students, for Students", description: "Every feature — from resource sharing to campus marketplace — solves a real problem students face daily." },
-  { icon: ShieldCheck, title: "Safe & Verified Community", description: "Your campus, your college — every interaction stays within your verified student community." },
+
+{
+ icon:Rocket,
+ title:"Everything in One Place",
+ description:
+ "Notes, events, marketplace, AI tools and student services inside one powerful campus ecosystem."
+},
+
+
+{
+ icon:Brain,
+ title:"AI Powered Learning",
+ description:
+ "Generate tests, solve doubts and improve your preparation using AI."
+},
+
+
+{
+ icon:Users,
+ title:"Student Community",
+ description:
+ "Connect with verified students and share knowledge."
+},
+
+
+{
+ icon:ShieldCheck,
+ title:"Safe Campus Network",
+ description:
+ "Private and secure environment designed only for your college."
+}
+
 ]
 
-export default async function DashboardPage() {
-  const session = await auth()
 
-  const dbUser = await prisma.user.findUnique({
-    where: { email: session?.user?.email ?? "" },
-    include: {
-      college: { select: { name: true } },
-      _count: { select: { uploadedNotes: true, coupons: true } },
-    },
-  })
 
-  if (!dbUser) {
-    return <p className="text-red-500 text-sm">Could not load dashboard</p>
-  }
 
-  const [recentNotices, upcomingEvents, totalDownloadsReceived] = await Promise.all([
-    prisma.notice.findMany({
-      where: { collegeId: dbUser.collegeId ?? 0, isArchived: false },
-      orderBy: [{ isPinned: "desc" }, { createdAt: "desc" }],
-      take: 3,
-      select: { id: true, title: true, createdAt: true, isPinned: true },
-    }),
-    prisma.event.findMany({
-      where: { collegeId: dbUser.collegeId ?? 0, eventDate: { gte: new Date() } },
-      orderBy: { eventDate: "asc" },
-      take: 3,
-      select: { id: true, title: true, eventDate: true },
-    }),
-    prisma.note.aggregate({
-      where: { uploadedById: dbUser.id },
-      _sum: { downloads: true },
-    }),
-  ])
 
-  const uploadsCount = dbUser._count.uploadedNotes
-  const couponsCount = dbUser._count.coupons
-  const downloadsReceived = totalDownloadsReceived._sum.downloads ?? 0
+export default async function DashboardPage(){
 
-  return (
-    <div className="space-y-8 sm:space-y-10">
-      {/* Hero */}
-      <div className="relative overflow-hidden rounded-2xl border bg-primary text-primary-foreground p-6 sm:p-10">
-        <div className="absolute inset-0 opacity-15 pointer-events-none">
-          <svg viewBox="0 0 400 120" className="absolute bottom-0 w-full h-24" preserveAspectRatio="none">
-            <rect x="0" y="40" width="50" height="80" fill="currentColor" />
-            <rect x="55" y="20" width="40" height="100" fill="currentColor" />
-            <rect x="100" y="55" width="60" height="65" fill="currentColor" />
-            <rect x="165" y="10" width="35" height="110" fill="currentColor" />
-            <rect x="205" y="45" width="50" height="75" fill="currentColor" />
-            <rect x="260" y="30" width="45" height="90" fill="currentColor" />
-            <rect x="310" y="60" width="40" height="60" fill="currentColor" />
-            <rect x="355" y="15" width="45" height="105" fill="currentColor" />
-          </svg>
-        </div>
-        <div className="absolute -top-16 -right-16 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
 
-        <div className="relative flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wide mb-2 opacity-80">
-              {dbUser.college?.name ?? "CampusHub"}
-            </p>
-            <h1 className="text-2xl sm:text-4xl font-bold tracking-tight">
-              Welcome back, {dbUser.name.split(" ")[0]} 👋
-            </h1>
-            <p className="text-sm sm:text-base opacity-85 mt-2">One platform for every part of your college life</p>
-          </div>
-          <div className="flex gap-2 shrink-0">
-            <Link href="/events">
-              <Button variant="secondary" className="whitespace-nowrap">
-                Explore Events <ArrowRight className="h-4 w-4 ml-1.5" />
-              </Button>
-            </Link>
-            {!dbUser.isPremium && (
-              <Link href="/premium">
-                <Button className="bg-[oklch(var(--premium))] text-[oklch(var(--premium-foreground))] hover:opacity-90 whitespace-nowrap">
-                  <Crown className="h-4 w-4 mr-1.5" /> Go Premium
-                </Button>
-              </Link>
-            )}
-          </div>
-        </div>
-      </div>
+const session = await auth()
 
-     {/* Stats */}
-<div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-  <AnimatedCard delay={0} className="rounded-xl border bg-card p-4 sm:p-5 space-y-2 cursor-default">
-    <div className="rounded-lg p-2 w-fit" style={{ backgroundColor: "oklch(0.55 0.15 278 / 0.12)" }}>
-      <FileUp className="h-4 w-4" style={{ color: "oklch(0.55 0.15 278)" }} />
-    </div>
-    <p className="text-2xl sm:text-3xl font-bold tracking-tight">{uploadsCount}</p>
-    <p className="text-xs text-muted-foreground">Uploads</p>
-  </AnimatedCard>
 
-  <AnimatedCard delay={0.05} className="rounded-xl border bg-card p-4 sm:p-5 space-y-2 cursor-default">
-    <div className="rounded-lg p-2 w-fit" style={{ backgroundColor: "oklch(0.55 0.13 145 / 0.12)" }}>
-      <Download className="h-4 w-4" style={{ color: "oklch(0.55 0.13 145)" }} />
-    </div>
-    <p className="text-2xl sm:text-3xl font-bold tracking-tight">{downloadsReceived}</p>
-    <p className="text-xs text-muted-foreground">Downloads</p>
-  </AnimatedCard>
 
-  <AnimatedCard delay={0.1} className="rounded-xl border bg-card p-4 sm:p-5 space-y-2 cursor-default">
-    <div className="rounded-lg p-2 w-fit" style={{ backgroundColor: "oklch(0.72 0.15 60 / 0.12)" }}>
-      <Ticket className="h-4 w-4" style={{ color: "oklch(0.72 0.15 60)" }} />
-    </div>
-    <p className="text-2xl sm:text-3xl font-bold tracking-tight">{couponsCount}</p>
-    <p className="text-xs text-muted-foreground">Coupons</p>
-  </AnimatedCard>
+const dbUser = await prisma.user.findUnique({
 
-  <AnimatedCard delay={0.15} className="rounded-xl border bg-card p-4 sm:p-5 space-y-2 cursor-default">
-    <div className="rounded-lg p-2 w-fit" style={{ backgroundColor: "oklch(var(--premium)/0.15)" }}>
-      <Crown className="h-4 w-4" style={{ color: "oklch(var(--premium))" }} />
-    </div>
-    <p className="text-2xl sm:text-3xl font-bold tracking-tight">{dbUser.isPremium ? "Premium" : "Free"}</p>
-    <p className="text-xs text-muted-foreground">Your Plan</p>
-  </AnimatedCard>
+where:{
+ email:session?.user?.email ?? ""
+},
+
+
+include:{
+
+
+college:{
+select:{
+name:true
+}
+},
+
+
+_count:{
+select:{
+uploadedNotes:true,
+coupons:true
+}
+}
+
+
+}
+
+})
+
+
+
+if(!dbUser){
+
+return (
+
+<div className="p-10">
+
+<p className="text-red-500">
+
+Could not load dashboard
+
+</p>
+
 </div>
 
-      {/* Quick Access */}
-      <div className="space-y-3">
-        <h2 className="font-semibold text-sm sm:text-base">Quick Access</h2>
-        <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3">
-          {quickLinks.map((link) => {
-            const Icon = link.icon
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="flex flex-col items-center gap-1.5 sm:gap-2 rounded-xl border bg-card p-3 sm:p-4 hover:-translate-y-0.5 hover:shadow-md transition-all"
-              >
-                <div className="rounded-lg p-1.5" style={{ backgroundColor: `${link.color}1f` }}>
-                  <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" style={{ color: link.color }} />
-                </div>
-                <span className="text-[10px] sm:text-xs font-medium text-center leading-tight">{link.label}</span>
-              </Link>
-            )
-          })}
-        </div>
-      </div>
+)
 
-      {/* Notices + Events */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="rounded-xl border bg-card p-4 sm:p-5 space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-sm sm:text-base flex items-center gap-2">
-              <Bell className="h-4 w-4 text-muted-foreground" /> Recent Notices
-            </h2>
-            <Link href="/notices" className="text-xs text-primary underline">View all</Link>
-          </div>
-          {recentNotices.length === 0 ? (
-            <EmptyState icon={Bell} title="No notices yet" />
-          ) : (
-            <div className="space-y-1">
-              {recentNotices.map((n) => (
-                <Link key={n.id} href="/notices" className="block text-sm p-2 rounded-lg hover:bg-muted truncate">
-                  {n.isPinned && "📌 "}{n.title}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
+}
 
-        <div className="rounded-xl border bg-card p-4 sm:p-5 space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-sm sm:text-base flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" /> Upcoming Events
-            </h2>
-            <Link href="/events" className="text-xs text-primary underline">View all</Link>
-          </div>
-          {upcomingEvents.length === 0 ? (
-            <EmptyState icon={Calendar} title="No upcoming events" />
-          ) : (
-            <div className="space-y-1">
-              {upcomingEvents.map((e) => (
-                <Link key={e.id} href="/events" className="block text-sm p-2 rounded-lg hover:bg-muted truncate">
-                  {e.title} — {new Date(e.eventDate).toLocaleDateString()}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
 
-      {/* Premium showcase */}
-      {!dbUser.isPremium && (
-        <div className="relative overflow-hidden rounded-2xl border border-[oklch(var(--premium)/0.4)] bg-gradient-to-r from-[oklch(var(--premium)/0.1)] to-transparent p-5 sm:p-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="rounded-full bg-[oklch(var(--premium)/0.2)] p-2.5 shrink-0">
-                <Crown className="h-5 w-5 text-[oklch(var(--premium))]" />
-              </div>
-              <div>
-                <p className="font-semibold text-sm">Unlock the full CampusHub experience</p>
-                <p className="text-xs text-muted-foreground">Unlimited downloads, premium tests, and more — starting at ₹49/week</p>
-              </div>
-            </div>
-            <Link href="/premium">
-              <Button className="bg-[oklch(var(--premium))] text-[oklch(var(--premium-foreground))] hover:opacity-90 whitespace-nowrap shrink-0">
-                View Plans <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      )}
 
-      {/* Why Choose CampusHub */}
-      <div className="space-y-4 pt-4">
-        <div className="text-center space-y-1">
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Why Choose CampusHub?</h2>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto">
-            Built to be the one app every student on your campus actually wants to open every day
-          </p>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {features.map((feature) => {
-            const Icon = feature.icon
-            return (
-              <div key={feature.title} className="rounded-xl border bg-card p-5 space-y-2">
-                <div className="rounded-lg bg-primary/10 p-2.5 w-fit">
-                  <Icon className="h-5 w-5 text-primary" />
-                </div>
-                <h3 className="font-semibold text-sm">{feature.title}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">{feature.description}</p>
-              </div>
-            )
-          })}
-        </div>
-      </div>
 
-      {/* Footer */}
-      <footer className="pt-8 mt-8 border-t space-y-4">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-center sm:text-left">
-            <p className="font-bold text-sm">CampusHub</p>
-            <p className="text-xs text-muted-foreground">One Platform For Every College Student</p>
-          </div>
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <Link href="/notes" className="hover:text-foreground">Resources</Link>
-            <Link href="/events" className="hover:text-foreground">Events</Link>
-            <Link href="/premium" className="hover:text-foreground">Premium</Link>
-            <Link href="/ai-assistant" className="hover:text-foreground">AI Assistant</Link>
-          </div>
-        </div>
-        <p className="text-center text-[11px] text-muted-foreground">
-          © {new Date().getFullYear()} CampusHub. Made with ❤️ for students, by students.
-        </p>
-      </footer>
-    </div>
-  )
+const [
+recentNotices,
+upcomingEvents,
+totalDownloadsReceived
+
+]=await Promise.all([
+
+
+
+prisma.notice.findMany({
+
+where:{
+collegeId:dbUser.collegeId ?? 0,
+isArchived:false
+},
+
+orderBy:[
+{
+isPinned:"desc"
+},
+{
+createdAt:"desc"
+}
+],
+
+take:3,
+
+
+select:{
+id:true,
+title:true,
+createdAt:true,
+isPinned:true
+}
+
+}),
+
+
+
+
+
+prisma.event.findMany({
+
+where:{
+collegeId:dbUser.collegeId ?? 0,
+eventDate:{
+gte:new Date()
+}
+},
+
+orderBy:{
+eventDate:"asc"
+},
+
+take:3,
+
+
+select:{
+id:true,
+title:true,
+eventDate:true
+}
+
+
+}),
+
+
+
+
+
+
+prisma.note.aggregate({
+
+where:{
+uploadedById:dbUser.id
+},
+
+_sum:{
+downloads:true
+}
+
+
+})
+
+
+])
+
+
+
+
+
+const uploadsCount =
+dbUser._count.uploadedNotes
+
+
+const couponsCount =
+dbUser._count.coupons
+
+
+const downloadsReceived =
+totalDownloadsReceived._sum.downloads ?? 0
+
+
+
+return (
+
+<div className="
+space-y-10
+pb-12
+">
+
+
+
+{/* HERO */}
+
+<section
+className="
+relative
+overflow-hidden
+rounded-3xl
+border
+bg-gradient-to-br
+from-primary
+via-primary/90
+to-purple-700
+text-primary-foreground
+p-6
+sm:p-10
+shadow-2xl
+"
+>
+
+
+<div
+className="
+absolute
+-right-20
+-top-20
+h-72
+w-72
+rounded-full
+bg-white/20
+blur-3xl
+"
+/>
+
+
+
+<div
+className="
+relative
+flex
+flex-col
+lg:flex-row
+lg:items-center
+justify-between
+gap-8
+"
+>
+
+
+<div className="space-y-5">
+
+
+<div
+className="
+inline-flex
+items-center
+gap-2
+rounded-full
+bg-white/15
+px-4
+py-2
+text-xs
+backdrop-blur
+"
+>
+
+<GraduationCap className="h-4 w-4"/>
+
+{dbUser.college?.name ?? "CampusHub"}
+
+</div>
+
+
+
+
+<h1
+className="
+text-3xl
+sm:text-5xl
+font-black
+tracking-tight
+"
+>
+
+Welcome back
+
+<br/>
+
+{dbUser.name.split(" ")[0]} 👋
+
+</h1>
+
+
+
+<p
+className="
+max-w-xl
+text-white/80
+text-sm
+sm:text-base
+"
+>
+
+Your complete digital campus.
+Study smarter, connect faster and grow together.
+
+</p>
+<div className="
+flex
+flex-wrap
+gap-3
+pt-3
+">
+
+<Link href="/events">
+
+<Button
+variant="secondary"
+className="
+rounded-xl
+shadow-lg
+"
+>
+
+Explore Campus
+
+<ArrowRight
+className="
+ml-2
+h-4
+w-4
+"
+/>
+
+</Button>
+
+</Link>
+
+
+
+{!dbUser.isPremium && (
+
+<Link href="/premium">
+
+<Button
+className="
+rounded-xl
+bg-white
+text-black
+hover:bg-white/90
+shadow-lg
+"
+>
+
+<Crown
+className="
+mr-2
+h-4
+w-4
+"
+/>
+
+Go Premium
+
+</Button>
+
+</Link>
+
+)}
+
+</div>
+
+</div>
+
+
+
+
+{/* Desktop Hero Card */}
+
+<div
+className="
+hidden
+lg:block
+"
+>
+
+
+<div
+className="
+w-80
+rounded-3xl
+border
+border-white/20
+bg-white/10
+backdrop-blur-xl
+p-6
+space-y-6
+"
+>
+
+
+<div className="
+flex
+items-center
+justify-between
+">
+
+<div>
+
+<p className="
+text-xs
+text-white/70
+">
+
+Campus Experience
+
+</p>
+
+
+<p className="
+text-2xl
+font-bold
+">
+
+Premium
+
+</p>
+
+</div>
+
+
+<Star
+className="
+h-9
+w-9
+fill-yellow-300
+text-yellow-300
+"
+/>
+
+</div>
+
+
+
+<div className="
+space-y-4
+text-sm
+">
+
+
+<div className="
+flex
+justify-between
+">
+
+<span className="text-white/70">
+Learning
+</span>
+
+<span>
+AI Enabled
+</span>
+
+</div>
+
+
+
+<div className="
+flex
+justify-between
+">
+
+<span className="text-white/70">
+Community
+</span>
+
+<span>
+Verified
+</span>
+
+</div>
+
+
+
+<div className="
+flex
+justify-between
+">
+
+<span className="text-white/70">
+Resources
+</span>
+
+<span>
+Unlimited
+</span>
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+{/* STATS SECTION */}
+
+
+<div
+className="
+grid
+grid-cols-2
+lg:grid-cols-4
+gap-4
+"
+>
+
+
+<AnimatedCard
+delay={0}
+className="
+rounded-2xl
+border
+bg-card
+p-5
+space-y-3
+hover:shadow-lg
+transition
+"
+>
+
+<div
+className="
+w-fit
+rounded-xl
+bg-purple-500/10
+p-2.5
+"
+>
+
+<FileUp
+className="
+h-5
+w-5
+text-purple-600
+"
+/>
+
+</div>
+
+
+<p className="
+text-3xl
+font-bold
+">
+
+{uploadsCount}
+
+</p>
+
+
+<p className="
+text-sm
+text-muted-foreground
+">
+
+Uploads
+
+</p>
+
+
+</AnimatedCard>
+
+
+
+
+
+
+
+<AnimatedCard
+delay={0.05}
+className="
+rounded-2xl
+border
+bg-card
+p-5
+space-y-3
+hover:shadow-lg
+transition
+"
+>
+
+
+<div
+className="
+w-fit
+rounded-xl
+bg-green-500/10
+p-2.5
+"
+>
+
+
+<Download
+className="
+h-5
+w-5
+text-green-600
+"
+/>
+
+
+</div>
+
+
+<p className="
+text-3xl
+font-bold
+">
+
+{downloadsReceived}
+
+</p>
+
+
+<p className="
+text-sm
+text-muted-foreground
+">
+
+Downloads
+
+</p>
+
+
+</AnimatedCard>
+
+
+
+
+
+
+<AnimatedCard
+delay={0.1}
+className="
+rounded-2xl
+border
+bg-card
+p-5
+space-y-3
+hover:shadow-lg
+transition
+"
+>
+
+
+<div
+className="
+w-fit
+rounded-xl
+bg-orange-500/10
+p-2.5
+"
+>
+
+<Ticket
+className="
+h-5
+w-5
+text-orange-500
+"
+/>
+
+
+</div>
+
+
+
+<p className="
+text-3xl
+font-bold
+">
+
+{couponsCount}
+
+</p>
+
+
+<p className="
+text-sm
+text-muted-foreground
+">
+
+Coupons
+
+</p>
+
+
+</AnimatedCard>
+
+
+
+
+
+
+<AnimatedCard
+delay={0.15}
+className="
+rounded-2xl
+border
+bg-card
+p-5
+space-y-3
+hover:shadow-lg
+transition
+"
+>
+
+
+<div
+className="
+w-fit
+rounded-xl
+bg-yellow-500/10
+p-2.5
+"
+>
+
+
+<Crown
+className="
+h-5
+w-5
+text-yellow-500
+"
+/>
+
+
+</div>
+
+
+
+<p className="
+text-xl
+font-bold
+"
+>
+
+{dbUser.isPremium ? "Premium" : "Free"}
+
+</p>
+
+
+<p className="
+text-sm
+text-muted-foreground
+">
+
+Plan
+
+</p>
+
+
+</AnimatedCard>
+
+
+
+</div>
+
+
+
+
+
+
+{/* QUICK ACCESS */}
+
+
+<section className="
+space-y-4
+">
+
+
+<div className="
+flex
+items-center
+justify-between
+">
+
+<h2 className="
+font-bold
+text-lg
+">
+
+Quick Access
+
+</h2>
+
+
+<span className="
+text-xs
+text-muted-foreground
+">
+
+Student Tools
+
+</span>
+
+
+</div>
+
+
+
+<div
+className="
+grid
+grid-cols-4
+sm:grid-cols-4
+lg:grid-cols-8
+gap-3
+"
+>
+
+
+{quickLinks.map((item)=>{
+
+
+const Icon=item.icon
+
+
+return (
+
+<Link
+key={item.href}
+href={item.href}
+className="
+group
+rounded-2xl
+border
+bg-card
+p-3
+sm:p-4
+flex
+flex-col
+items-center
+gap-2
+hover:-translate-y-1
+hover:shadow-xl
+transition-all
+"
+>
+
+
+<div
+className="
+rounded-xl
+p-2
+transition
+group-hover:scale-110
+"
+style={{
+backgroundColor:`${item.color}20`
+}}
+>
+
+
+<Icon
+className="
+h-4
+w-4
+sm:h-5
+sm:w-5
+"
+style={{
+color:item.color
+}}
+/>
+
+
+</div>
+
+
+<span
+className="
+text-[10px]
+sm:text-xs
+font-medium
+text-center
+"
+>
+
+{item.label}
+
+</span>
+
+
+</Link>
+
+)
+
+
+})}
+
+
+</div>
+
+
+</section>
+{/* NOTICES + EVENTS */}
+
+
+<section
+className="
+grid
+grid-cols-1
+lg:grid-cols-2
+gap-5
+"
+>
+
+
+{/* Notices */}
+
+<div
+className="
+rounded-2xl
+border
+bg-card
+p-5
+space-y-4
+"
+>
+
+
+<div
+className="
+flex
+items-center
+justify-between
+"
+>
+
+<h2
+className="
+font-bold
+flex
+items-center
+gap-2
+"
+>
+
+<Bell className="h-5 w-5 text-primary"/>
+
+Recent Notices
+
+</h2>
+
+
+<Link
+href="/notices"
+className="
+text-xs
+text-primary
+hover:underline
+"
+>
+
+View all
+
+</Link>
+
+
+</div>
+
+
+
+
+{
+recentNotices.length===0 ? (
+
+<EmptyState
+icon={Bell}
+title="No notices yet"
+/>
+
+)
+
+:
+
+(
+
+<div className="space-y-2">
+
+{
+recentNotices.map((notice)=>(
+
+
+<Link
+
+key={notice.id}
+
+href="/notices"
+
+className="
+block
+rounded-xl
+p-3
+hover:bg-muted
+transition
+text-sm
+"
+
+>
+
+
+{
+notice.isPinned && "📌 "
+}
+
+{notice.title}
+
+
+</Link>
+
+
+))
+
+}
+
+
+</div>
+
+
+)
+
+}
+
+
+
+</div>
+
+
+
+
+
+
+{/* Events */}
+
+
+<div
+className="
+rounded-2xl
+border
+bg-card
+p-5
+space-y-4
+"
+>
+
+
+<div
+className="
+flex
+items-center
+justify-between
+"
+>
+
+
+<h2
+className="
+font-bold
+flex
+items-center
+gap-2
+"
+>
+
+<Calendar className="h-5 w-5 text-primary"/>
+
+Upcoming Events
+
+</h2>
+
+
+<Link
+
+href="/events"
+
+className="
+text-xs
+text-primary
+hover:underline
+"
+
+>
+
+View all
+
+</Link>
+
+
+</div>
+
+
+
+
+
+{
+upcomingEvents.length===0 ? (
+
+<EmptyState
+
+icon={Calendar}
+
+title="No upcoming events"
+
+/>
+
+)
+
+:
+
+(
+
+<div className="space-y-2">
+
+
+{
+upcomingEvents.map((event)=>(
+
+
+<Link
+
+key={event.id}
+
+href="/events"
+
+className="
+block
+rounded-xl
+p-3
+hover:bg-muted
+transition
+text-sm
+"
+
+>
+
+
+<div className="
+font-medium
+">
+
+{event.title}
+
+</div>
+
+
+<p className="
+text-xs
+text-muted-foreground
+mt-1
+">
+
+{
+new Date(event.eventDate)
+.toLocaleDateString()
+}
+
+</p>
+
+
+</Link>
+
+
+))
+
+}
+
+
+</div>
+
+)
+
+}
+
+
+</div>
+
+
+
+</section>
+
+
+
+
+
+
+
+
+{/* PREMIUM CTA */}
+
+
+
+{
+!dbUser.isPremium && (
+
+<section
+
+className="
+relative
+overflow-hidden
+rounded-3xl
+border
+bg-gradient-to-r
+from-yellow-500/10
+to-transparent
+p-6
+"
+
+>
+
+
+<div
+className="
+absolute
+right-0
+top-0
+h-40
+w-40
+rounded-full
+bg-yellow-400/20
+blur-3xl
+"
+/>
+
+
+
+<div
+
+className="
+relative
+flex
+flex-col
+sm:flex-row
+items-center
+justify-between
+gap-5
+"
+
+>
+
+
+<div className="
+flex
+items-center
+gap-4
+"
+>
+
+
+<div
+className="
+rounded-2xl
+bg-yellow-500/20
+p-3
+"
+>
+
+
+<Crown
+className="
+h-7
+w-7
+text-yellow-500
+"
+/>
+
+
+</div>
+
+
+
+<div>
+
+<h3
+className="
+font-bold
+text-lg
+"
+>
+
+Unlock CampusHub Premium
+
+</h3>
+
+
+<p
+className="
+text-sm
+text-muted-foreground
+"
+>
+
+Unlimited resources, AI tests and exclusive features.
+
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+
+<Link href="/premium">
+
+
+<Button
+
+className="
+rounded-xl
+"
+
+>
+
+Upgrade Now
+
+<ArrowRight
+className="
+ml-2
+h-4
+w-4
+"
+
+/>
+
+</Button>
+
+
+</Link>
+
+
+
+</div>
+
+
+</section>
+
+
+)
+
+}
+
+
+
+
+
+
+
+
+
+{/* WHY CAMPUSHUB */}
+
+
+
+<section
+className="
+space-y-5
+pt-5
+"
+>
+
+
+<div
+className="
+text-center
+space-y-2
+"
+>
+
+
+<h2
+className="
+text-2xl
+sm:text-3xl
+font-black
+"
+>
+
+Why Choose CampusHub?
+
+</h2>
+
+
+<p
+className="
+text-sm
+text-muted-foreground
+max-w-xl
+mx-auto
+"
+>
+
+The ultimate student operating system built for modern campuses.
+
+</p>
+
+
+</div>
+
+
+
+
+
+<div
+
+className="
+grid
+grid-cols-1
+sm:grid-cols-2
+gap-5
+"
+
+>
+
+
+{
+features.map((feature)=>{
+
+
+const Icon=feature.icon
+
+
+return (
+
+<div
+
+key={feature.title}
+
+className="
+rounded-2xl
+border
+bg-card
+p-5
+hover:shadow-xl
+transition
+"
+
+>
+
+
+<div
+
+className="
+w-fit
+rounded-xl
+bg-primary/10
+p-3
+"
+
+>
+
+<Icon
+
+className="
+h-6
+w-6
+text-primary
+"
+
+/>
+
+</div>
+
+
+
+<h3
+className="
+font-bold
+mt-4
+"
+>
+
+{feature.title}
+
+</h3>
+
+
+
+<p
+
+className="
+text-sm
+text-muted-foreground
+mt-2
+leading-relaxed
+"
+
+>
+
+{feature.description}
+
+</p>
+
+
+
+</div>
+
+
+)
+
+
+})
+
+}
+
+
+</div>
+
+
+
+</section>
+
+
+
+
+
+
+
+
+
+{/* FOOTER */}
+
+
+<footer
+
+className="
+border-t
+pt-8
+mt-10
+space-y-5
+"
+
+>
+
+
+<div
+
+className="
+flex
+flex-col
+sm:flex-row
+justify-between
+items-center
+gap-5
+"
+
+>
+
+
+<div className="
+text-center
+sm:text-left
+"
+>
+
+
+<h3
+className="
+font-black
+text-lg
+"
+>
+
+CampusHub
+
+</h3>
+
+
+<p
+className="
+text-xs
+text-muted-foreground
+"
+>
+
+One platform for every college student.
+
+</p>
+
+
+</div>
+
+
+
+
+
+<div
+className="
+flex
+gap-5
+text-xs
+text-muted-foreground
+"
+>
+
+
+<Link href="/notes">
+Resources
+</Link>
+
+
+<Link href="/events">
+Events
+</Link>
+
+
+<Link href="/premium">
+Premium
+</Link>
+
+
+<Link href="/ai-assistant">
+AI
+</Link>
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+<p
+
+className="
+text-center
+text-xs
+text-muted-foreground
+"
+
+>
+
+© {new Date().getFullYear()} CampusHub.
+Made with ❤️ for students.
+
+</p>
+
+
+
+</footer>
+
+
+
+
+</div>
+
+)
+
 }

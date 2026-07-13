@@ -11,6 +11,7 @@ import { CampusHubLogo } from "@/components/campushub-logo"
 
 export default function LoginPage() {
   const router = useRouter()
+
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -18,10 +19,16 @@ export default function LoginPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
     setError("")
     setLoading(true)
 
-    const res = await signIn("credentials", { email, password, redirect: false })
+    const res = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    })
+
     setLoading(false)
 
     if (res?.error) {
@@ -33,55 +40,157 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center px-4 bg-muted/20">
-      <div className="w-full max-w-sm space-y-6">
-        <div className="flex flex-col items-center gap-2">
-          <CampusHubLogo className="h-10 w-10" />
-          <h1 className="text-xl font-bold">Welcome back</h1>
-          <p className="text-sm text-muted-foreground">Login to continue to CampusHub</p>
+    <main className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-primary/10 via-background to-muted">
+
+      <div className="w-full max-w-md space-y-7">
+
+        {/* Logo Section */}
+        <div className="flex flex-col items-center gap-3">
+
+          <div className="rounded-2xl bg-background p-3 shadow-md">
+            <CampusHubLogo className="h-12 w-12" />
+          </div>
+
+          <div className="text-center">
+            <h1 className="text-2xl font-bold tracking-tight">
+              Welcome back 👋
+            </h1>
+
+            <p className="text-sm text-muted-foreground mt-1">
+              Login to continue your CampusHub journey
+            </p>
+          </div>
+
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 border rounded-2xl p-6 bg-card shadow-sm">
-          {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+
+        {/* Login Card */}
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-5 rounded-3xl border bg-card/80 backdrop-blur p-7 shadow-xl"
+        >
+
+          {error && (
+            <div className="rounded-lg bg-red-500/10 px-3 py-2 text-center text-sm text-red-500">
+              {error}
+            </div>
+          )}
+
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <Label htmlFor="email">
+              Email Address
+            </Label>
+
+            <Input
+              id="email"
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e)=>setEmail(e.target.value)}
+              required
+              className="h-11 rounded-xl"
+            />
+          </div>
+                    <div className="space-y-2">
+            <Label htmlFor="password">
+              Password
+            </Label>
+
+            <Input
+              id="password"
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e)=>setPassword(e.target.value)}
+              required
+              className="h-11 rounded-xl"
+            />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+
+          <div className="flex justify-end">
+            <Link
+              href="/forgot-password"
+              className="text-xs text-primary hover:underline"
+            >
+              Forgot password?
+            </Link>
           </div>
-<div className="text-right">
-  <Link href="/forgot-password" className="text-xs text-primary underline underline-offset-2">
-    Forgot password?
-  </Link>
-</div>
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Logging in..." : "Login"}
+
+
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full h-11 rounded-xl text-sm font-medium"
+          >
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                Logging in...
+              </span>
+            ) : (
+              "Login"
+            )}
           </Button>
 
-          <div className="relative py-1">
-            <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
-            <div className="relative flex justify-center text-xs"><span className="bg-card px-2 text-muted-foreground">or</span></div>
+
+          {/* Divider */}
+          <div className="relative py-2">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+
+            <div className="relative flex justify-center">
+              <span className="bg-card px-3 text-xs text-muted-foreground">
+                OR
+              </span>
+            </div>
           </div>
+
 
           <Button
             type="button"
             variant="outline"
-            className="w-full"
-            onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+            className="w-full h-11 rounded-xl"
+            onClick={() =>
+              signIn("google", {
+                callbackUrl:"/dashboard"
+              })
+            }
           >
+            <svg
+              className="mr-2 h-4 w-4"
+              viewBox="0 0 24 24"
+            >
+              <path
+                fill="currentColor"
+                d="M21.35 12.27c0-.75-.07-1.47-.21-2.16H12v4.09h5.23a4.47 4.47 0 0 1-1.94 2.93v2.43h3.14c1.84-1.7 2.92-4.2 2.92-7.29Z"
+              />
+            </svg>
+
             Continue with Google
           </Button>
+
         </form>
 
+
         <p className="text-center text-sm text-muted-foreground">
+
           Don't have an account?{" "}
-          <Link href="/signup" className="text-primary font-medium underline underline-offset-2">Sign up</Link>
+
+          <Link
+            href="/signup"
+            className="font-medium text-primary hover:underline"
+          >
+            Create account
+          </Link>
+
         </p>
+
+
       </div>
+
     </main>
   )
 }

@@ -3,12 +3,22 @@
 import { useState } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Combobox } from "@/components/combobox"
-import { PageHeader } from "@/components/page-header"
 import { EmptyState } from "@/components/empty-state"
-import { Package, Plus, History, Search } from "lucide-react"
+
+import {
+  Package,
+  Plus,
+  History,
+  Search,
+  IndianRupee,
+  User,
+  ShieldCheck,
+} from "lucide-react"
+
 
 const CATEGORY_OPTIONS = [
   { value: "BOOKS", label: "Books" },
@@ -21,6 +31,7 @@ const CATEGORY_OPTIONS = [
   { value: "OTHER", label: "Other" },
 ]
 
+
 type Item = {
   id: number
   title: string
@@ -30,104 +41,502 @@ type Item = {
   price: number
   securityDeposit: number
   imageUrl: string | null
-  owner: { name: string }
+  owner: {
+    name: string
+  }
 }
 
-export function RentalsClient({ initialItems }: { initialItems: Item[] }) {
+
+
+export function RentalsClient({
+  initialItems,
+}: {
+  initialItems: Item[]
+}) {
+
   const [allItems] = useState<Item[]>(initialItems)
   const [items, setItems] = useState<Item[]>(initialItems)
+
   const [search, setSearch] = useState("")
   const [category, setCategory] = useState("")
 
+
+
   function applyFilters() {
+
     let filtered = allItems
 
+
     if (search.trim()) {
+
       const q = search.toLowerCase()
+
       filtered = filtered.filter(
-        (i) => i.title.toLowerCase().includes(q) || i.description?.toLowerCase().includes(q)
+        (i) =>
+          i.title.toLowerCase().includes(q) ||
+          i.description?.toLowerCase().includes(q)
       )
+
     }
+
 
     if (category) {
-      filtered = filtered.filter((i) => i.category === category)
+
+      filtered = filtered.filter(
+        (i) => i.category === category
+      )
+
     }
 
+
     setItems(filtered)
+
   }
 
-  return (
-    <div className="space-y-5">
-      <PageHeader
-        title="Rentals"
-        description="Borrow what you need — books, gear, and more, without buying"
-        action={
-          <div className="flex gap-2">
-            <Link href="/rentals/my-bookings">
-              <Button variant="outline" size="sm"><History className="h-4 w-4 mr-1.5" /> My Rentals</Button>
-            </Link>
-            <Link href="/rentals/create">
-              <Button size="sm"><Plus className="h-4 w-4 mr-1.5" /> List an Item</Button>
-            </Link>
-          </div>
-        }
-      />
 
-      <div className="flex flex-col sm:flex-row gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search rentals..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
+
+  return (
+
+    <div className="space-y-8">
+
+
+      {/* Header */}
+
+      <div className="
+        flex
+        flex-col
+        gap-4
+        md:flex-row
+        md:items-center
+        md:justify-between
+      ">
+
+
+        <div>
+
+          <h1 className="
+            text-3xl
+            font-bold
+            tracking-tight
+          ">
+            Campus Rentals
+          </h1>
+
+
+          <p className="
+            mt-1
+            text-muted-foreground
+          ">
+            Rent useful items from students around your college
+          </p>
+
+
         </div>
-        <Combobox placeholder="Category" value={category} onChange={setCategory} options={CATEGORY_OPTIONS} />
-        <Button onClick={applyFilters}>Search</Button>
+
+
+
+        <div className="flex gap-2">
+
+
+          <Link href="/rentals/my-bookings">
+
+            <Button variant="outline">
+
+              <History className="mr-2 h-4 w-4"/>
+
+              My Rentals
+
+            </Button>
+
+          </Link>
+
+
+
+          <Link href="/rentals/create">
+
+            <Button>
+
+              <Plus className="mr-2 h-4 w-4"/>
+
+              List Item
+
+            </Button>
+
+          </Link>
+
+
+        </div>
+
+
       </div>
 
-      {items.length === 0 ? (
-        <EmptyState
-          icon={Package}
-          title="No items found"
-          description="Try different filters, or be the first to list an item"
-          action={
-            <Link href="/rentals/create">
-              <Button size="sm"><Plus className="h-4 w-4 mr-1.5" /> List an Item</Button>
-            </Link>
-          }
-        />
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {items.map((item, i) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.25, delay: Math.min(i * 0.04, 0.3) }}
-            >
-              <Link href={`/rentals/${item.id}`}>
-                <div className="rounded-xl border bg-card overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                  {item.imageUrl && (
-                    <div className="aspect-video bg-muted overflow-hidden flex items-center justify-center">
-                      <img src={item.imageUrl} alt={item.title} className="w-full h-full object-contain" />
-                    </div>
-                  )}
-                  <div className="p-4 space-y-2">
-                    <h2 className="font-semibold text-sm">{item.title}</h2>
-                    {item.description && <p className="text-xs text-muted-foreground line-clamp-2">{item.description}</p>}
-                    <p className="font-bold text-sm">
-                      ₹{item.price} <span className="font-normal text-muted-foreground">/ {item.pricingType.toLowerCase()}</span>
-                    </p>
-                    <p className="text-[11px] text-muted-foreground">Owned by {item.owner.name}</p>
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
+
+
+
+
+      {/* Search */}
+
+      <div className="
+        rounded-2xl
+        border
+        bg-card
+        p-4
+        shadow-sm
+      ">
+
+
+        <div className="
+          flex
+          flex-col
+          gap-3
+          md:flex-row
+        ">
+
+
+          <div className="relative flex-1">
+
+
+            <Search
+              className="
+                absolute
+                left-3
+                top-1/2
+                h-4 w-4
+                -translate-y-1/2
+                text-muted-foreground
+              "
+            />
+
+
+            <Input
+
+              placeholder="Search books, laptop, cycle..."
+
+              value={search}
+
+              onChange={(e)=>setSearch(e.target.value)}
+
+              className="pl-10 h-11"
+
+            />
+
+
+          </div>
+
+
+
+          <Combobox
+
+            placeholder="All Categories"
+
+            value={category}
+
+            onChange={setCategory}
+
+            options={CATEGORY_OPTIONS}
+
+          />
+
+
+          <Button
+            onClick={applyFilters}
+            className="h-11 px-8"
+          >
+
+            Search
+
+          </Button>
+
+
         </div>
-      )}
+
+
+      </div>
+
+
+
+
+
+
+      {/* Items */}
+
+
+      {
+        items.length === 0 ? (
+
+          <EmptyState
+
+            icon={Package}
+
+            title="No rentals available"
+
+            description="Try another search or add your own item"
+
+            action={
+
+              <Link href="/rentals/create">
+
+                <Button>
+
+                  <Plus className="mr-2 h-4 w-4"/>
+
+                  List Item
+
+                </Button>
+
+              </Link>
+
+            }
+
+          />
+
+
+        ) : (
+
+
+          <div className="
+            grid
+            grid-cols-1
+            sm:grid-cols-2
+            lg:grid-cols-3
+            gap-6
+          ">
+
+
+          {
+            items.map((item,index)=>(
+
+
+              <motion.div
+
+                key={item.id}
+
+                initial={{
+                  opacity:0,
+                  y:20
+                }}
+
+                animate={{
+                  opacity:1,
+                  y:0
+                }}
+
+                transition={{
+                  delay:index*0.05
+                }}
+
+              >
+
+
+              <Link href={`/rentals/${item.id}`}>
+
+
+                <div className="
+                  group
+                  overflow-hidden
+                  rounded-3xl
+                  border
+                  bg-card
+                  shadow-sm
+                  transition
+                  hover:-translate-y-1
+                  hover:shadow-xl
+                ">
+
+
+
+                  <div className="
+                    relative
+                    aspect-video
+                    bg-muted
+                    overflow-hidden
+                  ">
+
+
+                    {
+                      item.imageUrl ? (
+
+                        <img
+
+                          src={item.imageUrl}
+
+                          alt={item.title}
+
+                          className="
+                            h-full
+                            w-full
+                            object-cover
+                            transition
+                            duration-300
+                            group-hover:scale-105
+                          "
+
+                        />
+
+                      ) : (
+
+                        <div className="
+                          flex
+                          h-full
+                          items-center
+                          justify-center
+                        ">
+
+                          <Package
+                            className="
+                              h-12
+                              w-12
+                              text-muted-foreground
+                            "
+                          />
+
+                        </div>
+
+                      )
+
+                    }
+
+
+                  </div>
+
+
+
+
+                  <div className="p-5 space-y-3">
+
+
+
+                    <div className="
+                      flex
+                      items-start
+                      justify-between
+                    ">
+
+
+                      <h2 className="
+                        font-semibold
+                        text-lg
+                        line-clamp-1
+                      ">
+
+                        {item.title}
+
+                      </h2>
+
+
+                    </div>
+
+
+
+
+                    {
+                      item.description && (
+
+                        <p className="
+                          text-sm
+                          text-muted-foreground
+                          line-clamp-2
+                        ">
+
+                          {item.description}
+
+                        </p>
+
+                      )
+                    }
+
+
+
+
+                    <div className="
+                      flex
+                      items-center
+                      gap-1
+                      text-xl
+                      font-bold
+                    ">
+
+                      <IndianRupee className="h-4 w-4"/>
+
+                      {item.price}
+
+
+                      <span className="
+                        text-sm
+                        font-normal
+                        text-muted-foreground
+                      ">
+
+                        / {item.pricingType.toLowerCase()}
+
+                      </span>
+
+
+                    </div>
+
+
+
+
+                    <div className="
+                      flex
+                      items-center
+                      justify-between
+                      border-t
+                      pt-3
+                      text-xs
+                      text-muted-foreground
+                    ">
+
+
+                      <span className="flex gap-1 items-center">
+
+                        <User className="h-3 w-3"/>
+
+                        {item.owner.name}
+
+                      </span>
+
+
+
+                      <span className="flex gap-1 items-center">
+
+                        <ShieldCheck className="h-3 w-3"/>
+
+                        Verified
+
+                      </span>
+
+
+                    </div>
+
+
+
+                  </div>
+
+
+
+                </div>
+
+
+              </Link>
+
+
+              </motion.div>
+
+
+            ))
+          }
+
+
+          </div>
+
+
+        )
+
+      }
+
+
     </div>
+
   )
 }
