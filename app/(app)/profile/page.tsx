@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/empty-state"
 import { StatCard } from "@/components/stat-card"
 import { LogoutButton } from "@/components/logout-button"
 import { PhoneEdit } from "@/components/phone-edit"
+import { Button } from "@/components/ui/button"
 
 import {
   FileUp,
@@ -16,9 +17,8 @@ import {
   Bookmark,
   Crown,
   Tag,
-  GraduationCap,
-  Building2,
-  Sparkles
+  Sparkles,
+  GraduationCap
 } from "lucide-react"
 
 
