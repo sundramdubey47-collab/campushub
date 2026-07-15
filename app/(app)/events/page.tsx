@@ -56,11 +56,11 @@ export default async function EventsPage() {
     : []
 
   const serializedEvents = events.map((e) => ({
-    ...e,
-    eventDate: e.eventDate.toISOString(),
-    registrationDeadline:
-      e.registrationDeadline?.toISOString() ?? null,
-  }))
+  ...e,
+  eventDate: e.eventDate.toISOString(),
+  endDate: e.endDate?.toISOString() ?? null,
+  registrationDeadline: e.registrationDeadline?.toISOString() ?? null,
+}))
 
   return (
     <div className="space-y-8">

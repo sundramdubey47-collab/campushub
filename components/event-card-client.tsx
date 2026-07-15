@@ -13,6 +13,7 @@ type Event = {
   type: string
   venue: string | null
   eventDate: string
+  endDate: string | null
   registrationDeadline: string | null
   seatLimit: number | null
   createdBy: { name: string }
@@ -29,32 +30,60 @@ const TYPE_STYLES: Record<string, string> = {
   OTHER: "bg-muted text-muted-foreground",
 }
 
-function Countdown({ eventDate }: { eventDate: string }) {
-  const [timeLeft, setTimeLeft] = useState("")
-  const [isLive, setIsLive] = useState(false)
+function Countdown({ eventDate, endDate }: { eventDate: string; endDate: string | null }) {
+  const [status, setStatus] = useState<{ text: string; state: "upcoming" | "live" | "ended" }>({
+    text: "",
+    state: "upcoming",
+  })
 
   useEffect(() => {
     function update() {
-      const diff = new Date(eventDate).getTime() - Date.now()
-      if (diff <= 0) {
-        setTimeLeft("Happening now")
-        setIsLive(true)
+      const now = Date.now()
+      const start = new Date(eventDate).getTime()
+      const end = endDate ? new Date(endDate).getTime() : null
+
+      if (end && now > end) {
+        setStatus({ text: "Event ended", state: "ended" })
         return
       }
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24)
-      const minutes = Math.floor((diff / (1000 * 60)) % 60)
-      setTimeLeft(days > 0 ? `${days}d ${hours}h left` : `${hours}h ${minutes}m left`)
+
+      if (now >= start && (!end || now <= end)) {
+        setStatus({ text: "Happening now", state: "live" })
+        return
+      }
+
+      if (now < start) {
+        const diff = start - now
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24)
+        const minutes = Math.floor((diff / (1000 * 60)) % 60)
+        setStatus({
+          text: days > 0 ? `${days}d ${hours}h left` : `${hours}h ${minutes}m left`,
+          state: "upcoming",
+        })
+        return
+      }
+
+      // eventDate nikal gayi par koi endDate nahi di gayi thi
+      setStatus({ text: "Happening now", state: "live" })
     }
+
     update()
     const interval = setInterval(update, 60000)
     return () => clearInterval(interval)
-  }, [eventDate])
+  }, [eventDate, endDate])
+
+  const colorClass =
+    status.state === "ended"
+      ? "text-muted-foreground"
+      : status.state === "live"
+      ? "text-[oklch(var(--success))]"
+      : "text-primary"
 
   return (
-    <div className={`flex items-center gap-1.5 text-xs font-medium ${isLive ? "text-[oklch(var(--success))]" : "text-primary"}`}>
+    <div className={`flex items-center gap-1.5 text-xs font-medium ${colorClass}`}>
       <Clock className="h-3.5 w-3.5" />
-      {timeLeft}
+      {status.text}
     </div>
   )
 }
@@ -92,9 +121,10 @@ export function EventCardClient({ event, canManage }: { event: Event; canManage:
   const seatsLeft = event.seatLimit ? event.seatLimit - event._count.registrations : null
   const seatsFull = seatsLeft === 0
   const dateObj = new Date(event.eventDate)
+  const hasEnded = event.endDate ? Date.now() > new Date(event.endDate).getTime() : false
 
   return (
-    <div className="group relative overflow-hidden rounded-2xl border bg-card shadow-sm hover:shadow-lg transition-shadow duration-300">
+    <div className={`group relative overflow-hidden rounded-2xl border bg-card shadow-sm hover:shadow-lg transition-shadow duration-300 ${hasEnded ? "opacity-60" : ""}`}>
       <div className="h-1 w-full bg-gradient-to-r from-primary via-primary/60 to-transparent" />
 
       <div className="p-5 space-y-3.5">
@@ -131,35 +161,37 @@ export function EventCardClient({ event, canManage }: { event: Event; canManage:
           </div>
         </div>
 
-        <Countdown eventDate={event.eventDate} />
+        <Countdown eventDate={event.eventDate} endDate={event.endDate} />
 
         {error && <p className="text-xs text-red-500">{error}</p>}
 
-        <div className="pt-1 space-y-2">
-          {registered && qrImage ? (
-            <div className="flex items-center gap-3 rounded-xl border bg-muted/40 p-3">
-              <img src={qrImage} alt="QR Code" className="w-14 h-14 rounded-lg border bg-white shrink-0" />
-              <p className="text-xs text-[oklch(var(--success))] font-medium">You're in! ✅<br/><span className="text-muted-foreground font-normal">Show this QR code at entry</span></p>
-            </div>
-          ) : (
-            <Button size="sm" className="w-full" onClick={handleRegister} disabled={loading || seatsFull}>
-              {loading ? "Registering..." : seatsFull ? "Seats Full" : "Register Now"}
-            </Button>
-          )}
-
-          <WhatsAppShare
-            text={`Check out this event: "${event.title}" on CampusHub`}
-            url={typeof window !== "undefined" ? window.location.href : ""}
-          />
-
-          {canManage && (
-            <Link href={`/events/${event.id}/scan`}>
-              <Button variant="outline" size="sm" className="w-full">
-                <QrCode className="h-3.5 w-3.5 mr-1.5" /> Scan Attendance
+        {!hasEnded && (
+          <div className="pt-1 space-y-2">
+            {registered && qrImage ? (
+              <div className="flex items-center gap-3 rounded-xl border bg-muted/40 p-3">
+                <img src={qrImage} alt="QR Code" className="w-14 h-14 rounded-lg border bg-white shrink-0" />
+                <p className="text-xs text-[oklch(var(--success))] font-medium">You're in! ✅<br/><span className="text-muted-foreground font-normal">Show this QR code at entry</span></p>
+              </div>
+            ) : (
+              <Button size="sm" className="w-full" onClick={handleRegister} disabled={loading || seatsFull}>
+                {loading ? "Registering..." : seatsFull ? "Seats Full" : "Register Now"}
               </Button>
-            </Link>
-          )}
-        </div>
+            )}
+
+            <WhatsAppShare
+              text={`Check out this event: "${event.title}" on CampusHub`}
+              url={typeof window !== "undefined" ? window.location.href : ""}
+            />
+
+            {canManage && (
+              <Link href={`/events/${event.id}/scan`}>
+                <Button variant="outline" size="sm" className="w-full">
+                  <QrCode className="h-3.5 w-3.5 mr-1.5" /> Scan Attendance
+                </Button>
+              </Link>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

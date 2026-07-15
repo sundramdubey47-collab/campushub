@@ -20,7 +20,17 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json()
-  const { title, description, type, venue, bannerUrl, eventDate, registrationDeadline, seatLimit } = body
+ const {
+  title,
+  description,
+  type,
+  venue,
+  bannerUrl,
+  eventDate,
+  endDate,
+  registrationDeadline,
+  seatLimit,
+} = body
 
   if (!title || !eventDate) {
     return NextResponse.json({ error: "Title and Event Date both are need" }, { status: 400 })
@@ -34,6 +44,7 @@ export async function POST(req: Request) {
       venue,
       bannerUrl,
       eventDate: new Date(eventDate),
+      endDate: endDate ? new Date(endDate) : null,
       registrationDeadline: registrationDeadline ? new Date(registrationDeadline) : null,
       seatLimit: seatLimit ? Number(seatLimit) : null,
       createdById: dbUser.id,

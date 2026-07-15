@@ -25,6 +25,7 @@ export default function CreateEventPage() {
   const [type, setType] = useState("")
   const [venue, setVenue] = useState("")
   const [eventDate, setEventDate] = useState("")
+  const [endDate, setEndDate] = useState("")
   const [registrationDeadline, setRegistrationDeadline] = useState("")
   const [seatLimit, setSeatLimit] = useState("")
   const [error, setError] = useState("")
@@ -50,6 +51,7 @@ export default function CreateEventPage() {
         type,
         venue,
         eventDate,
+        endDate: endDate || null,
         registrationDeadline: registrationDeadline || null,
         seatLimit: seatLimit || null,
       }),
@@ -107,7 +109,14 @@ export default function CreateEventPage() {
             required
           />
         </div>
-
+<div className="space-y-2">
+  <Label>Event End Date & Time</Label>
+  <Input
+    type="datetime-local"
+    value={endDate}
+    onChange={(e) => setEndDate(e.target.value)}
+  />
+</div>
         <div className="space-y-2">
           <Label>Registration Deadline (optional)</Label>
           <Input

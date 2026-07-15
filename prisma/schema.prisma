@@ -328,6 +328,7 @@ model Event {
   bannerUrl     String?
 
   eventDate     DateTime
+  endDate       DateTime?
   registrationDeadline DateTime?
   seatLimit     Int?
 
