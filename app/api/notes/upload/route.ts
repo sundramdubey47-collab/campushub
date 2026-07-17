@@ -40,6 +40,7 @@ export async function POST(req: Request) {
   const category = formData.get("category") as string
   const isPremium = formData.get("isPremium") === "true"
   const unit = formData.get("unit") as string
+const fulfillsRequestId = formData.get("fulfillsRequestId") as string
 
   if (!file || !title || !courseId || !semesterId) {
     return NextResponse.json(
@@ -103,6 +104,13 @@ export async function POST(req: Request) {
       subjectId: subjectId ? Number(subjectId) : null,
     },
   })
+
+if (fulfillsRequestId) {
+  await prisma.resourceRequest.update({
+    where: { id: Number(fulfillsRequestId) },
+    data: { status: "FULFILLED", fulfilledAt: new Date(), fulfilledNoteId: note.id },
+  })
+}
 
   return NextResponse.json({ message: "Uploaded successfully", note })
 }

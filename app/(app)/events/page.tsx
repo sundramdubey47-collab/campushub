@@ -37,9 +37,7 @@ export default async function EventsPage() {
         where: {
           collegeId: dbUser.collegeId,
         },
-        orderBy: {
-          eventDate: "asc",
-        },
+       orderBy: { createdAt: "desc" },
         include: {
           createdBy: {
             select: {

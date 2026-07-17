@@ -162,6 +162,22 @@ export function EventCardClient({ event, canManage }: { event: Event; canManage:
         </div>
 
         <Countdown eventDate={event.eventDate} endDate={event.endDate} />
+        <div className="flex flex-col gap-1 text-xs text-muted-foreground border-t pt-2">
+  <div className="flex items-center gap-1.5">
+    <span className="font-medium text-foreground">Starts:</span>
+    {new Date(event.eventDate).toLocaleString("en-IN", {
+      day: "numeric", month: "short", hour: "numeric", minute: "2-digit",
+    })}
+  </div>
+  {event.endDate && (
+    <div className="flex items-center gap-1.5">
+      <span className="font-medium text-foreground">Ends:</span>
+      {new Date(event.endDate).toLocaleString("en-IN", {
+        day: "numeric", month: "short", hour: "numeric", minute: "2-digit",
+      })}
+    </div>
+  )}
+</div>
 
         {error && <p className="text-xs text-red-500">{error}</p>}
 

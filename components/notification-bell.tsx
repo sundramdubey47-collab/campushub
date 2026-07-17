@@ -10,8 +10,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { HelpCircle, CheckCircle2 } from "lucide-react" // is import ko upar add karo
 
 type NotifItem = { id: number; title: string; createdAt: string; type: string; link: string }
+
 
 const ICONS: Record<string, any> = {
   notice: BellIcon,
@@ -19,6 +21,18 @@ const ICONS: Record<string, any> = {
   marketplace: ShoppingBag,
   rental: Package,
   resource: FileText,
+  request: HelpCircle,
+  fulfilled: CheckCircle2,
+}
+
+const CATEGORY_LABELS: Record<string, string> = {
+  notice: "Notice",
+  event: "Event",
+  marketplace: "Marketplace",
+  rental: "Rental",
+  resource: "Resource",
+  request: "Request",
+  fulfilled: "Fulfilled",
 }
 
 export function NotificationBell() {
@@ -49,7 +63,9 @@ export function NotificationBell() {
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-4 w-4" />
           {unseenCount > 0 && (
-            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+              {unseenCount > 99 ? "99+" : unseenCount}
+            </span>
           )}
         </Button>
       </DropdownMenuTrigger>
@@ -63,8 +79,13 @@ export function NotificationBell() {
               <DropdownMenuItem key={`${item.type}-${item.id}`} asChild>
                 <Link href={item.link} className="flex items-start gap-2.5 py-2">
                   <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
-                  <div className="min-w-0">
-                    <p className="text-sm truncate">{item.title}</p>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[9px] font-semibold uppercase tracking-wide text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                        {CATEGORY_LABELS[item.type] || "Update"}
+                      </span>
+                    </div>
+                    <p className="text-sm truncate mt-1">{item.title}</p>
                     <p className="text-[10px] text-muted-foreground">{new Date(item.createdAt).toLocaleDateString()}</p>
                   </div>
                 </Link>

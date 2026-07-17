@@ -2,7 +2,7 @@ import Link from "next/link"
 
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-
+import { AvatarEdit } from "@/components/avatar-edit"
 import { EmptyState } from "@/components/empty-state"
 import { StatCard } from "@/components/stat-card"
 import { LogoutButton } from "@/components/logout-button"
@@ -220,24 +220,7 @@ export default async function ProfilePage(){
           items-start
         ">
 
-
-          <div className="
-            h-20
-            w-20
-            rounded-3xl
-            bg-primary
-            text-primary-foreground
-            flex
-            items-center
-            justify-center
-            text-2xl
-            font-bold
-            shadow-lg
-          ">
-
-            {initials}
-
-          </div>
+<AvatarEdit initialUrl={dbUser.avatarUrl} initials={initials} />
 
 
 

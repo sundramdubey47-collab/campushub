@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSession } from "next-auth/react"
-
+import { HelpCircle, CheckCircle2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 import {
@@ -39,7 +39,7 @@ const links = [
     label:"Resources",
     icon:FileText
   },
-
+{ href: "/notes/requests", label: "Requests", icon: HelpCircle },
 
   {
     href:"/notices",

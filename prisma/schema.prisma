@@ -38,6 +38,7 @@ model College {
   events Event[]
   listings Listing[]
   lostFoundItems LostFoundItem[]
+  resourceRequests ResourceRequest[]
   rentalItems RentalItem[]
   tests Test[]
   @@unique([universityId, code])
@@ -171,6 +172,7 @@ model User {
   payments Payment[]
   feedbacks Feedback[]
   reports Report[]
+  resourceRequests ResourceRequest[] @relation("RequestedResources")
   lastSeenNotificationsAt DateTime?
   chatSessions ChatSession[]
   createdTests   Test[]
@@ -227,6 +229,7 @@ model Note {
   ratings   Rating[]
   bookmarks Bookmark[]
   comments  Comment[]
+  fulfillsRequests ResourceRequest[]
   coupons Coupon[]
 }
 model Coupon {
@@ -724,4 +727,26 @@ model PasswordResetOTP {
   expiresAt DateTime
   used      Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+enum RequestStatus {
+  OPEN
+  FULFILLED
+}
+
+model ResourceRequest {
+  id          Int           @id @default(autoincrement())
+  title       String
+  description String?
+  status      RequestStatus @default(OPEN)
+  createdAt   DateTime      @default(now())
+  fulfilledAt DateTime?
+
+  requestedById Int
+  requestedBy   User        @relation("RequestedResources", fields: [requestedById], references: [id])
+
+  collegeId   Int
+  college     College       @relation(fields: [collegeId], references: [id])
+
+  fulfilledNoteId Int?
+  fulfilledNote   Note?     @relation(fields: [fulfilledNoteId], references: [id])
 }

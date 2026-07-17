@@ -10,7 +10,7 @@ import { NotificationBell } from "@/components/notification-bell"
 import { prisma } from "@/lib/prisma"
 import { GlobalSearch } from "@/components/global-search"
 import { FeedbackButton } from "@/components/feedback-button"
-
+import { BottomNav } from "@/components/bottom-nav"
 export default async function AppLayout({
   children,
 }: {
@@ -78,7 +78,8 @@ export default async function AppLayout({
         </header>
 
         {/* Page content */}
-        <main className="flex-1 p-4 sm:p-6 overflow-x-hidden bg-muted/20">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 pb-20 md:pb-6 overflow-x-hidden bg-muted/20">{children}</main>
+        <BottomNav />
         <FeedbackButton />
       </div>
     </div>
