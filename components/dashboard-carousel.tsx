@@ -96,7 +96,7 @@ export function DashboardCarousel({
         shadow-2xl
         shadow-black/25
 
-        h-[300px]
+        h-[280px]
         p-7
 
         flex
