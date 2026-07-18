@@ -14,7 +14,7 @@ export async function POST(
 
   const { id } = await params
   const body = await req.json()
-  const action = body.action
+  const enteredOtp = body.otp
 
   const booking = await prisma.rentalBooking.findUnique({
     where: { id: Number(id) },
@@ -23,24 +23,13 @@ export async function POST(
 
   if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 404 })
   if (booking.item.ownerId !== dbUser.id) return NextResponse.json({ error: "Permission denied" }, { status: 403 })
-  if (booking.status !== "PENDING") return NextResponse.json({ error: "Already handled" }, { status: 400 })
+  if (booking.status !== "APPROVED") return NextResponse.json({ error: "Not ready for handover" }, { status: 400 })
+  if (booking.otp !== enteredOtp) return NextResponse.json({ error: "Incorrect OTP" }, { status: 400 })
 
-  if (action === "approve") {
-    const otp = Math.floor(100000 + Math.random() * 900000).toString()
-    await prisma.rentalBooking.update({
-      where: { id: booking.id },
-      data: { status: "APPROVED", otp },
-    })
-    await prisma.rentalItem.update({
-      where: { id: booking.itemId },
-      data: { status: "RENTED" },
-    })
-  } else {
-    await prisma.rentalBooking.update({
-      where: { id: booking.id },
-      data: { status: "REJECTED" },
-    })
-  }
+  await prisma.rentalBooking.update({
+    where: { id: booking.id },
+    data: { status: "ACTIVE", actualStartDate: new Date(), otp: null },
+  })
 
   return NextResponse.json({ success: true })
 }

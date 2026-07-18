@@ -537,7 +537,7 @@ model RentalBooking {
   actualStartDate    DateTime?
   actualReturnDate   DateTime?
   status         RentalBookingStatus @default(PENDING)
-
+  otp String?
   rentAmount     Int
   securityDeposit Int
   lateFee        Int                 @default(0)

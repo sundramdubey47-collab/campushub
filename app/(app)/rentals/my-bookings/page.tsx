@@ -2,18 +2,19 @@
 
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 type Booking = {
   id: number
   startDate: string
   expectedReturnDate: string
   actualStartDate: string | null
-  actualReturnDate: string | null
   status: string
   rentAmount: number
   securityDeposit: number
   lateFee: number
-  item: { title: string; imageUrl: string | null }
+  otp: string | null
+  item: { title: string; imageUrl: string | null; pricingType: string }
   renter?: { name: string }
 }
 
@@ -43,6 +44,7 @@ export default function MyRentalBookingsPage() {
   const [asOwner, setAsOwner] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState("")
+  const [otpInputs, setOtpInputs] = useState<{ [key: number]: string }>({})
 
   async function load() {
     setLoading(true)
@@ -66,8 +68,21 @@ export default function MyRentalBookingsPage() {
     load()
   }
 
-  async function confirmReceived(bookingId: number) {
-    await fetch(`/api/rental-bookings/${bookingId}/confirm-received`, { method: "POST" })
+  async function verifyOtp(bookingId: number) {
+    setMessage("")
+    const res = await fetch(`/api/rental-bookings/${bookingId}/verify-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ otp: otpInputs[bookingId] }),
+    })
+    const data = await res.json()
+
+    if (!res.ok) {
+      setMessage("❌ " + data.error)
+      return
+    }
+
+    setMessage("✅ Handover confirmed! Item is now marked as rented out.")
     load()
   }
 
@@ -86,6 +101,8 @@ export default function MyRentalBookingsPage() {
   }
 
   if (loading) return <p className="text-muted-foreground">Loading...</p>
+
+  const pendingCount = asOwner.filter((b) => b.status === "PENDING").length
 
   return (
     <div className="max-w-2xl space-y-8">
@@ -112,22 +129,27 @@ export default function MyRentalBookingsPage() {
                 Requested: {new Date(b.startDate).toLocaleDateString()} → {new Date(b.expectedReturnDate).toLocaleDateString()}
               </p>
 
+              {b.status === "APPROVED" && b.otp && (
+                <div className="rounded-lg bg-primary/10 border border-primary/30 p-3">
+                  <p className="text-xs text-muted-foreground">Give this code to the owner when you receive the item:</p>
+                  <p className="text-2xl font-bold tracking-widest text-primary mt-1">{b.otp}</p>
+                </div>
+              )}
+
               {b.status === "ACTIVE" && b.actualStartDate && (
-                <p className="text-sm text-primary font-medium">
-                  You've had this since {new Date(b.actualStartDate).toLocaleDateString()} — {daysSince(b.actualStartDate)} day(s) so far
-                </p>
+                <div className="rounded-lg bg-muted/40 p-3 space-y-0.5">
+                  <p className="text-sm font-medium">
+                    You rented this from {b.item.title.split(" ")[0] || "owner"} — {new Date(b.actualStartDate).toLocaleDateString()}
+                  </p>
+                  <p className="text-sm text-primary font-medium">{daysSince(b.actualStartDate)} day(s) so far</p>
+                  <p className="text-xs text-muted-foreground">₹{b.rentAmount} / {b.item.pricingType.toLowerCase()}</p>
+                </div>
               )}
 
               <p className="text-sm text-muted-foreground">
                 Rent: ₹{b.rentAmount} • Deposit: ₹{b.securityDeposit}
                 {b.lateFee > 0 && ` • Late Fee: ₹${b.lateFee}`}
               </p>
-
-              {b.status === "APPROVED" && (
-                <Button size="sm" onClick={() => confirmReceived(b.id)}>
-                  I've Received the Item
-                </Button>
-              )}
             </div>
           ))
         )}
@@ -135,7 +157,14 @@ export default function MyRentalBookingsPage() {
 
       {/* As Owner (A) */}
       <div className="space-y-3">
-        <h2 className="font-semibold text-lg">Items I've Listed</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="font-semibold text-lg">Items I've Listed</h2>
+          {pendingCount > 0 && (
+            <span className="h-5 min-w-[20px] px-1.5 rounded-full bg-red-500 text-white text-[11px] font-bold flex items-center justify-center">
+              {pendingCount}
+            </span>
+          )}
+        </div>
         {asOwner.length === 0 ? (
           <p className="text-sm text-muted-foreground">No rental requests yet</p>
         ) : (
@@ -163,6 +192,18 @@ export default function MyRentalBookingsPage() {
                 <div className="flex gap-2">
                   <Button size="sm" onClick={() => respond(b.id, "approve")}>Approve</Button>
                   <Button size="sm" variant="outline" onClick={() => respond(b.id, "reject")}>Reject</Button>
+                </div>
+              )}
+
+              {b.status === "APPROVED" && (
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Enter OTP from renter"
+                    value={otpInputs[b.id] || ""}
+                    onChange={(e) => setOtpInputs({ ...otpInputs, [b.id]: e.target.value })}
+                    className="max-w-[200px]"
+                  />
+                  <Button size="sm" onClick={() => verifyOtp(b.id)}>Confirm Handover</Button>
                 </div>
               )}
 
