@@ -8,6 +8,8 @@ import {
   MessageCircle, Brain, ArrowRight, Crown, Megaphone, BookOpen,
   Code2, Trophy, Zap, ChevronRight,
 } from "lucide-react"
+import { DashboardCarousel } from "@/components/dashboard-carousel"
+import Image from "next/image"
 
 const quickLinks = [
   { href: "/notes", label: "Resources", icon: FileText },
@@ -29,13 +31,33 @@ export default async function DashboardPage() {
   const session = await auth()
 
   const dbUser = await prisma.user.findUnique({
-    where: { email: session?.user?.email ?? "" },
-    include: {
-      college: { select: { name: true } },
-      course: { select: { name: true } },
-      semester: { select: { number: true } },
+  where: { email: session?.user?.email ?? "" },
+  select: {
+    id: true,
+    name: true,
+    avatarUrl: true,
+    isPremium: true,
+    collegeId: true,
+
+    college: {
+      select: {
+        name: true,
+      },
     },
-  })
+
+    course: {
+      select: {
+        name: true,
+      },
+    },
+
+    semester: {
+      select: {
+        number: true,
+      },
+    },
+  },
+})
 
   if (!dbUser) {
     return <p className="text-red-500 text-sm">Could not load dashboard</p>
@@ -70,9 +92,22 @@ export default async function DashboardPage() {
           <p className="text-sm text-muted-foreground">Here's what's happening on campus today.</p>
         </div>
         <div className="flex flex-col items-center gap-1 shrink-0">
-          <div className="h-11 w-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
-            {initials}
-          </div>
+         <div className="h-11 w-11 rounded-full overflow-hidden bg-primary flex items-center justify-center border border-border">
+  {dbUser.avatarUrl ? (
+    <Image
+      src={dbUser.avatarUrl}
+      alt={dbUser.name}
+      width={44}
+      height={44}
+      className="h-full w-full object-cover"
+      unoptimized
+    />
+  ) : (
+    <span className="text-sm font-bold text-primary-foreground">
+      {initials}
+    </span>
+  )}
+</div>
           {dbUser.course && (
             <p className="text-[10px] text-muted-foreground text-center leading-tight">
               {dbUser.course.name}{dbUser.semester ? ` Sem ${dbUser.semester.number}` : ""}
@@ -82,21 +117,9 @@ export default async function DashboardPage() {
       </div>
 
       {/* Hero Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/15 via-primary/5 to-transparent border p-6">
-        <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-primary/10 blur-2xl" />
-        <p className="text-xs font-semibold text-primary uppercase tracking-wide relative">
-          {dbUser.college?.name ?? "CampusHub"}
-        </p>
-        <h2 className="text-2xl font-bold mt-1 relative">Your Campus. Your Journey.</h2>
-        <p className="text-sm text-muted-foreground mt-1.5 relative">
-          Explore. Learn. Connect. Everything your college life needs, in one place.
-        </p>
-        <Link href="/events">
-          <Button className="mt-4 relative">
-            Explore Events <ArrowRight className="h-4 w-4 ml-1.5" />
-          </Button>
-        </Link>
-      </div>
+    
+  <DashboardCarousel collegeName={dbUser.college?.name ?? "your college"} />
+
 
       {/* What's Happening */}
       <div className="rounded-2xl border bg-card p-4 space-y-1">
