@@ -68,17 +68,17 @@ if (win.recaptchaVerifier) {
   win.recaptchaVerifier = null
 }
 
-
-   const verifier = new RecaptchaVerifier(
+const verifier = new RecaptchaVerifier(
+  auth,
   "recaptcha-container",
   {
     size: "invisible",
     callback: () => {
       console.log("Recaptcha solved")
     },
-  },
-  auth
-) 
+  }
+)
+
 
 
     win.recaptchaVerifier = verifier
