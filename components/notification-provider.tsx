@@ -20,15 +20,17 @@ export default function NotificationProvider() {
       if (!token) return
 
       console.log("FCM Token:", token)
+const res = await fetch("/api/fcm/register", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ token }),
+})
 
-      await fetch("/api/fcm/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ token }),
-      })
-
+console.log("FCM Register Status:", res.status)
+console.log("FCM Register Response:", await res.text())
+     
       await listenForegroundNotifications((payload) => {
         console.log(payload)
       })

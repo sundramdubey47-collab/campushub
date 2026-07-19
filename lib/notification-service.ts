@@ -26,21 +26,25 @@ export async function sendPushNotification({
   if (!devices.length) return
 
   const tokens = devices.map((d) => d.fcmToken)
+console.log("Devices:", devices)
+console.log("Tokens:", tokens)
 
-  await adminMessaging.sendEachForMulticast({
-    tokens,
+ const result = await adminMessaging.sendEachForMulticast({
+  tokens,
+  notification: {
+    title,
+    body,
+  },
+  data: {
+    url,
+  },
+  webpush: {
     notification: {
-      title,
-      body,
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
     },
-    data: {
-      url,
-    },
-    webpush: {
-      notification: {
-        icon: "/icon-192.png",
-        badge: "/icon-192.png",
-      },
-    },
-  })
+  },
+})
+
+console.log("FCM Result:", JSON.stringify(result, null, 2))
 }
