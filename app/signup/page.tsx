@@ -7,7 +7,7 @@ import {
   signInWithPhoneNumber,
   ConfirmationResult,
 } from "firebase/auth"
-import type { RecaptchaVerifier } from "firebase/auth"
+
 
 type WindowWithRecaptcha = Window & {
   recaptchaVerifier?: RecaptchaVerifier | null
@@ -69,17 +69,16 @@ if (win.recaptchaVerifier) {
 }
 
 
-    const verifier =
-      new RecaptchaVerifier(
-        auth,
-        "recaptcha-container",
-        {
-          size:"invisible",
-          callback: () => {
-            console.log("Recaptcha solved")
-          },
-        }
-      )
+   const verifier = new RecaptchaVerifier(
+  "recaptcha-container",
+  {
+    size: "invisible",
+    callback: () => {
+      console.log("Recaptcha solved")
+    },
+  },
+  auth
+) 
 
 
     win.recaptchaVerifier = verifier
