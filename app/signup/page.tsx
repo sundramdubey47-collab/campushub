@@ -7,7 +7,11 @@ import {
   signInWithPhoneNumber,
   ConfirmationResult,
 } from "firebase/auth"
+import type { RecaptchaVerifier } from "firebase/auth"
 
+type WindowWithRecaptcha = Window & {
+  recaptchaVerifier?: RecaptchaVerifier | null
+}
 import { useState, Suspense } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -44,7 +48,7 @@ const [otpVerified,setOtpVerified] = useState(false)
   const [loading,setLoading] = useState(false)
 
  async function sendOTP(){
-
+const win = window as WindowWithRecaptcha
   try{
 
     setError("")
@@ -59,14 +63,10 @@ const [otpVerified,setOtpVerified] = useState(false)
       return
     }
 
-
-    if(window.recaptchaVerifier){
-
-      window.recaptchaVerifier.clear()
-
-      window.recaptchaVerifier = null
-
-    }
+if (win.recaptchaVerifier) {
+  win.recaptchaVerifier.clear()
+  win.recaptchaVerifier = null
+}
 
 
     const verifier =
@@ -82,7 +82,7 @@ const [otpVerified,setOtpVerified] = useState(false)
       )
 
 
-    window.recaptchaVerifier = verifier
+    win.recaptchaVerifier = verifier
 
     console.log("Phone sending:", phone)
 console.log("Firebase format:", `+91${phone}`)
