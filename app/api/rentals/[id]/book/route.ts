@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { sendPushNotification } from "@/lib/notification-service"
 
 export async function POST(
   req: Request,
@@ -23,7 +24,12 @@ export async function POST(
     return NextResponse.json({ error: "Both dates are required" }, { status: 400 })
   }
 
-  const item = await prisma.rentalItem.findUnique({ where: { id: Number(id) } })
+ const item = await prisma.rentalItem.findUnique({
+  where: { id: Number(id) },
+  include: {
+    owner: true,
+  },
+})
 
   if (!item) return NextResponse.json({ error: "Item not found" }, { status: 404 })
   if (item.status !== "AVAILABLE") return NextResponse.json({ error: "This item is not available right now" }, { status: 400 })
@@ -64,6 +70,11 @@ export async function POST(
       status: "PENDING",
     },
   })
-
+await sendPushNotification({
+  userId: item.ownerId,
+  title: "📦 New Rental Request",
+  body: `${dbUser.name} requested to rent "${item.title}".`,
+  url: "/rentals",
+})
   return NextResponse.json(booking)
 }

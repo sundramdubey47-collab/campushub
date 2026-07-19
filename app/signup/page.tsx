@@ -1,5 +1,13 @@
 "use client"
 
+import { auth } from "@/lib/firebase"
+
+import {
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  ConfirmationResult,
+} from "firebase/auth"
+
 import { useState, Suspense } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -15,25 +23,143 @@ function SignupForm(){
 
   const router = useRouter()
   const searchParams = useSearchParams()
-
   const referralCode = searchParams.get("ref")
-
-
   const [honeypot,setHoneypot] = useState("")
-
   const [name,setName] = useState("")
   const [email,setEmail] = useState("")
   const [password,setPassword] = useState("")
+  const [firebaseToken,setFirebaseToken] = useState("")
+  const [phone,setPhone] = useState("")
+const [otp,setOtp] = useState("")
 
+const [confirmationResult,setConfirmationResult] =
+useState<ConfirmationResult | null>(null)
+
+const [otpSent,setOtpSent] = useState(false)
+
+const [otpVerified,setOtpVerified] = useState(false)
   const [showPassword,setShowPassword] = useState(false)
-
   const [agreed,setAgreed] = useState(false)
-
   const [error,setError] = useState("")
   const [loading,setLoading] = useState(false)
 
+ async function sendOTP(){
+
+  try{
+
+    setError("")
 
 
+    if(phone.length !== 10){
+
+      setError(
+        "Please enter a valid 10 digit phone number"
+      )
+
+      return
+    }
+
+
+    if(window.recaptchaVerifier){
+
+      window.recaptchaVerifier.clear()
+
+      window.recaptchaVerifier = null
+
+    }
+
+
+    const verifier =
+      new RecaptchaVerifier(
+        auth,
+        "recaptcha-container",
+        {
+          size:"invisible",
+          callback: () => {
+            console.log("Recaptcha solved")
+          },
+        }
+      )
+
+
+    window.recaptchaVerifier = verifier
+
+    console.log("Phone sending:", phone)
+console.log("Firebase format:", `+91${phone}`)
+console.log("PHONE STATE:", phone)
+console.log("FINAL NUMBER:", `+91${phone}`)
+console.log("LENGTH:", phone.length)
+
+    const confirmation =
+      await signInWithPhoneNumber(
+        auth,
+        `+91${phone}`,
+        verifier
+      )
+
+
+    setConfirmationResult(confirmation)
+
+    setOtpSent(true)
+
+
+  }catch(error:any){
+
+    console.error("OTP ERROR:", error)
+
+    setError(
+      error.message || "OTP sending failed"
+    )
+
+  }
+
+}
+
+async function verifyOTP(){
+
+  try{
+
+    setError("")
+
+
+    if(!confirmationResult){
+
+      setError(
+        "Please request OTP first"
+      )
+
+      return
+    }
+
+
+    const result =
+      await confirmationResult.confirm(otp)
+
+
+    const token =
+      await result.user.getIdToken()
+
+
+    console.log("TOKEN:", token)
+
+
+    setFirebaseToken(token)
+
+
+    setOtpVerified(true)
+
+
+  }catch(error){
+
+    console.error(error)
+
+    setError(
+      "Invalid OTP. Please try again."
+    )
+
+  }
+
+}
   async function handleSubmit(e:React.FormEvent){
 
     e.preventDefault()
@@ -46,6 +172,15 @@ function SignupForm(){
 
     setError("")
 
+    if(!otpVerified){
+
+  setError(
+    "Please verify your phone number first"
+  )
+
+  return
+
+}
 
     if(!agreed){
 
@@ -59,7 +194,7 @@ function SignupForm(){
 
     setLoading(true)
 
-
+console.log("Signup Token:", firebaseToken)
     const res = await fetch("/api/signup",{
 
       method:"POST",
@@ -67,14 +202,14 @@ function SignupForm(){
       headers:{
         "Content-Type":"application/json"
       },
-
-      body:JSON.stringify({
-        name,
-        email,
-        password,
-        referralCode
-      })
-
+body:JSON.stringify({
+  name,
+  email,
+  phone,
+  password,
+  referralCode,
+  firebaseToken
+})
     })
 
 
@@ -416,6 +551,153 @@ space-y-5
           </div>
 
 
+
+{/* Phone Number */}
+
+<div className="space-y-2">
+
+  <Label htmlFor="phone">
+    Phone Number
+  </Label>
+
+
+  <div className="flex gap-2">
+
+
+<Input
+
+  id="phone"
+
+  type="tel"
+
+  placeholder="9876543210"
+
+  value={phone}
+
+  onChange={(e)=>
+  setPhone(
+    e.target.value
+      .replace(/\D/g,"")
+      .replace(/^0+/,"")
+      .slice(0,10)
+  )
+}
+  disabled={otpVerified}
+
+  required
+
+  className="
+    h-12
+    rounded-xl
+    bg-background/60
+  "
+
+/>
+    <Button
+
+      type="button"
+
+      onClick={sendOTP}
+
+      disabled={
+        otpSent || phone.length !== 10
+      }
+
+      className="
+        h-12
+        rounded-xl
+        whitespace-nowrap
+      "
+
+    >
+
+      {otpSent
+        ? "Sent"
+        : "Send OTP"
+      }
+
+    </Button>
+
+
+  </div>
+
+
+</div>
+<div id="recaptcha-container"></div>
+
+{/* OTP Verification */}
+
+{otpSent && !otpVerified && (
+
+<div className="space-y-2">
+
+
+  <Label>
+    Enter OTP
+  </Label>
+
+
+  <div className="flex gap-2">
+
+
+    <Input
+
+      type="text"
+
+      maxLength={6}
+
+      placeholder="123456"
+
+      value={otp}
+
+      onChange={(e)=>
+        setOtp(e.target.value)
+      }
+
+      className="
+        h-12
+        rounded-xl
+        bg-background/60
+      "
+
+    />
+
+
+    <Button
+
+      type="button"
+
+      onClick={verifyOTP}
+
+      disabled={otp.length !== 6}
+
+    >
+
+      Verify
+
+    </Button>
+
+
+  </div>
+
+
+</div>
+
+)}
+
+
+{otpVerified && (
+
+<p className="
+text-sm
+text-green-500
+">
+
+✓ Phone number verified
+
+</p>
+
+)}
 
 
 

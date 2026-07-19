@@ -125,29 +125,23 @@ model User {
   email        String   @unique
   passwordHash String
   role         UserRole @default(STUDENT)
-
-  phone        String?
+  phone        String?  @unique
+  emailVerified DateTime?
+  phoneVerified Boolean  @default(false)
   avatarUrl    String?
-
   isPremium    Boolean  @default(false)
   premiumUntil DateTime?
-
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-
   // Student ke liye — kis college/dept/course/semester me hai
   collegeId    Int?
   college      College?    @relation(fields: [collegeId], references: [id])
-
   departmentId Int?
   department   Department? @relation(fields: [departmentId], references: [id])
-
   courseId     Int?
   course       Course?     @relation(fields: [courseId], references: [id])
-
   semesterId   Int?
   semester     Semester?   @relation(fields: [semesterId], references: [id])
-
   // Admin ke liye — sirf ek college manage karta hai
   managedCollegeId Int?    @unique
   managedCollege   College? @relation("CollegeAdmin", fields: [managedCollegeId], references: [id])
@@ -179,6 +173,7 @@ model User {
   testAttempts   TestAttempt[]
   testPurchases  TestPurchase[]
   coupons Coupon[]
+  devices UserDevice[]
 }
 
 enum NoteCategory {
@@ -749,4 +744,19 @@ model ResourceRequest {
 
   fulfilledNoteId Int?
   fulfilledNote   Note?     @relation(fields: [fulfilledNoteId], references: [id])
+}
+model UserDevice {
+  id         Int      @id @default(autoincrement())
+
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  fcmToken   String   @unique
+  platform   String
+  deviceName String?
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
 }

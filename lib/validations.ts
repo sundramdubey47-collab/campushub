@@ -1,12 +1,34 @@
 import { z } from "zod"
 
 export const signupSchema = z.object({
-  name: z.string().trim().min(2).max(100),
-  email: z.string().trim().toLowerCase().email().max(255),
-  password: z.string().min(6).max(100),
-  referralCode: z.string().max(20).optional().nullable(),
-})
 
+  name: z.string()
+    .trim()
+    .min(2)
+    .max(100),
+
+  email: z.string()
+    .trim()
+    .toLowerCase()
+    .email()
+    .max(255),
+
+  phone: z.string()
+    .regex(/^[6-9]\d{9}$/, "Invalid phone number"),
+
+  password: z.string()
+    .min(6)
+    .max(100),
+
+  firebaseToken: z.string()
+    .min(20),
+
+  referralCode: z.string()
+    .max(20)
+    .optional()
+    .nullable(),
+
+})
 export const loginSchema = z.object({
   email: z.string().trim().toLowerCase().email().max(255),
   password: z.string().min(1).max(100),
