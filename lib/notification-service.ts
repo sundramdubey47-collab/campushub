@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma"
-import { adminMessaging } from "@/lib/firebase-admin"
 
 type NotificationPayload = {
   userId: number
@@ -14,6 +13,10 @@ export async function sendPushNotification({
   body,
   url = "/dashboard",
 }: NotificationPayload) {
+
+  // Lazy import
+  const { adminMessaging } = await import("@/lib/firebase-admin")
+
   const devices = await prisma.userDevice.findMany({
     where: {
       userId,

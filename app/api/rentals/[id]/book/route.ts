@@ -57,24 +57,30 @@ export async function POST(
   }
 
   // Note: item status "AVAILABLE" hi rehta hai jab tak owner approve na kare
-  const booking = await prisma.rentalBooking.create({
-    data: {
-      renterId: dbUser.id,
-      itemId: item.id,
-      startDate: new Date(startDate),
-      expectedReturnDate: new Date(expectedReturnDate),
-      rentAmount,
-      securityDeposit: item.securityDeposit,
-      couponUsed,
-      platformAbsorbed,
-      status: "PENDING",
-    },
-  })
-await sendPushNotification({
-  userId: item.ownerId,
-  title: "📦 New Rental Request",
-  body: `${dbUser.name} requested to rent "${item.title}".`,
-  url: "/rentals",
+const booking = await prisma.rentalBooking.create({
+  data: {
+    renterId: dbUser.id,
+    itemId: item.id,
+    startDate: new Date(startDate),
+    expectedReturnDate: new Date(expectedReturnDate),
+    rentAmount,
+    securityDeposit: item.securityDeposit,
+    couponUsed,
+    platformAbsorbed,
+    status: "PENDING",
+  },
 })
-  return NextResponse.json(booking)
+
+try {
+  await sendPushNotification({
+    userId: item.ownerId,
+    title: "📦 New Rental Request",
+    body: `${dbUser.name} requested to rent "${item.title}".`,
+    url: "/rentals",
+  })
+} catch (error) {
+  console.error("Push notification failed:", error)
+}
+
+return NextResponse.json(booking)
 }
