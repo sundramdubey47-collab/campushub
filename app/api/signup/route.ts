@@ -114,7 +114,7 @@ const user = await prisma.user.create({
    role:"STUDENT",
 
    phoneVerified:true,
-emailVerified:new Date(),pri
+emailVerified:new Date(),
    referralCode:myReferralCode,
 
    referredById,
