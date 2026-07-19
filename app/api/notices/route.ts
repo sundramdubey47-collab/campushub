@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { sendPushNotificationToCollege } from "@/lib/notification-service"
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -46,6 +47,12 @@ export async function POST(req: Request) {
       publishAt: publishAt ? new Date(publishAt) : new Date(),
     },
   })
+  await sendPushNotificationToCollege({
+  collegeId: dbUser.collegeId,
+  title: "📢 New Notice",
+  body: notice.title,
+  url: "/notices",
+})
 
   return NextResponse.json(notice)
 }

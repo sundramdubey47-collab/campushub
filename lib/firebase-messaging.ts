@@ -1,17 +1,42 @@
 "use client"
 
-import { getMessaging, getToken, isSupported, onMessage } from "firebase/messaging"
+import {
+  getMessaging,
+  getToken,
+  isSupported,
+  onMessage,
+} from "firebase/messaging"
+
 import { firebaseApp } from "./firebase"
 
-export async function getFCMToken() {
+let messaging: ReturnType<typeof getMessaging> | null = null
+
+async function getMessagingInstance() {
   const supported = await isSupported()
 
   if (!supported) return null
 
-  const messaging = getMessaging(firebaseApp)
+  if (!messaging) {
+    messaging = getMessaging(firebaseApp)
+  }
+
+  return messaging
+}
+
+export async function getFCMToken() {
+  const messaging = await getMessagingInstance()
+
+  if (!messaging) return null
+
+  const registration = await navigator.serviceWorker.register(
+    "/firebase-messaging-sw.js"
+  )
+
+  await navigator.serviceWorker.ready
 
   const token = await getToken(messaging, {
-    vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+    vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY!,
+    serviceWorkerRegistration: registration,
   })
 
   return token
@@ -20,11 +45,9 @@ export async function getFCMToken() {
 export async function listenForegroundNotifications(
   callback: (payload: any) => void
 ) {
-  const supported = await isSupported()
+  const messaging = await getMessagingInstance()
 
-  if (!supported) return
+  if (!messaging) return
 
-  const messaging = getMessaging(firebaseApp)
-
-  onMessage(messaging, callback)
+  return onMessage(messaging, callback)
 }

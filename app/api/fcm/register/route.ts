@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const session = await auth()
 
@@ -13,39 +13,59 @@ export async function POST(req: Request) {
       )
     }
 
-    const { token } = await req.json()
+    const { token, platform = "web" } = await req.json()
 
     if (!token) {
       return NextResponse.json(
-        { error: "Missing token" },
+        { error: "FCM token is required" },
         { status: 400 }
       )
     }
 
-    await prisma.userDevice.upsert({
+    const userId = Number(session.user.id)
+
+    // Check if this token already exists
+    const existing = await prisma.userDevice.findFirst({
       where: {
         fcmToken: token,
       },
-      update: {
-        userId: Number(session.user.id),
-        platform: "web",
-      },
-      create: {
-        userId: Number(session.user.id),
-        fcmToken: token,
-        platform: "web",
-      },
     })
+
+    if (existing) {
+      await prisma.userDevice.update({
+        where: {
+          id: existing.id,
+        },
+        data: {
+          userId,
+          platform,
+          updatedAt: new Date(),
+        },
+      })
+    } else {
+      await prisma.userDevice.create({
+        data: {
+          userId,
+          fcmToken: token,
+          platform,
+        },
+      })
+    }
 
     return NextResponse.json({
       success: true,
     })
   } catch (error) {
-    console.error(error)
+    console.error("FCM Register Error:", error)
 
     return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
+      {
+        success: false,
+        error: "Registration failed",
+      },
+      {
+        status: 500,
+      }
     )
   }
 }
