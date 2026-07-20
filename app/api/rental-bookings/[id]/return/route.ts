@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { sendPushNotification } from "@/lib/notification-service"
 
 const LATE_FEE_PER_DAY = 20
 
@@ -56,6 +57,19 @@ export async function POST(
     where: { id: booking.itemId },
     data: { status: "AVAILABLE" },
   })
+await sendPushNotification({
+  userId: booking.renterId,
+  title: "🎉 Rental Completed",
+  body: `Your rental for "${booking.item.title}" has been completed successfully. Thank you for using CampusHub!`,
+  url: "/rentals/my-bookings",
+})
+
+await sendPushNotification({
+  userId: booking.item.ownerId,
+  title: "📦 Item Returned",
+  body: `"${booking.item.title}" has been returned successfully and is now available for rent again.`,
+  url: "/rentals/my-bookings",
+})
 
   return NextResponse.json({ success: true, lateFee })
 }

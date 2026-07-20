@@ -71,16 +71,13 @@ const booking = await prisma.rentalBooking.create({
   },
 })
 
-try {
-  await sendPushNotification({
+await sendPushNotification({
     userId: item.ownerId,
     title: "📦 New Rental Request",
-    body: `${dbUser.name} requested to rent "${item.title}".`,
-    url: "/rentals",
+    body: `${dbUser.name} wants to rent your "${item.title}". Check your requests.`,
+    url: "/rentals/my-bookings",
   })
-} catch (error) {
-  console.error("Push notification failed:", error)
-}
 
+  
 return NextResponse.json(booking)
 }

@@ -65,6 +65,16 @@ export async function sendPushNotification({
   console.log(
     `Push Result: ${result.successCount} success, ${result.failureCount} failed`
   )
+  console.log("FCM Responses:")
+
+result.responses.forEach((response, index) => {
+  console.log({
+    token: tokens[index],
+    success: response.success,
+    error: response.error?.code,
+    message: response.error?.message,
+  })
+})
 
   // Remove invalid tokens automatically
   for (let i = 0; i < result.responses.length; i++) {

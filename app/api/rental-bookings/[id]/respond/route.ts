@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { sendPushNotification } from "@/lib/notification-service"
 
 export async function POST(
   req: Request,
@@ -35,11 +36,25 @@ export async function POST(
       where: { id: booking.itemId },
       data: { status: "RENTED" },
     })
+await sendPushNotification({
+  userId: booking.renterId,
+  title: "✅ Rental Request Approved",
+  body: `Your request for "${booking.item.title}" has been approved.`,
+  url: "/rentals/my-bookings",
+})
+    
   } else {
     await prisma.rentalBooking.update({
       where: { id: booking.id },
       data: { status: "REJECTED" },
     })
+
+    await sendPushNotification({
+  userId: booking.renterId,
+  title: "❌ Rental Request Rejected",
+  body: `Your request for "${booking.item.title}" was rejected.`,
+  url: "/rentals/my-bookings",
+})
   }
 
   return NextResponse.json({ success: true })
