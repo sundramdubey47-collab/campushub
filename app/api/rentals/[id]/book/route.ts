@@ -34,6 +34,17 @@ export async function POST(
   if (!item) return NextResponse.json({ error: "Item not found" }, { status: 404 })
   if (item.status !== "AVAILABLE") return NextResponse.json({ error: "This item is not available right now" }, { status: 400 })
   if (item.ownerId === dbUser.id) return NextResponse.json({ error: "You cannot rent your own item" }, { status: 400 })
+   const existingBooking = await prisma.rentalBooking.findFirst({
+  where: {
+    itemId: item.id,
+    renterId: dbUser.id,
+    status: { in: ["PENDING", "APPROVED", "ACTIVE"] },
+  },
+})
+
+if (existingBooking) {
+  return NextResponse.json({ error: "You already have an active or pending request for this item" }, { status: 400 })
+} 
 
   let rentAmount = item.price
   let couponUsed = false

@@ -15,8 +15,8 @@ type Booking = {
   securityDeposit: number
   lateFee: number
   otp: string | null
-  item: { title: string; imageUrl: string | null; pricingType: string }
-  renter?: { name: string }
+  item: { title: string; imageUrl: string | null; pricingType: string; owner?: { name: string; phone: string | null } }
+  renter?: { name: string; phone: string | null }
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -202,6 +202,12 @@ export default function MyRentalBookingsPage() {
                 </div>
               )}
 
+{b.status === "APPROVED" && b.item.owner?.phone && (
+  <div className="rounded-lg bg-muted/40 p-3">
+    <p className="text-xs text-muted-foreground">Contact owner directly to arrange pickup:</p>
+    <p className="text-sm font-semibold mt-0.5">📞 {b.item.owner.phone}</p>
+  </div>
+)}
               {b.status === "ACTIVE" && b.actualStartDate && (
                 <div className="rounded-lg bg-muted/40 p-3 space-y-0.5">
                   <p className="text-sm font-medium">
@@ -259,6 +265,9 @@ export default function MyRentalBookingsPage() {
               </div>
 
               <p className="text-sm text-muted-foreground">Requested by {b.renter?.name}</p>
+              {b.renter?.phone && (
+  <p className="text-sm text-muted-foreground">📞 {b.renter.phone}</p>
+)}
               <p className="text-sm text-muted-foreground">
                 {new Date(b.startDate).toLocaleDateString()} → {new Date(b.expectedReturnDate).toLocaleDateString()}
               </p>

@@ -221,7 +221,7 @@ export default async function DashboardPage() {
             <div className="rounded-full bg-[oklch(var(--premium)/0.2)] p-2 shrink-0">
               <Crown className="h-4 w-4 text-[oklch(var(--premium))]" />
             </div>
-            <p className="text-xs font-medium">Unlock Premium features from ₹49/week</p>
+            <p className="text-xs font-medium">Unlock Premium features from ₹19/week</p>
           </div>
           <Link href="/premium">
             <Button size="sm" className="bg-[oklch(var(--premium))] text-[oklch(var(--premium-foreground))] hover:opacity-90 shrink-0">
