@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { Package, ShoppingBag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
@@ -45,6 +46,7 @@ export default function MyRentalBookingsPage() {
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState("")
   const [otpInputs, setOtpInputs] = useState<{ [key: number]: string }>({})
+  const [activeTab, setActiveTab] = useState<"renter" | "owner">("renter")
 
   async function load() {
     setLoading(true)
@@ -106,18 +108,82 @@ export default function MyRentalBookingsPage() {
 
   return (
     <div className="max-w-2xl space-y-8">
-      <h1 className="text-2xl font-bold">My Rentals</h1>
+     <div className="space-y-4">
+  <div>
+    <h1 className="text-2xl font-bold">My Rentals</h1>
+    <p className="text-sm text-muted-foreground">
+      Manage your rented items and your listed rental items.
+    </p>
+  </div>
 
-      {message && <p className="text-sm font-medium border rounded-lg p-3">{message}</p>}
+  {message && (
+    <div
+  className={`rounded-xl border px-4 py-3 text-sm font-medium ${
+    message.startsWith("✅")
+      ? "border-green-500/30 bg-green-500/10 text-green-700"
+      : "border-red-500/30 bg-red-500/10 text-red-700"
+  }`}
+>
+      {message}
+    </div>
+  )}
+
+  <div className="grid grid-cols-2 rounded-xl border bg-card p-1">
+    <button
+      onClick={() => setActiveTab("renter")}
+      className={`flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-medium transition ${
+        activeTab === "renter"
+          ? "bg-primary text-primary-foreground shadow"
+          : "text-muted-foreground hover:bg-muted"
+      }`}
+    >
+      <ShoppingBag className="h-4 w-4" />
+      Renting
+    </button>
+
+    <button
+      onClick={() => setActiveTab("owner")}
+      className={`relative flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-medium transition ${
+        activeTab === "owner"
+          ? "bg-primary text-primary-foreground shadow"
+          : "text-muted-foreground hover:bg-muted"
+      }`}
+    >
+      <Package className="h-4 w-4" />
+      Listed
+
+      {pendingCount > 0 && (
+        <span className="absolute right-3 top-1.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+          {pendingCount}
+        </span>
+      )}
+    </button>
+  </div>
+</div>
 
       {/* As Renter (B) */}
+      {activeTab === "renter" && (
       <div className="space-y-3">
-        <h2 className="font-semibold text-lg">Items I'm Renting</h2>
+<div>
+  <h2 className="text-xl font-bold">
+    📥 Items I'm Renting
+  </h2>
+
+  <p className="text-sm text-muted-foreground">
+    Track your rented items and their current status.
+  </p>
+</div>
         {asRenter.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No rentals yet</p>
+         <div className="rounded-xl border border-dashed p-8 text-center">
+  <ShoppingBag className="mx-auto h-10 w-10 text-muted-foreground mb-3" />
+  <h3 className="font-semibold">No Rentals Yet</h3>
+  <p className="text-sm text-muted-foreground mt-1">
+    Items you rent from other students will appear here.
+  </p>
+</div>
         ) : (
           asRenter.map((b) => (
-            <div key={b.id} className="border rounded-xl p-4 space-y-2">
+            <div key={b.id}className="rounded-2xl border bg-card p-5 space-y-3 shadow-sm transition hover:shadow-md" >
               <div className="flex items-center justify-between">
                 <h3 className="font-medium">{b.item.title}</h3>
                 <span className={`text-xs px-2 py-1 rounded-full ${STATUS_COLORS[b.status]}`}>
@@ -130,7 +196,7 @@ export default function MyRentalBookingsPage() {
               </p>
 
               {b.status === "APPROVED" && b.otp && (
-                <div className="rounded-lg bg-primary/10 border border-primary/30 p-3">
+          <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
                   <p className="text-xs text-muted-foreground">Give this code to the owner when you receive the item:</p>
                   <p className="text-2xl font-bold tracking-widest text-primary mt-1">{b.otp}</p>
                 </div>
@@ -154,11 +220,20 @@ export default function MyRentalBookingsPage() {
           ))
         )}
       </div>
-
+      )}
       {/* As Owner (A) */}
+      {activeTab === "owner" && (
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <h2 className="font-semibold text-lg">Items I've Listed</h2>
+<div>
+  <h2 className="text-xl font-bold">
+    📤 Items I've Listed
+  </h2>
+
+  <p className="text-sm text-muted-foreground">
+    Manage rental requests for your listed items.
+  </p>
+</div>
           {pendingCount > 0 && (
             <span className="h-5 min-w-[20px] px-1.5 rounded-full bg-red-500 text-white text-[11px] font-bold flex items-center justify-center">
               {pendingCount}
@@ -166,10 +241,16 @@ export default function MyRentalBookingsPage() {
           )}
         </div>
         {asOwner.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No rental requests yet</p>
+         <div className="rounded-xl border border-dashed p-8 text-center">
+  <Package className="mx-auto h-10 w-10 text-muted-foreground mb-3" />
+  <h3 className="font-semibold">No Requests Yet</h3>
+  <p className="text-sm text-muted-foreground mt-1">
+    Rental requests for your listed items will appear here.
+  </p>
+</div>
         ) : (
           asOwner.map((b) => (
-            <div key={b.id} className="border rounded-xl p-4 space-y-2">
+            <div key={b.id} className="rounded-2xl border bg-card p-5 space-y-3 shadow-sm transition hover:shadow-md">
               <div className="flex items-center justify-between">
                 <h3 className="font-medium">{b.item.title}</h3>
                 <span className={`text-xs px-2 py-1 rounded-full ${STATUS_COLORS[b.status]}`}>
@@ -190,8 +271,8 @@ export default function MyRentalBookingsPage() {
 
               {b.status === "PENDING" && (
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={() => respond(b.id, "approve")}>Approve</Button>
-                  <Button size="sm" variant="outline" onClick={() => respond(b.id, "reject")}>Reject</Button>
+                  <Button size="sm" className="rounded-lg" onClick={() => respond(b.id, "approve")}>Approve</Button>
+                  <Button size="sm" variant="destructive" className="rounded-lg" onClick={() => respond(b.id, "reject")}>Reject</Button>
                 </div>
               )}
 
@@ -216,6 +297,8 @@ export default function MyRentalBookingsPage() {
           ))
         )}
       </div>
+      )}
     </div>
+    
   )
 }
