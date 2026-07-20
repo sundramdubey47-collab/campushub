@@ -30,21 +30,21 @@ const PLANS = [
   {
     type:"WEEKLY",
     label:"Weekly",
-    price:49,
+    price:19,
     popular:false
   },
 
   {
     type:"MONTHLY",
     label:"Monthly",
-    price:149,
+    price:99,
     popular:true
   },
 
   {
     type:"YEARLY",
     label:"Yearly",
-    price:999,
+    price:899,
     popular:false
   },
 

@@ -7,7 +7,7 @@ export async function POST(req: Request) {
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
+    return NextResponse.json({ error: "Login is required" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
@@ -18,20 +18,20 @@ export async function POST(req: Request) {
 
   if (!["FACULTY", "ADMIN", "SUPER_ADMIN"].includes(dbUser.role)) {
     return NextResponse.json(
-      { error: "Only Faculty/Admin can create notice for sucerity purpose" },
+      { error: "Only Faculty/Admin can create notices" },
       { status: 403 }
     )
   }
 
   if (!dbUser.collegeId) {
-    return NextResponse.json({ error: "your college is not found" }, { status: 400 })
+    return NextResponse.json({ error: "Your college is not set" }, { status: 400 })
   }
 
   const body = await req.json()
   const { title, content, attachmentUrl, departmentId, courseId, semesterId, publishAt } = body
 
   if (!title || !content) {
-    return NextResponse.json({ error: "Title and content must be required" }, { status: 400 })
+    return NextResponse.json({ error: "Title and content are required" }, { status: 400 })
   }
 
   const notice = await prisma.notice.create({
@@ -47,10 +47,11 @@ export async function POST(req: Request) {
       publishAt: publishAt ? new Date(publishAt) : new Date(),
     },
   })
-  await sendPushNotificationToCollege({
+
+   await sendPushNotificationToCollege({
   collegeId: dbUser.collegeId,
   title: "📢 New Notice",
-  body: notice.title,
+  body: notice.title, 
   url: "/notices",
 })
 
@@ -61,7 +62,7 @@ export async function GET() {
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
+    return NextResponse.json({ error: "Login is required" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
@@ -76,24 +77,9 @@ export async function GET() {
       isArchived: false,
       publishAt: { lte: new Date() },
       AND: [
-        {
-          OR: [
-            { departmentId: null },
-            { departmentId: dbUser.departmentId },
-          ],
-        },
-        {
-          OR: [
-            { courseId: null },
-            { courseId: dbUser.courseId },
-          ],
-        },
-        {
-          OR: [
-            { semesterId: null },
-            { semesterId: dbUser.semesterId },
-          ],
-        },
+        { OR: [{ departmentId: null }, { departmentId: dbUser.departmentId }] },
+        { OR: [{ courseId: null }, { courseId: dbUser.courseId }] },
+        { OR: [{ semesterId: null }, { semesterId: dbUser.semesterId }] },
       ],
     },
     orderBy: [{ isPinned: "desc" }, { createdAt: "desc" }],

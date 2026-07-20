@@ -147,17 +147,7 @@ export function MarketplaceClient({
 
       </div>
 
-      <div className="rounded-2xl border bg-background px-6 py-5 shadow-sm">
-
-        <div className="text-3xl font-bold">
-          {listings.length}
-        </div>
-
-        <div className="text-sm text-muted-foreground">
-          Available Listings
-        </div>
-
-      </div>
+     
 
     </div>
 

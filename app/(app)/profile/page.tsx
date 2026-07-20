@@ -76,83 +76,57 @@ export default async function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 pb-10">
-      {/* Premium Profile Card */}
-<div className="overflow-hidden rounded-3xl border bg-card shadow-sm">
+ 
+{/* Profile header card */}
+<div className="rounded-2xl border bg-card p-5 flex items-center gap-4">
+  <AvatarEdit
+    initialUrl={dbUser.avatarUrl}
+    initials={initials}
+  />
 
-  {/* Gradient Header */}
-  <div className="h-4 bg-gradient-to-r " />
-  <div className="relative px-6 pb-6">
-    <div className="-mt-12 flex flex-col sm:flex-row sm:items-end gap-4">
-      <div className="rounded-full border-4 border-background shadow-lg">
-        <AvatarEdit
-          initialUrl={dbUser.avatarUrl}
-          initials={initials}
-        />
-      </div>
-      <div className="flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-2xl font-bold">
-            {dbUser.name}
-          </h1>
-          {dbUser.isPremium ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-yellow-500 px-3 py-1 text-xs font-semibold text-white">
-              <Crown className="h-3.5 w-3.5" />
-              Premium
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-xs font-medium">
-            
-            </span>
-          )}
-        </div>
-        <div className="mt-3 space-y-2">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Mail className="h-4 w-4" />
-            {dbUser.email}
-          </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <ShieldCheck className="h-4 w-4" />
-            {dbUser.role}
-          </div>
-          {dbUser.course && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <GraduationCap className="h-4 w-4" />
-              {dbUser.course.name}
-              {dbUser.semester && ` • Semester ${dbUser.semester.number}`}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-    <div className="mt-6 flex flex-wrap gap-2">
+  <div className="min-w-0 flex-1">
+    <h1 className="text-xl font-bold truncate">
+      {dbUser.name}
+    </h1>
+
+    <p className="text-sm text-muted-foreground truncate">
+      {dbUser.email}
+    </p>
+
+    <div className="flex flex-wrap gap-2 pt-3">
+
+      <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium">
+        {dbUser.role}
+      </span>
+
+      {dbUser.isPremium && (
+        <span className="flex items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-1 text-[11px] font-medium text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-300">
+          <Crown className="h-3 w-3" />
+          Premium
+        </span>
+      )}
 
       {dbUser.college && (
-        <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+        <span className="rounded-full bg-muted px-2.5 py-1 text-[11px]">
           {dbUser.college.name}
         </span>
       )}
 
-      {dbUser.department && (
-        <span className="rounded-full bg-muted px-3 py-1 text-xs">
-          {dbUser.department.name}
-        </span>
-      )}
-
       {dbUser.course && (
-        <span className="rounded-full bg-muted px-3 py-1 text-xs">
+        <span className="rounded-full bg-muted px-2.5 py-1 text-[11px]">
           {dbUser.course.name}
         </span>
       )}
+
       {dbUser.semester && (
-        <span className="rounded-full bg-muted px-3 py-1 text-xs">
+        <span className="rounded-full bg-muted px-2.5 py-1 text-[11px]">
           Semester {dbUser.semester.number}
         </span>
       )}
+
     </div>
   </div>
-  
 </div>
-
 {!dbUser.isPremium && (
   <Link href="/premium">
     <div className="group overflow-hidden rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-500 to-orange-500 p-[1px] transition hover:scale-[1.01]">
