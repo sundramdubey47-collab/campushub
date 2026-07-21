@@ -8,8 +8,14 @@ export async function GET() {
 
   if (!dbUser?.courseId || !dbUser?.semesterId) return NextResponse.json([])
 
+  const studentSection = dbUser.section || "A"
+
   const slots = await prisma.timetableSlot.findMany({
-    where: { courseId: dbUser.courseId, semesterId: dbUser.semesterId },
+    where: {
+      courseId: dbUser.courseId,
+      semesterId: dbUser.semesterId,
+      OR: [{ section: studentSection }, { section: null }],
+    },
     orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
   })
 

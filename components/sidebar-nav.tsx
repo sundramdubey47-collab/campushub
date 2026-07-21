@@ -47,6 +47,7 @@ const links = [
     icon:Bell
   },
 
+{ href: "/timetable", label: "Timetable", icon: Clock },
 
   {
     href:"/events",

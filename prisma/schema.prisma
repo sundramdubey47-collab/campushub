@@ -129,6 +129,7 @@ model User {
   passwordHash String
   role         UserRole @default(STUDENT)
   phone        String?  @unique
+  section String?
   emailVerified DateTime?
   phoneVerified Boolean  @default(false)
   avatarUrl    String?
@@ -765,12 +766,13 @@ model UserDevice {
 }
 model TimetableSlot {
   id          Int      @id @default(autoincrement())
-  dayOfWeek   Int      // 0 = Sunday, 1 = Monday ... 6 = Saturday
-  startTime   String   // "09:00" format (24hr)
-  endTime     String   // "10:00" format
+  dayOfWeek   Int
+  startTime   String
+  endTime     String
   subjectName String
   room        String?
   facultyName String?
+  section     String?  @default("A")
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -783,4 +785,17 @@ model TimetableSlot {
 
   collegeId   Int
   college     College  @relation(fields: [collegeId], references: [id])
+
+  @@index([courseId, semesterId, section, dayOfWeek])
+}
+
+model TimetableVersion {
+  id          Int      @id @default(autoincrement())
+  fileName    String
+  courseId    Int
+  semesterId  Int
+  collegeId   Int
+  uploadedById Int
+  rowCount    Int
+  createdAt   DateTime @default(now())
 }

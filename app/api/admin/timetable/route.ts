@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   if (!dbUser.collegeId) return NextResponse.json({ error: "College not set" }, { status: 400 })
 
   const body = await req.json()
-  const { dayOfWeek, startTime, endTime, subjectName, room, facultyName, courseId, semesterId } = body
+  const { dayOfWeek, startTime, endTime, subjectName, room, facultyName, section, courseId, semesterId } = body
 
   if (dayOfWeek === undefined || !startTime || !endTime || !subjectName || !courseId || !semesterId) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -26,6 +26,7 @@ export async function POST(req: Request) {
       subjectName,
       room: room || null,
       facultyName: facultyName || null,
+      section: section || "A",
       courseId: Number(courseId),
       semesterId: Number(semesterId),
       collegeId: dbUser.collegeId,
