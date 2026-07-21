@@ -10,6 +10,7 @@ import {
 } from "lucide-react"
 import { DashboardCarousel } from "@/components/dashboard-carousel"
 import Image from "next/image"
+import { NowInClass } from "@/components/now-in-class"
 
 const quickLinks = [
   { href: "/notes", label: "Resources", icon: FileText },
@@ -117,7 +118,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Hero Banner */}
-    
+    <NowInClass />
   <DashboardCarousel collegeName={dbUser.college?.name ?? "your college"} />
 
 

@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSession } from "next-auth/react"
-import { HelpCircle, CheckCircle2 } from "lucide-react"
+import { HelpCircle, CheckCircle2, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 import {
@@ -147,7 +147,10 @@ export function SidebarNav(){
     role==="SUPER_ADMIN"
 
 
-
+console.log("Session:", session)
+console.log("Role:", role)
+console.log("isAdmin:", isAdmin)
+console.log("isSuperAdmin:", role === "SUPER_ADMIN")
 
   let allLinks:any[]=links
 
@@ -169,7 +172,7 @@ export function SidebarNav(){
 
   }
 
-
+if (isAdmin || role === "FACULTY") allLinks = [...allLinks, { href: "/admin/timetable", label: "Timetable", icon: Clock }]
 
   if(isSuperAdmin){
 
