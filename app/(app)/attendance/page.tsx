@@ -4,6 +4,15 @@ import { PageHeader } from "@/components/page-header"
 import { EmptyState } from "@/components/empty-state"
 import { CalendarCheck, TrendingUp, Check, X, MinusCircle } from "lucide-react"
 
+const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+
+function formatHistoryLine(name: string, date: Date, subject: string, status: string) {
+  const day = DAY_NAMES[date.getDay()]
+  const dateStr = date.toLocaleDateString("en-GB").replace(/\//g, "/")
+  const statusText = status === "PRESENT" ? "attended" : status === "ABSENT" ? "missed" : "had no class held for"
+  return `${name}, ${day} ${dateStr} ko ${subject} ka class ${statusText}`
+}
+
 export default async function AttendancePage() {
   const session = await auth()
   const dbUser = await prisma.user.findUnique({ where: { email: session?.user?.email ?? "" } })
@@ -96,12 +105,11 @@ export default async function AttendancePage() {
             <h2 className="font-semibold text-sm">History</h2>
             <div className="space-y-1.5">
               {allRecords.slice(0, 30).map((r) => (
-                <div key={r.id} className="flex items-center gap-3 rounded-lg border bg-card p-3 text-sm">
-                  {r.status === "PRESENT" && <Check className="h-4 w-4 text-[oklch(var(--success))] shrink-0" />}
-                  {r.status === "ABSENT" && <X className="h-4 w-4 text-red-500 shrink-0" />}
-                  {r.status === "NOT_CONDUCTED" && <MinusCircle className="h-4 w-4 text-muted-foreground shrink-0" />}
-                  <span className="flex-1">{r.timetableSlot.subjectName}</span>
-                  <span className="text-xs text-muted-foreground">{new Date(r.date).toLocaleDateString()}</span>
+                <div key={r.id} className="flex items-start gap-3 rounded-lg border bg-card p-3 text-sm">
+                  {r.status === "PRESENT" && <Check className="h-4 w-4 text-[oklch(var(--success))] shrink-0 mt-0.5" />}
+                  {r.status === "ABSENT" && <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />}
+                  {r.status === "NOT_CONDUCTED" && <MinusCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />}
+                  <span className="flex-1">{formatHistoryLine(dbUser.name, new Date(r.date), r.timetableSlot.subjectName, r.status)}</span>
                 </div>
               ))}
             </div>
