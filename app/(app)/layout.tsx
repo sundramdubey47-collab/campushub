@@ -38,14 +38,14 @@ export default async function AppLayout({
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen overflow-hidden">
       {/* Sidebar - desktop only */}
-      <aside className="hidden md:flex w-64 flex-col border-r shrink-0">
+      <aside className="hidden md:flex h-screen w-64 flex-col border-r shrink-0">
         <div className="flex items-center gap-2 px-4 py-4 border-b">
           <CampusHubLogo className="h-7 w-7" />
           <span className="text-lg font-bold tracking-tight">CampusHub</span>
         </div>
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 min-h-0 overflow-y-auto">
           <SidebarNav />
         </div>
         <div className="border-t p-3">
@@ -57,7 +57,7 @@ export default async function AppLayout({
       </aside>
 
       {/* Main area */}
-      <div className="flex flex-1 flex-col min-w-0">
+      <div className="flex flex-1 flex-col min-w-0 min-h-0">
         {/* Navbar */}
         <header className="flex h-16 items-center gap-3 border-b px-4 shrink-0">
           <div className="flex items-center gap-2 md:hidden">
@@ -78,7 +78,7 @@ export default async function AppLayout({
         </header>
 
         {/* Page content */}
-        <main className="flex-1 p-4 sm:p-6 pb-20 md:pb-6 overflow-x-hidden bg-muted/20">{children}</main>
+        <main className="flex-1 min-h-o overflow-y-auto overflow-x-hidden p-4 sm:p-6 pb-20 md:pb-6 overflow-x-hidden bg-muted/20">{children}</main>
         <BottomNav />
         <FeedbackButton />
       </div>
