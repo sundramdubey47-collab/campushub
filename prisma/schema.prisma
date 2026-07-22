@@ -130,6 +130,7 @@ model User {
   role         UserRole @default(STUDENT)
   phone        String?  @unique
   section String?
+  attendances Attendance[]
   emailVerified DateTime?
   phoneVerified Boolean  @default(false)
   avatarUrl    String?
@@ -787,6 +788,7 @@ model TimetableSlot {
   college     College  @relation(fields: [collegeId], references: [id])
 
   @@index([courseId, semesterId, section, dayOfWeek])
+  attendances Attendance[]
 }
 
 model TimetableVersion {
@@ -798,4 +800,24 @@ model TimetableVersion {
   uploadedById Int
   rowCount    Int
   createdAt   DateTime @default(now())
+}
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  NOT_CONDUCTED
+}
+
+model Attendance {
+  id        Int              @id @default(autoincrement())
+  status    AttendanceStatus
+  date      DateTime
+  createdAt DateTime         @default(now())
+
+  studentId Int
+  student   User             @relation(fields: [studentId], references: [id])
+
+  timetableSlotId Int
+  timetableSlot   TimetableSlot @relation(fields: [timetableSlotId], references: [id])
+
+  @@unique([studentId, timetableSlotId, date])
 }

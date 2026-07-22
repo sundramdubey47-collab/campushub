@@ -16,11 +16,11 @@ export function MobileNav() {
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-64 p-0">
-        <div className="px-4 py-4 border-b">
+      <SheetContent side="left" className="w-64 p-0 flex flex-col h-full">
+        <div className="px-4 py-4 border-b shrink-0">
           <span className="text-lg font-bold">CampusHub</span>
         </div>
-        <div onClick={() => setOpen(false)}>
+        <div className="flex-1 overflow-y-auto" onClick={() => setOpen(false)}>
           <SidebarNav />
         </div>
       </SheetContent>

@@ -51,7 +51,7 @@ export default function AdminTimetablePage() {
   const [courses, setCourses] = useState<Course[]>([])
   const [semesters, setSemesters] = useState<Semester[]>([])
   const [slots, setSlots] = useState<Slot[]>([])
-
+const [editingId, setEditingId] = useState<number | null>(null)
   const [courseId, setCourseId] = useState("")
   const [semesterId, setSemesterId] = useState("")
 
@@ -90,28 +90,47 @@ export default function AdminTimetablePage() {
     setSlots(await res.json())
   }
 
-  async function addSlot() {
-    setError("")
-    if (!startTime || !endTime || !subjectName) {
-      setError("Time and Subject are required")
-      return
-    }
-
-    const res = await fetch("/api/admin/timetable", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ dayOfWeek, startTime, endTime, subjectName, room, facultyName, section, courseId, semesterId }),
-    })
-
-    if (!res.ok) {
-      const data = await res.json()
-      setError(data.error)
-      return
-    }
-
-    setStartTime(""); setEndTime(""); setSubjectName(""); setRoom(""); setFacultyName("")
-    loadSlots()
+  async function saveSlot() {
+  setError("")
+  if (!startTime || !endTime || !subjectName) {
+    setError("Time and Subject are required")
+    return
   }
+
+  const payload = { dayOfWeek, startTime, endTime, subjectName, room, facultyName, section, courseId, semesterId }
+
+  const res = editingId
+    ? await fetch(`/api/admin/timetable/${editingId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+    : await fetch("/api/admin/timetable", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+
+  if (!res.ok) {
+    const data = await res.json()
+    setError(data.error)
+    return
+  }
+
+  setStartTime(""); setEndTime(""); setSubjectName(""); setRoom(""); setFacultyName(""); setEditingId(null)
+  loadSlots()
+}
+
+function startEdit(slot: Slot) {
+  setEditingId(slot.id)
+  setDayOfWeek(String(slot.dayOfWeek))
+  setStartTime(slot.startTime)
+  setEndTime(slot.endTime)
+  setSubjectName(slot.subjectName)
+  setRoom(slot.room || "")
+  setFacultyName(slot.facultyName || "")
+  setSection(slot.section || "A")
+}
 
   async function deleteSlot(id: number) {
     await fetch(`/api/admin/timetable/${id}`, { method: "DELETE" })
@@ -299,7 +318,10 @@ export default function AdminTimetablePage() {
               </div>
             </div>
 
-            <Button size="sm" onClick={addSlot}>Add Slot</Button>
+            <Button size="sm" onClick={saveSlot}>{editingId ? "Update Slot" : "Add Slot"}</Button>
+{editingId && (
+  <Button size="sm" variant="ghost" onClick={() => { setEditingId(null); setStartTime(""); setEndTime(""); setSubjectName(""); setRoom(""); setFacultyName("") }}>Cancel</Button>
+)}
           </div>
 
           {/* Current Slots */}
@@ -323,9 +345,12 @@ export default function AdminTimetablePage() {
                             {slot.facultyName && ` • ${slot.facultyName}`}
                           </p>
                         </div>
-                        <button onClick={() => deleteSlot(slot.id)}>
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </button>
+                      <div className="flex gap-2">
+  <button onClick={() => startEdit(slot)} className="text-xs text-primary underline">Edit</button>
+  <button onClick={() => deleteSlot(slot.id)}>
+    <Trash2 className="h-4 w-4 text-red-500" />
+  </button>
+</div>
                       </div>
                     ))}
                   </div>

@@ -106,11 +106,7 @@ const links = [
   },
 
 
-  {
-    href:"/referrals",
-    label:"Invite Friends",
-    icon:Gift
-  }
+  
 
 ]
 

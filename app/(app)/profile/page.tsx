@@ -6,7 +6,7 @@ import { LogoutButton } from "@/components/logout-button"
 import { AvatarEdit } from "@/components/avatar-edit"
 import { Phone } from "lucide-react"
 
-import { ChevronRight, FileUp, Download, Ticket, ShoppingBag, Bookmark, Crown, Package,Mail, GraduationCap, ShieldCheck, } from "lucide-react"
+import { ChevronRight, FileUp, Download, Ticket, ShoppingBag, Bookmark, Crown, Package, Mail, GraduationCap, ShieldCheck, Gift, } from "lucide-react"
 
 export default async function ProfilePage() {
   const session = await auth()
@@ -74,6 +74,8 @@ export default async function ProfilePage() {
     icon: Ticket,
     count: dbUser._count.coupons,
   },
+
+  { href: "/referrals", label: "Invite Friends", icon: Gift },
 ]
 
   return (

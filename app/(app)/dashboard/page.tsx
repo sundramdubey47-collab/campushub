@@ -11,6 +11,7 @@ import {
 import { DashboardCarousel } from "@/components/dashboard-carousel"
 import Image from "next/image"
 import { NowInClass } from "@/components/now-in-class"
+import { TimetableLiveCard } from "@/components/timetable-live-card"
 
 const quickLinks = [
   { href: "/notes", label: "Resources", icon: FileText },
@@ -118,7 +119,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Hero Banner */}
-    <NowInClass />
+    <TimetableLiveCard />
   <DashboardCarousel collegeName={dbUser.college?.name ?? "your college"} />
 
 
