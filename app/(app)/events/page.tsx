@@ -22,6 +22,7 @@ export default async function EventsPage() {
       email: session?.user?.email ?? "",
     },
     select: {
+      id:true,
       collegeId: true,
       role: true,
     },
