@@ -9,39 +9,75 @@ export async function POST(
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login karna zaroori hai" }, { status: 401 })
+    return NextResponse.json(
+      { error: "Login karna zaroori hai" },
+      { status: 401 }
+    )
   }
 
-  const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
+  // ✅ id pehle nikaalo
+  const { id } = await params
+
+  const dbUser = await prisma.user.findUnique({
+    where: { email: session.user.email },
+  })
 
   if (!dbUser) {
-  return NextResponse.json({ error: "Login is required" }, { status: 401 })
-}
+    return NextResponse.json(
+      { error: "Login is required" },
+      { status: 401 }
+    )
+  }
 
-const isCollegeStaff = ["FACULTY", "ADMIN", "SUPER_ADMIN"].includes(dbUser.role)
-const teamMembership = await prisma.eventTeamMember.findUnique({
-  where: { eventId_userId: { eventId: Number(id), userId: dbUser.id } },
-})
+  const isCollegeStaff = ["FACULTY", "ADMIN", "SUPER_ADMIN"].includes(
+    dbUser.role
+  )
 
-if (!isCollegeStaff && !teamMembership) {
-  return NextResponse.json({ error: "You don't have permission to scan for this event" }, { status: 403 })
-}
+  const teamMembership = await prisma.eventTeamMember.findUnique({
+    where: {
+      eventId_userId: {
+        eventId: Number(id),
+        userId: dbUser.id,
+      },
+    },
+  })
 
-  const { id } = await params
+  if (!isCollegeStaff && !teamMembership) {
+    return NextResponse.json(
+      { error: "You don't have permission to scan for this event" },
+      { status: 403 }
+    )
+  }
+
   const body = await req.json()
   const qrCode = body.qrCode
 
   const registration = await prisma.eventRegistration.findFirst({
-    where: { qrCode, eventId: Number(id) },
-    include: { user: { select: { name: true } } },
+    where: {
+      qrCode,
+      eventId: Number(id),
+    },
+    include: {
+      user: {
+        select: {
+          name: true,
+        },
+      },
+    },
   })
 
   if (!registration) {
-    return NextResponse.json({ error: "Invalid QR code" }, { status: 404 })
+    return NextResponse.json(
+      { error: "Invalid QR code" },
+      { status: 404 }
+    )
   }
 
   if (registration.attended) {
-    return NextResponse.json({ error: `${registration.user.name} Attendance has alredy been taken` }, { status: 400 })
+    return NextResponse.json(
+      { error: `${registration.user.name} Attendance has alredy been taken` },
+      { status: 400 }
+    )
   }
 
   await prisma.eventRegistration.update({
@@ -49,5 +85,8 @@ if (!isCollegeStaff && !teamMembership) {
     data: { attended: true },
   })
 
-  return NextResponse.json({ success: true, name: registration.user.name })
+  return NextResponse.json({
+    success: true,
+    name: registration.user.name,
+  })
 }
