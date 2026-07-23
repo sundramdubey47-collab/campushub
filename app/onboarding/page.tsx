@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-
+import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
 import {
@@ -24,180 +24,172 @@ import {
 
 
 type Semester = {
-  id:number
-  number:number
+  id: number
+  number: number
 }
 
 
 type Course = {
-  id:number
-  name:string
-  semesters:Semester[]
+  id: number
+  name: string
+  semesters: Semester[]
 }
 
 
 type Department = {
-  id:number
-  name:string
-  courses:Course[]
+  id: number
+  name: string
+  courses: Course[]
 }
 
 
 type College = {
-  id:number
-  name:string
-  departments:Department[]
+  id: number
+  name: string
+  departments: Department[]
 }
 
 
 type University = {
-  id:number
-  name:string
-  colleges:College[]
+  id: number
+  name: string
+  colleges: College[]
 }
 
 
 
-export default function OnboardingPage(){
+export default function OnboardingPage() {
 
-const router = useRouter()
+  const router = useRouter()
 
 
-const [universities,setUniversities] = useState<University[]>([])
+  const [universities, setUniversities] = useState<University[]>([])
 
-const [loading,setLoading] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-const [error,setError] = useState("")
+  const [error, setError] = useState("")
 
 
-const [universityId,setUniversityId] = useState("")
-const [collegeId,setCollegeId] = useState("")
-const [departmentId,setDepartmentId] = useState("")
-const [courseId,setCourseId] = useState("")
-const [semesterId,setSemesterId] = useState("")
+  const [universityId, setUniversityId] = useState("")
+  const [collegeId, setCollegeId] = useState("")
+  const [departmentId, setDepartmentId] = useState("")
+  const [courseId, setCourseId] = useState("")
+  const [semesterId, setSemesterId] = useState("")
+  const [section, setSection] = useState("")
 
 
+  useEffect(() => {
 
-useEffect(()=>{
+    fetch("/api/onboarding-data")
+      .then(res => res.json())
+      .then(data => setUniversities(data))
 
-fetch("/api/onboarding-data")
-.then(res=>res.json())
-.then(data=>setUniversities(data))
+  }, [])
 
-},[])
 
 
+  const university =
+    universities.find(
+      u => u.id === Number(universityId)
+    )
 
-const university =
-universities.find(
-u=>u.id===Number(universityId)
-)
 
+  const colleges =
+    university?.colleges ?? []
 
-const colleges =
-university?.colleges ?? []
 
 
+  const college =
+    colleges.find(
+      c => c.id === Number(collegeId)
+    )
 
-const college =
-colleges.find(
-c=>c.id===Number(collegeId)
-)
 
+  const departments =
+    college?.departments ?? []
 
-const departments =
-college?.departments ?? []
 
 
+  const department =
+    departments.find(
+      d => d.id === Number(departmentId)
+    )
 
-const department =
-departments.find(
-d=>d.id===Number(departmentId)
-)
 
+  const courses =
+    department?.courses ?? []
 
-const courses =
-department?.courses ?? []
 
 
+  const course =
+    courses.find(
+      c => c.id === Number(courseId)
+    )
 
-const course =
-courses.find(
-c=>c.id===Number(courseId)
-)
 
+  const semesters =
+    course?.semesters ?? []
 
-const semesters =
-course?.semesters ?? []
 
 
+  async function handleSubmit() {
 
-async function handleSubmit(){
+    setError("")
 
-setError("")
 
+    if (
+      !collegeId ||
+      !departmentId ||
+      !courseId ||
+      !semesterId
+    ) {
 
-if(
-!collegeId ||
-!departmentId ||
-!courseId ||
-!semesterId
-){
+      setError("Please complete all details")
 
-setError("Please complete all details")
+      return
 
-return
+    }
 
-}
 
+    setLoading(true)
 
-setLoading(true)
 
+    const res = await fetch(
+      "/api/onboarding",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
 
-const res = await fetch(
-"/api/onboarding",
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
+        body: JSON.stringify({ collegeId, departmentId, courseId, semesterId, section }),
+      }
 
-body:JSON.stringify({
+    )
 
-collegeId,
-departmentId,
-courseId,
-semesterId
 
-})
+    setLoading(false)
 
-}
 
-)
+    if (!res.ok) {
 
+      setError("Something went wrong")
 
-setLoading(false)
+      return
 
+    }
 
-if(!res.ok){
 
-setError("Something went wrong")
+    router.push("/dashboard")
 
-return
 
-}
+  }
 
 
-router.push("/dashboard")
 
+  return (
 
-}
-
-
-
-return (
-
-<div className="
+    <div className="
 min-h-screen
 bg-muted/30
 flex
@@ -207,7 +199,7 @@ p-4
 ">
 
 
-<div className="
+      <div className="
 max-w-6xl
 w-full
 grid
@@ -217,9 +209,9 @@ gap-6
 
 
 
-{/* LEFT INFO */}
+        {/* LEFT INFO */}
 
-<div className="
+        <div className="
 bg-primary
 text-primary-foreground
 rounded-2xl
@@ -228,53 +220,53 @@ space-y-6
 ">
 
 
-<h1 className="
+          <h1 className="
 text-3xl
 font-bold
 ">
 
-Welcome to CampusHub 🎓
+            Welcome to CampusHub 🎓
 
-</h1>
+          </h1>
 
-<div className="space-y-4">
-
-
-<div className="flex gap-3">
+          <div className="space-y-4">
 
 
-</div>
+            <div className="flex gap-3">
 
 
-
-<div className="flex gap-3">
-
-<div>
-
-
-</div>
-
-</div>
+            </div>
 
 
 
+            <div className="flex gap-3">
 
-<div className="flex gap-3">
-
-
-<div>
-
-</div>
-
-</div>
+              <div>
 
 
-</div>
+              </div>
 
-</div>
-{/* RIGHT FORM */}
+            </div>
 
-<div className="
+
+
+
+            <div className="flex gap-3">
+
+
+              <div>
+
+              </div>
+
+            </div>
+
+
+          </div>
+
+        </div>
+        {/* RIGHT FORM */}
+
+        <div className="
 bg-background
 border
 rounded-2xl
@@ -284,37 +276,37 @@ space-y-6
 ">
 
 
-<div>
+          <div>
 
-<h2 className="
+            <h2 className="
 text-2xl
 font-bold
 ">
 
-Complete Your Profile
+              Complete Your Profile
 
-</h2>
+            </h2>
 
 
-<p className="
+            <p className="
 text-sm
 text-muted-foreground
 mt-2
 ">
 
-Select your academic details to personalize
-your CampusHub dashboard.
+              Select your academic details to personalize
+              your CampusHub dashboard.
 
-</p>
+            </p>
 
-</div>
+          </div>
 
 
 
-{
-error && (
+          {
+            error && (
 
-<p className="
+              <p className="
 bg-red-50
 text-red-600
 rounded-lg
@@ -322,440 +314,445 @@ p-3
 text-sm
 ">
 
-{error}
+                {error}
 
-</p>
+              </p>
 
-)
+            )
 
-}
+          }
 
 
 
 
-{/* UNIVERSITY */}
+          {/* UNIVERSITY */}
 
 
-<div className="space-y-2">
+          <div className="space-y-2">
 
-<label className="flex items-center gap-2 text-sm font-medium">
+            <label className="flex items-center gap-2 text-sm font-medium">
 
-<GraduationCap className="h-4 w-4"/>
+              <GraduationCap className="h-4 w-4" />
 
-University
+              University
 
-</label>
+            </label>
 
 
-<Select
+            <Select
 
-value={universityId}
+              value={universityId}
 
-onValueChange={(v)=>{
+              onValueChange={(v) => {
 
-setUniversityId(v)
-setCollegeId("")
-setDepartmentId("")
-setCourseId("")
-setSemesterId("")
+                setUniversityId(v)
+                setCollegeId("")
+                setDepartmentId("")
+                setCourseId("")
+                setSemesterId("")
 
-}}
+              }}
 
->
+            >
 
 
-<SelectTrigger>
+              <SelectTrigger>
 
-<SelectValue placeholder="Select University"/>
+                <SelectValue placeholder="Select University" />
 
-</SelectTrigger>
+              </SelectTrigger>
 
 
-<SelectContent>
+              <SelectContent>
 
-{
-universities.map(u=>(
+                {
+                  universities.map(u => (
 
-<SelectItem
-key={u.id}
-value={u.id.toString()}
->
+                    <SelectItem
+                      key={u.id}
+                      value={u.id.toString()}
+                    >
 
-{u.name}
+                      {u.name}
 
-</SelectItem>
+                    </SelectItem>
 
-))
+                  ))
 
-}
+                }
 
-</SelectContent>
+              </SelectContent>
 
 
-</Select>
+            </Select>
 
 
-</div>
+          </div>
 
 
 
 
 
-{/* COLLEGE */}
+          {/* COLLEGE */}
 
 
-<div className="space-y-2">
+          <div className="space-y-2">
 
 
-<label className="flex items-center gap-2 text-sm font-medium">
+            <label className="flex items-center gap-2 text-sm font-medium">
 
-<Building2 className="h-4 w-4"/>
+              <Building2 className="h-4 w-4" />
 
-College
+              College
 
-</label>
+            </label>
 
 
 
-<Select
+            <Select
 
-value={collegeId}
+              value={collegeId}
 
-disabled={!universityId}
+              disabled={!universityId}
 
-onValueChange={(v)=>{
+              onValueChange={(v) => {
 
-setCollegeId(v)
-setDepartmentId("")
-setCourseId("")
-setSemesterId("")
+                setCollegeId(v)
+                setDepartmentId("")
+                setCourseId("")
+                setSemesterId("")
 
-}}
+              }}
 
->
+            >
 
 
-<SelectTrigger>
+              <SelectTrigger>
 
-<SelectValue placeholder="Select College"/>
+                <SelectValue placeholder="Select College" />
 
-</SelectTrigger>
+              </SelectTrigger>
 
 
-<SelectContent>
+              <SelectContent>
 
 
-{
-colleges.map(c=>(
+                {
+                  colleges.map(c => (
 
-<SelectItem
+                    <SelectItem
 
-key={c.id}
+                      key={c.id}
 
-value={c.id.toString()}
+                      value={c.id.toString()}
 
->
+                    >
 
-{c.name}
+                      {c.name}
 
-</SelectItem>
+                    </SelectItem>
 
-))
+                  ))
 
-}
+                }
 
 
-</SelectContent>
+              </SelectContent>
 
 
-</Select>
+            </Select>
 
 
-</div>
+          </div>
 
 
 
 
 
-{/* DEPARTMENT */}
+          {/* DEPARTMENT */}
 
 
-<div className="space-y-2">
+          <div className="space-y-2">
 
 
-<label className="flex items-center gap-2 text-sm font-medium">
+            <label className="flex items-center gap-2 text-sm font-medium">
 
 
-<Layers className="h-4 w-4"/>
+              <Layers className="h-4 w-4" />
 
-Department
+              Department
 
 
-</label>
+            </label>
 
 
 
-<Select
+            <Select
 
-value={departmentId}
+              value={departmentId}
 
-disabled={!collegeId}
+              disabled={!collegeId}
 
-onValueChange={(v)=>{
+              onValueChange={(v) => {
 
-setDepartmentId(v)
-setCourseId("")
-setSemesterId("")
+                setDepartmentId(v)
+                setCourseId("")
+                setSemesterId("")
 
-}}
+              }}
 
->
+            >
 
 
-<SelectTrigger>
+              <SelectTrigger>
 
-<SelectValue placeholder="Select Department"/>
+                <SelectValue placeholder="Select Department" />
 
-</SelectTrigger>
+              </SelectTrigger>
 
 
-<SelectContent>
+              <SelectContent>
 
 
-{
-departments.map(d=>(
+                {
+                  departments.map(d => (
 
-<SelectItem
+                    <SelectItem
 
-key={d.id}
+                      key={d.id}
 
-value={d.id.toString()}
+                      value={d.id.toString()}
 
->
+                    >
 
-{d.name}
+                      {d.name}
 
-</SelectItem>
+                    </SelectItem>
 
 
-))
+                  ))
 
-}
+                }
 
 
-</SelectContent>
+              </SelectContent>
 
 
-</Select>
+            </Select>
 
 
 
-</div>
+          </div>
 
 
 
 
 
-{/* COURSE */}
+          {/* COURSE */}
 
 
 
-<div className="space-y-2">
+          <div className="space-y-2">
 
 
-<label className="flex items-center gap-2 text-sm font-medium">
+            <label className="flex items-center gap-2 text-sm font-medium">
 
 
-<BookOpen className="h-4 w-4"/>
+              <BookOpen className="h-4 w-4" />
 
-Course
+              Course
 
 
-</label>
+            </label>
 
 
 
-<Select
+            <Select
 
-value={courseId}
+              value={courseId}
 
-disabled={!departmentId}
+              disabled={!departmentId}
 
-onValueChange={(v)=>{
+              onValueChange={(v) => {
 
-setCourseId(v)
-setSemesterId("")
+                setCourseId(v)
+                setSemesterId("")
 
-}}
+              }}
 
->
+            >
 
 
-<SelectTrigger>
+              <SelectTrigger>
 
-<SelectValue placeholder="Select Course"/>
+                <SelectValue placeholder="Select Course" />
 
-</SelectTrigger>
+              </SelectTrigger>
 
 
 
-<SelectContent>
+              <SelectContent>
 
 
-{
-courses.map(c=>(
+                {
+                  courses.map(c => (
 
-<SelectItem
+                    <SelectItem
 
-key={c.id}
+                      key={c.id}
 
-value={c.id.toString()}
+                      value={c.id.toString()}
 
->
+                    >
 
-{c.name}
+                      {c.name}
 
-</SelectItem>
+                    </SelectItem>
 
-))
+                  ))
 
-}
+                }
 
 
-</SelectContent>
+              </SelectContent>
 
 
-</Select>
+            </Select>
 
 
 
-</div>
-{/* SEMESTER */}
+          </div>
+          {/* SEMESTER */}
 
-<div className="space-y-2">
+          <div className="space-y-2">
 
 
-<label className="flex items-center gap-2 text-sm font-medium">
+            <label className="flex items-center gap-2 text-sm font-medium">
 
-<CalendarDays className="h-4 w-4"/>
+              <CalendarDays className="h-4 w-4" />
 
-Current Semester
+              Current Semester
 
-</label>
+            </label>
 
 
 
-<Select
+            <Select
 
-value={semesterId}
+              value={semesterId}
 
-disabled={!courseId}
+              disabled={!courseId}
 
-onValueChange={setSemesterId}
+              onValueChange={setSemesterId}
 
->
+            >
 
 
-<SelectTrigger>
+              <SelectTrigger>
 
-<SelectValue placeholder="Select Semester"/>
+                <SelectValue placeholder="Select Semester" />
 
-</SelectTrigger>
+              </SelectTrigger>
 
 
 
-<SelectContent>
+              <SelectContent>
 
 
-{
-semesters.map(s=>(
+                {
+                  semesters.map(s => (
 
-<SelectItem
+                    <SelectItem
 
-key={s.id}
+                      key={s.id}
 
-value={s.id.toString()}
+                      value={s.id.toString()}
 
->
+                    >
 
-Semester {s.number}
+                      Semester {s.number}
 
-</SelectItem>
+                    </SelectItem>
 
-))
+                  ))
 
-}
+                }
 
 
-</SelectContent>
+              </SelectContent>
 
 
-</Select>
+              <Input
+                placeholder="Your Section (e.g. A, B, C) — optional"
+                value={section}
+                onChange={(e) => setSection(e.target.value.toUpperCase())}
+              />
+            </Select>
 
 
-</div>
+          </div>
 
 
 
 
 
-<Button
+          <Button
 
-onClick={handleSubmit}
+            onClick={handleSubmit}
 
-disabled={loading}
+            disabled={loading}
 
-className="
+            className="
 w-full
 h-12
 text-base
 font-semibold
 "
 
->
+          >
 
 
-{
-loading
+            {
+              loading
 
-?
+                ?
 
-"Saving Profile..."
+                "Saving Profile..."
 
-:
+                :
 
-"Continue to CampusHub 🚀"
+                "Continue to CampusHub 🚀"
 
-}
-
-
-</Button>
+            }
 
 
+          </Button>
 
-<p className="
+
+
+          <p className="
 text-xs
 text-center
 text-muted-foreground
 pt-2
 ">
 
-Your academic details help CampusHub show
-relevant notes, tests and campus updates.
+            Your academic details help CampusHub show
+            relevant notes, tests and campus updates.
 
-</p>
-
-
-
-</div>
+          </p>
 
 
-</div>
+
+        </div>
 
 
-</div>
+      </div>
 
 
-)
+    </div>
+
+
+  )
 
 }

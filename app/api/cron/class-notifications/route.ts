@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { sendPushNotification } from "@/lib/notification-service"
-import { nowHHMM, subtractMinutes } from "@/lib/time-utils"
+import { getISTParts, getISTMidnightUTC, minutesBetween, normalizeHHMM } from "@/lib/time-utils"
 
 export async function GET(req: Request) {
   const authHeader = req.headers.get("authorization")
@@ -9,47 +9,57 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const dayOfWeek = new Date().getDay()
-  const currentTime = nowHHMM()
-  const tenMinBeforeTarget = subtractMinutes(currentTime, -10) // classes starting in 10 min
+  const { hhmm: currentTime, dayOfWeek } = getISTParts()
+  const today = getISTMidnightUTC()
 
-  const [upcomingSlots, liveSlots] = await Promise.all([
-    prisma.timetableSlot.findMany({ where: { dayOfWeek, startTime: tenMinBeforeTarget } }),
-    prisma.timetableSlot.findMany({ where: { dayOfWeek, startTime: currentTime } }),
-  ])
+  const todaySlots = await prisma.timetableSlot.findMany({ where: { dayOfWeek } })
 
   let notified = 0
+  const checked: any[] = []
 
-  for (const slot of [...upcomingSlots.map((s) => ({ slot: s, type: "upcoming" as const })), ...liveSlots.map((s) => ({ slot: s, type: "live" as const }))]) {
+  for (const slot of todaySlots) {
+    const slotStart = normalizeHHMM(slot.startTime)
+    const slotEnd = normalizeHHMM(slot.endTime)
+    const minsToStart = minutesBetween(currentTime, slotStart)
+    const isUpcoming = minsToStart > 0 && minsToStart <= 10
+    const isLive = slotStart <= currentTime && slotEnd > currentTime
+
+    checked.push({ subject: slot.subjectName, slotStart, minsToStart, isUpcoming, isLive })
+
+    if (!isUpcoming && !isLive) continue
+
+    const notifType = isLive ? "LIVE" : "UPCOMING"
+
+    try {
+      await prisma.classNotificationLog.create({
+        data: { timetableSlotId: slot.id, date: today, type: notifType },
+      })
+    } catch {
+      continue
+    }
+
     const students = await prisma.user.findMany({
       where: {
-        collegeId: slot.slot.collegeId,
-        courseId: slot.slot.courseId,
-        semesterId: slot.slot.semesterId,
-        ...(slot.slot.section ? { OR: [{ section: slot.slot.section }, { section: null }] } : {}),
+        collegeId: slot.collegeId,
+        courseId: slot.courseId,
+        semesterId: slot.semesterId,
+        OR: [{ section: slot.section }, { section: null }],
       },
       select: { id: true },
     })
 
     for (const student of students) {
-      if (slot.type === "upcoming") {
-        await sendPushNotification({
-          userId: student.id,
-          title: "⏰ Class starting in 10 minutes",
-          body: `${slot.slot.subjectName} starts at ${slot.slot.startTime}${slot.slot.room ? ` in ${slot.slot.room}` : ""}`,
-          url: "/dashboard",
-        })
-      } else {
-        await sendPushNotification({
-          userId: student.id,
-          title: "🔴 Class is live now",
-          body: `${slot.slot.subjectName} has started${slot.slot.room ? ` in ${slot.slot.room}` : ""}. Don't miss it!`,
-          url: "/dashboard",
-        })
-      }
+      await sendPushNotification({
+        userId: student.id,
+        title: notifType === "UPCOMING" ? "⏰ Class starting in 10 minutes" : "🔴 Class is live now",
+        body: notifType === "UPCOMING"
+          ? `${slot.subjectName} starts at ${slotStart}${slot.room ? ` in ${slot.room}` : ""}`
+          : `${slot.subjectName} has started${slot.room ? ` in ${slot.room}` : ""}. Don't miss it!`,
+        url: "/dashboard",
+      })
       notified++
     }
   }
 
-  return NextResponse.json({ success: true, notified })
+  return NextResponse.json({ success: true, notified, currentTime, dayOfWeek, checked })
 }

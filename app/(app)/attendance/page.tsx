@@ -2,16 +2,8 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { PageHeader } from "@/components/page-header"
 import { EmptyState } from "@/components/empty-state"
-import { CalendarCheck, TrendingUp, Check, X, MinusCircle } from "lucide-react"
-
-const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-
-function formatHistoryLine(name: string, date: Date, subject: string, status: string) {
-  const day = DAY_NAMES[date.getDay()]
-  const dateStr = date.toLocaleDateString("en-GB").replace(/\//g, "/")
-  const statusText = status === "PRESENT" ? "attended" : status === "ABSENT" ? "missed" : "had no class held for"
-  return `${name}, ${day} ${dateStr} ko ${subject} ka class ${statusText}`
-}
+import { AttendanceHistoryClient } from "@/components/attendance-history-client"
+import { CalendarCheck, TrendingUp } from "lucide-react"
 
 export default async function AttendancePage() {
   const session = await auth()
@@ -52,6 +44,15 @@ export default async function AttendancePage() {
   const monthlyRecords = countable.filter((r) => new Date(r.date) >= monthAgo)
   const weeklyPercent = weeklyRecords.length ? Math.round((weeklyRecords.filter((r) => r.status === "PRESENT").length / weeklyRecords.length) * 100) : 0
   const monthlyPercent = monthlyRecords.length ? Math.round((monthlyRecords.filter((r) => r.status === "PRESENT").length / monthlyRecords.length) * 100) : 0
+
+  const historyData = allRecords.slice(0, 50).map((r) => ({
+    id: r.id,
+    subject: r.timetableSlot.subjectName,
+    date: r.date.toISOString(),
+    status: r.status,
+  }))
+
+  const uniqueSubjects = [...new Set(historyData.map((h) => h.subject))]
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -103,16 +104,7 @@ export default async function AttendancePage() {
 
           <div className="space-y-3">
             <h2 className="font-semibold text-sm">History</h2>
-            <div className="space-y-1.5">
-              {allRecords.slice(0, 30).map((r) => (
-                <div key={r.id} className="flex items-start gap-3 rounded-lg border bg-card p-3 text-sm">
-                  {r.status === "PRESENT" && <Check className="h-4 w-4 text-[oklch(var(--success))] shrink-0 mt-0.5" />}
-                  {r.status === "ABSENT" && <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />}
-                  {r.status === "NOT_CONDUCTED" && <MinusCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />}
-                  <span className="flex-1">{formatHistoryLine(dbUser.name, new Date(r.date), r.timetableSlot.subjectName, r.status)}</span>
-                </div>
-              ))}
-            </div>
+            <AttendanceHistoryClient history={historyData} subjects={uniqueSubjects} />
           </div>
         </>
       )}

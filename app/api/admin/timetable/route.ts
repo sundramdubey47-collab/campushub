@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { normalizeHHMM } from "@/lib/time-utils"
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -21,8 +22,8 @@ export async function POST(req: Request) {
   const slot = await prisma.timetableSlot.create({
     data: {
       dayOfWeek: Number(dayOfWeek),
-      startTime,
-      endTime,
+    startTime: normalizeHHMM(startTime),
+      endTime: normalizeHHMM(endTime),
       subjectName,
       room: room || null,
       facultyName: facultyName || null,

@@ -817,7 +817,15 @@ model Attendance {
   student   User             @relation(fields: [studentId], references: [id])
 
   timetableSlotId Int
-  timetableSlot   TimetableSlot @relation(fields: [timetableSlotId], references: [id])
-
+timetableSlot   TimetableSlot @relation(fields: [timetableSlotId], references: [id], onDelete: Cascade)
   @@unique([studentId, timetableSlotId, date])
+}
+model ClassNotificationLog {
+  id              Int      @id @default(autoincrement())
+  timetableSlotId Int
+  date            DateTime
+  type            String
+  createdAt       DateTime @default(now())
+
+  @@unique([timetableSlotId, date, type])
 }

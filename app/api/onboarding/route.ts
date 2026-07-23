@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json()
-  const { collegeId, departmentId, courseId, semesterId } = body
+  const { collegeId, departmentId, courseId, semesterId, section } = body
 
   if (!collegeId || !departmentId || !courseId || !semesterId) {
     return NextResponse.json({ error: "All fields are required" }, { status: 400 })
@@ -27,6 +27,7 @@ export async function POST(req: Request) {
       departmentId: Number(departmentId),
       courseId: Number(courseId),
       semesterId: Number(semesterId),
+      section: section || null,
     },
   })
 

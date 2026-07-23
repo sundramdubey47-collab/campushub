@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Autocomplete } from "@/components/autocomplete"
 import { Combobox } from "@/components/combobox"
-import { Trash2, Upload, CheckCircle2, AlertTriangle } from "lucide-react"
+import { Trash2, Upload, CheckCircle2, AlertTriangle, Download } from "lucide-react"
 
 const DAYS = [
   { value: "1", label: "Monday" },
@@ -137,6 +137,18 @@ function startEdit(slot: Slot) {
     loadSlots()
   }
 
+  function downloadTemplate() {
+  const csvContent = "Day,StartTime,EndTime,Subject,Room,Faculty,Section\nMonday,09:00,10:00,Data Structures,LT 203,Dr. Sharma,A\nMonday,10:00,11:00,Data Structures,LT 203,Dr. Sharma,B\nTuesday,09:00,10:00,Mathematics,LT 105,Dr. Verma,A"
+  const blob = new Blob([csvContent], { type: "text/csv" })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement("a")
+  a.href = url
+  a.download = "campushub-timetable-template.csv"
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -218,17 +230,19 @@ function startEdit(slot: Slot) {
       {courseId && semesterId && (
         <>
           {/* Bulk Upload */}
-          <div className="rounded-xl border bg-card p-4 space-y-3">
-            <h3 className="font-semibold text-sm flex items-center gap-2">
-              <Upload className="h-4 w-4 text-primary" /> Bulk Upload (Excel/CSV)
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              Columns expected: Day, StartTime, EndTime, Subject, Room, Faculty, Section (optional — supports multiple sections in one file)
-            </p>
-            <Input type="file" accept=".xlsx,.xls,.csv" onChange={handleFileUpload} disabled={uploading} />
-            {importMessage && <p className="text-sm">{importMessage}</p>}
-          </div>
-
+          <div className="flex items-center justify-between">
+  <h3 className="font-semibold text-sm flex items-center gap-2">
+    <Upload className="h-4 w-4 text-primary" /> Bulk Upload (Excel/CSV)
+  </h3>
+  <button onClick={downloadTemplate} className="text-xs text-primary underline flex items-center gap-1">
+    <Download className="h-3 w-3" /> Download Template
+  </button>
+</div>
+<p className="text-xs text-muted-foreground">
+  Columns: Day, StartTime, EndTime, Subject, Room, Faculty, Section (multiple sections supported in one file — the selected Branch/Semester above applies to all rows)
+</p>
+<Input type="file" accept=".xlsx,.xls,.csv" onChange={handleFileUpload} disabled={uploading} />
+{importMessage && <p className="text-sm">{importMessage}</p>}
           {/* Preview */}
           {parsedRows && (
             <div className="rounded-xl border bg-card p-4 space-y-3">

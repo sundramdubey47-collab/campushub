@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { nowHHMM, todayMidnight } from "@/lib/time-utils"
+import { getISTParts, getISTMidnightUTC, normalizeHHMM } from "@/lib/time-utils"
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -20,10 +20,9 @@ export async function POST(req: Request) {
   const slot = await prisma.timetableSlot.findUnique({ where: { id: Number(timetableSlotId) } })
   if (!slot) return NextResponse.json({ error: "Class slot not found" }, { status: 404 })
 
-  // Sirf shuru ho chuki classes ki attendance maark ho sakti hai
-  const currentTime = nowHHMM()
-  const today = new Date().getDay()
-  if (slot.dayOfWeek === today && slot.startTime > currentTime) {
+  const { hhmm: currentTime, dayOfWeek } = getISTParts()
+  const slotStart = normalizeHHMM(slot.startTime)
+  if (slot.dayOfWeek === dayOfWeek && slotStart > currentTime) {
     return NextResponse.json({ error: "This class hasn't started yet" }, { status: 400 })
   }
 
@@ -32,14 +31,14 @@ export async function POST(req: Request) {
       studentId_timetableSlotId_date: {
         studentId: dbUser.id,
         timetableSlotId: Number(timetableSlotId),
-        date: todayMidnight(),
+        date: getISTMidnightUTC(),
       },
     },
     update: { status },
     create: {
       studentId: dbUser.id,
       timetableSlotId: Number(timetableSlotId),
-      date: todayMidnight(),
+      date: getISTMidnightUTC(),
       status,
     },
   })
