@@ -138,7 +138,7 @@ export default function ListingDetailPage() {
   text={`Check out "${listing.title}" on CampusHub Marketplace`}
   url={typeof window !== "undefined" ? window.location.href : ""}
 />
-      <div className="space-y-3">
+      <div className="space-y-3 pb-16">
         <h2 className="font-semibold">Chat (Price Negotiation)</h2>
 
         <div className="border rounded-lg p-3 h-64 overflow-y-auto space-y-2">

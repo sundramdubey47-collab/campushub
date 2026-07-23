@@ -18,7 +18,7 @@ const quickLinks = [
   { href: "/marketplace", label: "Marketplace", icon: ShoppingBag },
   { href: "/rentals", label: "Rentals", icon: Package },
   { href: "/lost-found", label: "Lost & Found", icon: Search },
-  { href: "/tests", label: "AI Tests", icon: Brain },
+  { href: "/tests", label: "Tests Arena", icon: Brain, color: "oklch(0.55 0.15 278)"},
   { href: "/ai-assistant", label: "AI Assistant", icon: MessageCircle },
 ]
 

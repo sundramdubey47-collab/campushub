@@ -18,6 +18,11 @@ type Event = {
   seatLimit: number | null
   createdBy: { name: string }
   _count: { registrations: number }
+  organizerType?: string
+clubName?: string | null
+isPaid?: boolean
+feeAmount?: number | null
+feeNote?: string | null
 }
 
 const TYPE_STYLES: Record<string, string> = {
@@ -28,7 +33,10 @@ const TYPE_STYLES: Record<string, string> = {
   WORKSHOP: "bg-[oklch(0.55_0.15_278/0.15)] text-[oklch(0.4_0.15_278)]",
   COMPETITION: "bg-[oklch(0.6_0.18_25/0.15)] text-[oklch(0.45_0.18_25)]",
   OTHER: "bg-muted text-muted-foreground",
+  
 }
+
+
 
 function Countdown({ eventDate, endDate }: { eventDate: string; endDate: string | null }) {
   const [status, setStatus] = useState<{ text: string; state: "upcoming" | "live" | "ended" }>({
@@ -88,7 +96,7 @@ function Countdown({ eventDate, endDate }: { eventDate: string; endDate: string 
   )
 }
 
-export function EventCardClient({ event, canManage }: { event: Event; canManage: boolean }) {
+export function EventCardClient({ event, canManage, isOrganizer }: { event: Event; canManage: boolean; isOrganizer?: boolean }) {
   const [registered, setRegistered] = useState(false)
   const [qrImage, setQrImage] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -142,6 +150,16 @@ export function EventCardClient({ event, canManage }: { event: Event; canManage:
                 {event.type}
               </span>
             </div>
+            {event.organizerType === "CLUB" && (
+  <span className="inline-block mt-1 ml-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-[oklch(0.72_0.15_60/0.15)] text-[oklch(0.5_0.15_60)]">
+    {event.clubName || "Club Event"}
+  </span>
+)}
+{event.isPaid && (
+  <span className="inline-block mt-1 ml-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-[oklch(var(--premium)/0.15)] text-[oklch(var(--premium))]">
+    ₹{event.feeAmount}
+  </span>
+)}
           </div>
         </div>
 

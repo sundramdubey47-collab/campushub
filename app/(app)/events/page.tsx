@@ -31,6 +31,11 @@ export default async function EventsPage() {
     ["FACULTY", "ADMIN", "SUPER_ADMIN"].includes(
       dbUser?.role ?? ""
     )
+const myMemberships = await prisma.eventTeamMember.findMany({
+  where: { userId: dbUser?.id ?? 0 },
+  select: { eventId: true, role: true },
+})
+const organizerEventIds = new Set(myMemberships.filter((m) => m.role === "ORGANIZER").map((m) => m.eventId))
 
   const events = dbUser?.collegeId
     ? await prisma.event.findMany({
@@ -58,8 +63,14 @@ export default async function EventsPage() {
   eventDate: e.eventDate.toISOString(),
   endDate: e.endDate?.toISOString() ?? null,
   registrationDeadline: e.registrationDeadline?.toISOString() ?? null,
-}))
 
+  // 👇 Ye 5 fields add karo
+  organizerType: e.organizerType,
+  clubName: e.clubName,
+  isPaid: e.isPaid,
+  feeAmount: e.feeAmount,
+  feeNote: e.feeNote,
+}))
   return (
     <div className="space-y-8">
 
@@ -160,10 +171,11 @@ export default async function EventsPage() {
       <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
         {serializedEvents.map((event) => (
           <EventCardClient
-            key={event.id}
-            event={event}
-            canManage={canCreate}
-          />
+  key={event.id}
+  event={event}
+  canManage={canCreate}
+  isOrganizer={organizerEventIds.has(event.id)}
+/>
         ))}
       </div>
 

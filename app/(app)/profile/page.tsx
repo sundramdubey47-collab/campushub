@@ -133,6 +133,7 @@ export default async function ProfilePage() {
           Semester {dbUser.semester.number}
         </span>
       )}
+      {dbUser.section && <span className="text-[10px] bg-muted px-2 py-0.5 rounded-full">Section {dbUser.section}</span>}
 
     </div>
   </div>

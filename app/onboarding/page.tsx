@@ -683,7 +683,7 @@ text-sm
 
 
               <Input
-                placeholder="Your Section (e.g. A, B, C) — optional"
+                placeholder="Your Section (e.g. A, B, C)"
                 value={section}
                 onChange={(e) => setSection(e.target.value.toUpperCase())}
               />

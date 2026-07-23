@@ -39,6 +39,7 @@ model College {
   listings Listing[]
   lostFoundItems LostFoundItem[]
   resourceRequests ResourceRequest[]
+  campusChatMessages CampusChatMessage[]
   rentalItems RentalItem[]
   tests Test[]
   timetableSlots TimetableSlot[]
@@ -160,6 +161,7 @@ model User {
   comments  Comment[]
   postedNotices Notice[] @relation("PostedNotices")
   createdEvents Event[] @relation("CreatedEvents")
+  eventTeamMemberships EventTeamMember[] @relation("EventTeamMemberships")
   eventRegistrations EventRegistration[]
   sellerListings Listing[] @relation("SellerListings")
   wishlist       Wishlist[]
@@ -172,6 +174,7 @@ model User {
   feedbacks Feedback[]
   reports Report[]
   resourceRequests ResourceRequest[] @relation("RequestedResources")
+  campusChatMessages CampusChatMessage[]
   lastSeenNotificationsAt DateTime?
   chatSessions ChatSession[]
   createdTests   Test[]
@@ -321,6 +324,15 @@ enum EventType {
   COMPETITION
   OTHER
 }
+enum EventOrganizerType {
+  COLLEGE
+  CLUB
+}
+
+enum EventTeamRole {
+  ORGANIZER
+  VOLUNTEER
+}
 
 model Event {
   id            Int       @id @default(autoincrement())
@@ -329,6 +341,13 @@ model Event {
   type          EventType @default(OTHER)
   venue         String?
   bannerUrl     String?
+
+  organizerType EventOrganizerType @default(COLLEGE)
+  clubName      String?
+
+  isPaid        Boolean   @default(false)
+  feeAmount     Int?
+  feeNote       String?
 
   eventDate     DateTime
   endDate       DateTime?
@@ -345,6 +364,21 @@ model Event {
   college       College   @relation(fields: [collegeId], references: [id])
 
   registrations EventRegistration[]
+  team          EventTeamMember[]
+}
+
+model EventTeamMember {
+  id        Int           @id @default(autoincrement())
+  role      EventTeamRole @default(VOLUNTEER)
+  createdAt DateTime      @default(now())
+
+  eventId   Int
+  event     Event         @relation(fields: [eventId], references: [id])
+
+  userId    Int
+  user      User          @relation("EventTeamMemberships", fields: [userId], references: [id])
+
+  @@unique([eventId, userId])
 }
 
 model EventRegistration {
@@ -828,4 +862,17 @@ model ClassNotificationLog {
   createdAt       DateTime @default(now())
 
   @@unique([timetableSlotId, date, type])
+}
+model CampusChatMessage {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+
+  collegeId Int
+  college   College  @relation(fields: [collegeId], references: [id])
+
+  @@index([collegeId, createdAt])
 }

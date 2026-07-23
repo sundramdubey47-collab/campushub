@@ -14,9 +14,18 @@ export async function POST(
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
 
-  if (!dbUser || !["FACULTY", "ADMIN", "SUPER_ADMIN"].includes(dbUser.role)) {
-    return NextResponse.json({ error: "Permission nahi hai" }, { status: 403 })
-  }
+  if (!dbUser) {
+  return NextResponse.json({ error: "Login is required" }, { status: 401 })
+}
+
+const isCollegeStaff = ["FACULTY", "ADMIN", "SUPER_ADMIN"].includes(dbUser.role)
+const teamMembership = await prisma.eventTeamMember.findUnique({
+  where: { eventId_userId: { eventId: Number(id), userId: dbUser.id } },
+})
+
+if (!isCollegeStaff && !teamMembership) {
+  return NextResponse.json({ error: "You don't have permission to scan for this event" }, { status: 403 })
+}
 
   const { id } = await params
   const body = await req.json()

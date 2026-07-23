@@ -2,7 +2,7 @@ import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { SidebarNav } from "@/components/sidebar-nav"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { LogoutButton } from "@/components/logout-button"
+
 import { MobileNav } from "@/components/mobile-nav"
 import { CampusHubLogo } from "@/components/campushub-logo"
 import { UserMenu } from "@/components/user-menu"
@@ -70,9 +70,7 @@ export default async function AppLayout({
           <div className="ml-auto flex items-center gap-2">
             <NotificationBell />
             <ThemeToggle />
-            <div className="hidden md:block">
-              <LogoutButton />
-            </div>
+           
           </div>
         </header>
 

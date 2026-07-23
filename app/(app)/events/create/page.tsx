@@ -30,6 +30,11 @@ export default function CreateEventPage() {
   const [seatLimit, setSeatLimit] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+const [organizerType, setOrganizerType] = useState("COLLEGE")
+const [clubName, setClubName] = useState("")
+const [isPaid, setIsPaid] = useState(false)
+const [feeAmount, setFeeAmount] = useState("")
+const [feeNote, setFeeNote] = useState("")
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -54,6 +59,7 @@ export default function CreateEventPage() {
         endDate: endDate || null,
         registrationDeadline: registrationDeadline || null,
         seatLimit: seatLimit || null,
+        organizerType, clubName, isPaid, feeAmount, feeNote,
       }),
     })
 
@@ -94,6 +100,44 @@ export default function CreateEventPage() {
             options={TYPE_OPTIONS}
           />
         </div>
+
+<div className="space-y-2">
+  <Label>Organized By</Label>
+  <Combobox
+    placeholder="Choose..."
+    value={organizerType}
+    onChange={setOrganizerType}
+    options={[
+      { value: "COLLEGE", label: "College (Official)" },
+      { value: "CLUB", label: "Student Club" },
+    ]}
+  />
+</div>
+
+{organizerType === "CLUB" && (
+  <div className="space-y-2">
+    <Label>Club Name</Label>
+    <Input value={clubName} onChange={(e) => setClubName(e.target.value)} placeholder="e.g. Coding Club" />
+  </div>
+)}
+
+<div className="flex items-center gap-2">
+  <input type="checkbox" id="isPaid" checked={isPaid} onChange={(e) => setIsPaid(e.target.checked)} />
+  <Label htmlFor="isPaid">This is a paid event</Label>
+</div>
+
+{isPaid && (
+  <>
+    <div className="space-y-2">
+      <Label>Fee Amount (₹)</Label>
+      <Input type="number" value={feeAmount} onChange={(e) => setFeeAmount(e.target.value)} />
+    </div>
+    <div className="space-y-2">
+      <Label>Payment Instructions</Label>
+      <Input value={feeNote} onChange={(e) => setFeeNote(e.target.value)} placeholder="e.g. Pay in cash at the registration desk" />
+    </div>
+  </>
+)}
 
         <div className="space-y-2">
           <Label>Venue</Label>
