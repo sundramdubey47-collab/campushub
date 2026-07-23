@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { PageHeader } from "@/components/page-header"
 import { MessageCircle, Send } from "lucide-react"
+import { BlockUserButton } from "@/components/block-user-button"
 
 type Message = {
   id: number
   content: string
   createdAt: string
+  userId: number
   user: { name: string }
 }
 
@@ -66,7 +68,7 @@ export default function CampusChatPage() {
   const myName = session?.user?.name
 
   return (
-    <div className="max-w-2xl h-[calc(100vh-8rem)] flex flex-col">
+    <div className="max-w-2xl h-[calc(100vh-8rem)] flex flex-col pb-16">
       <PageHeader title="Campus Chat" description="Chat with everyone from your college" />
 
       {error && <p className="text-xs text-red-500 mb-2">{error}</p>}
@@ -84,6 +86,9 @@ export default function CampusChatPage() {
               <div key={m.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
                 <div className={`max-w-[80%] rounded-lg px-3 py-2 ${isMe ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
                   <p className="text-[10px] font-semibold opacity-70 mb-0.5">{m.user.name}</p>
+                  {!isMe && (
+  <BlockUserButton targetUserId={m.userId} />
+)}
                   <p className="text-sm">{m.content}</p>
                 </div>
               </div>

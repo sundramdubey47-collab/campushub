@@ -132,6 +132,8 @@ model User {
   phone        String?  @unique
   section String?
   attendances Attendance[]
+  blockedUsers BlockedUser[] @relation("Blocker")
+  blockedByUsers BlockedUser[] @relation("Blocked")
   emailVerified DateTime?
   phoneVerified Boolean  @default(false)
   avatarUrl    String?
@@ -234,6 +236,7 @@ model Note {
   comments  Comment[]
   fulfillsRequests ResourceRequest[]
   coupons Coupon[]
+  @@index([universityId, courseId, semesterId])
 }
 model Coupon {
   id              Int      @id @default(autoincrement())
@@ -365,6 +368,8 @@ model Event {
 
   registrations EventRegistration[]
   team          EventTeamMember[]
+  @@index([collegeId, eventDate])
+
 }
 
 model EventTeamMember {
@@ -441,6 +446,7 @@ model Listing {
   wishlistedBy Wishlist[]
   messages     ChatMessage[]
   orders       Order[]
+  @@index([collegeId, status])
 }
 model ListingImage {
   id        Int      @id @default(autoincrement())
@@ -875,4 +881,16 @@ model CampusChatMessage {
   college   College  @relation(fields: [collegeId], references: [id])
 
   @@index([collegeId, createdAt])
+}
+model BlockedUser {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  blockerId Int
+  blocker   User     @relation("Blocker", fields: [blockerId], references: [id])
+
+  blockedId Int
+  blocked   User     @relation("Blocked", fields: [blockedId], references: [id])
+
+  @@unique([blockerId, blockedId])
 }

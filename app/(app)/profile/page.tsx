@@ -5,7 +5,7 @@ import { StatCard } from "@/components/stat-card"
 import { LogoutButton } from "@/components/logout-button"
 import { AvatarEdit } from "@/components/avatar-edit"
 import { Phone } from "lucide-react"
-
+import { DigitalIdCard } from "@/components/digital-id-card"
 import { ChevronRight, FileUp, Download, Ticket, ShoppingBag, Bookmark, Crown, Package, Mail, GraduationCap, ShieldCheck, Gift, } from "lucide-react"
 
 export default async function ProfilePage() {
@@ -136,6 +136,7 @@ export default async function ProfilePage() {
       {dbUser.section && <span className="text-[10px] bg-muted px-2 py-0.5 rounded-full">Section {dbUser.section}</span>}
 
     </div>
+    <DigitalIdCard />
   </div>
 </div>
 {!dbUser.isPremium && (

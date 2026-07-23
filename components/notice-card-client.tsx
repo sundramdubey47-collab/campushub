@@ -79,7 +79,7 @@ export function NoticeCardClient({ notice, canManage }: { notice: Notice; canMan
           <div className="pt-1">
             {isImage ? (
               <a href={notice.attachmentUrl} target="_blank" rel="noopener noreferrer">
-                <img src={notice.attachmentUrl} alt="Notice attachment" className="max-h-64 rounded-lg border object-contain" />
+               <img src={notice.attachmentUrl} alt="Notice attachment" className="w-full max-h-80 rounded-lg border object-contain bg-muted/20" />
               </a>
             ) : (
               <a href={notice.attachmentUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-primary underline underline-offset-2">

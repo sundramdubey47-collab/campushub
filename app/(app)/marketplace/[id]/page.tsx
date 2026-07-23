@@ -8,6 +8,7 @@ import { Heart, HeartOff } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { ReportButton } from "@/components/report-button"
 import { WhatsAppShare } from "@/components/whatsapp-share"
+import { BlockUserButton } from "@/components/block-user-button"
 
 type Listing = {
   id: number
@@ -88,7 +89,7 @@ export default function ListingDetailPage() {
     router.push("/marketplace")
   }
 
-  if (!listing) return <p className="text-muted-foreground">Load ho raha hai...</p>
+  if (!listing) return <p className="text-muted-foreground">Loading...</p>
 
   const isOwner = (session?.user as any)?.id === listing.seller.id.toString()
 
@@ -127,6 +128,7 @@ export default function ListingDetailPage() {
         {listing.price && <p className="text-xl font-bold">₹{listing.price}</p>}
         {listing.location && <p className="text-sm text-muted-foreground">Location: {listing.location}</p>}
         <p className="text-sm text-muted-foreground">Seller: {listing.seller.name}</p>
+       <BlockUserButton targetUserId={listing.seller.id} /> 
 <ReportButton type="LISTING" targetId={listing.id} />
         {error && <p className="text-sm text-red-500">{error}</p>}
 

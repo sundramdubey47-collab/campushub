@@ -8,10 +8,16 @@ import {
   MessageCircle, Brain, ArrowRight, Crown, Megaphone, BookOpen,
   Code2, Trophy, Zap, ChevronRight,
 } from "lucide-react"
-import { DashboardCarousel } from "@/components/dashboard-carousel"
 import Image from "next/image"
 import { NowInClass } from "@/components/now-in-class"
-import { TimetableLiveCard } from "@/components/timetable-live-card"
+import dynamic from "next/dynamic"
+
+const DashboardCarousel = dynamic(() => import("@/components/dashboard-carousel").then((m) => m.DashboardCarousel), {
+  loading: () => <div className="h-60 rounded-3xl bg-muted animate-pulse" />,
+})
+const TimetableLiveCard = dynamic(() => import("@/components/timetable-live-card").then((m) => m.TimetableLiveCard), {
+  loading: () => <div className="h-40 rounded-2xl bg-muted animate-pulse" />,
+})
 
 const quickLinks = [
   { href: "/notes", label: "Resources", icon: FileText },
@@ -19,7 +25,7 @@ const quickLinks = [
   { href: "/rentals", label: "Rentals", icon: Package },
   { href: "/lost-found", label: "Lost & Found", icon: Search },
   { href: "/tests", label: "Tests Arena", icon: Brain, color: "oklch(0.55 0.15 278)"},
-  { href: "/ai-assistant", label: "AI Assistant", icon: MessageCircle },
+{ href: "/ai-assistant", label: "24x7 Help", icon: MessageCircle, color: "oklch(0.55 0.13 145)" },
 ]
 
 const NOTICE_ICONS = [Megaphone, BookOpen, Code2]

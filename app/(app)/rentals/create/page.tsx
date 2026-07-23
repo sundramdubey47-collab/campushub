@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Combobox } from "@/components/combobox"
+import { ImageCropModal } from "@/components/image-crop-modal"
 
 const CATEGORY_OPTIONS = [
   { value: "BOOKS", label: "Books" },
@@ -36,6 +37,8 @@ export default function CreateRentalPage() {
   const [file, setFile] = useState<File | null>(null)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+const [cropModalOpen, setCropModalOpen] = useState(false)
+const [pendingFile, setPendingFile] = useState<File | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -108,12 +111,28 @@ export default function CreateRentalPage() {
 
         <div className="space-y-2">
           <Label>Photo</Label>
-          <Input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+<Input
+  type="file"
+  accept="image/*"
+  onChange={(e) => {
+    const f = e.target.files?.[0]
+    if (f) {
+      setPendingFile(f)
+      setCropModalOpen(true)
+    }
+  }}
+/>
         </div>
 
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? "Posting..." : "List"}
         </Button>
+        <ImageCropModal
+  file={pendingFile}
+  open={cropModalOpen}
+  onClose={() => setCropModalOpen(false)}
+  onCropped={(cropped) => setFile(cropped)}
+/>
       </form>
     </div>
   )

@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react"
 import { cn } from "@/lib/utils"
 import {
   LayoutDashboard, FileText, Bell, ShoppingBag, User, Calendar, Search,
-  Package, ShieldCheck, Crown, MessageCircle, Brain, Clock, CalendarCheck,
+  Package, ShieldCheck, Crown, MessageCircle, Brain, Clock, CalendarCheck, MessageSquare
 } from "lucide-react"
 
 const baseLinks = [
@@ -21,7 +21,7 @@ const baseLinks = [
   { href: "/timetable", label: "Timetable", icon: Clock },
   { href: "/attendance", label: "Attendance", icon: CalendarCheck },
   { href: "/tests", label: "Tests Arena", icon: Brain },
-  { href: "/ai-assistant", label: "AI Assistant", icon: MessageCircle },
+  { href: "/ai-assistant", label: "24x7 Help Center", icon: MessageCircle },
   { href: "/premium", label: "Premium", icon: Crown },
   { href: "/profile", label: "Profile", icon: User },
 ]
@@ -39,6 +39,7 @@ export function SidebarNav() {
   if (isAdmin || isFaculty) allLinks.push({ href: "/admin/timetable", label: "Manage Timetable", icon: Clock })
   if (isAdmin) allLinks.push({ href: "/admin", label: "Admin Panel", icon: ShieldCheck })
   if (isSuperAdmin) allLinks.push({ href: "/super-admin", label: "Super Admin", icon: Crown })
+if (isAdmin) allLinks.push({ href: "/admin/feedback", label: "Feedback Inbox", icon: MessageSquare })
 
   return (
     <nav className="flex flex-col gap-0.5 p-3 pb-6">

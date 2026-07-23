@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
 import { MessageSquarePlus, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -12,6 +12,12 @@ export function FeedbackButton() {
   const [message, setMessage] = useState("")
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [alreadyGiven, setAlreadyGiven] = useState(true)
+
+  useEffect(() => {
+    const given = localStorage.getItem(`ch_feedback_given:${pathname}`)
+    setAlreadyGiven(!!given)
+  }, [pathname])
 
   async function handleSubmit() {
     if (!message.trim()) return
@@ -26,19 +32,23 @@ export function FeedbackButton() {
     setLoading(false)
     setSubmitted(true)
     setMessage("")
+    localStorage.setItem(`ch_feedback_given:${pathname}`, "true")
 
     setTimeout(() => {
       setSubmitted(false)
       setOpen(false)
+      setAlreadyGiven(true)
     }, 1500)
   }
+
+  if (alreadyGiven) return null
 
   return (
     <div className="fixed bottom-20 right-4 z-40 sm:bottom-4">
       {open ? (
         <div className="w-72 rounded-xl border bg-card shadow-xl p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <p className="font-semibold text-sm">Got feedback or found a bug?</p>
+            <p className="font-semibold text-sm">Got feedback for this page?</p>
             <button onClick={() => setOpen(false)}>
               <X className="h-4 w-4 text-muted-foreground" />
             </button>
@@ -61,11 +71,7 @@ export function FeedbackButton() {
           )}
         </div>
       ) : (
-        <Button
-          size="icon"
-          className="rounded-full h-12 w-12 shadow-lg"
-          onClick={() => setOpen(true)}
-        >
+        <Button size="icon" className="rounded-full h-12 w-12 shadow-lg" onClick={() => setOpen(true)}>
           <MessageSquarePlus className="h-5 w-5" />
         </Button>
       )}

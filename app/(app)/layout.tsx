@@ -1,8 +1,11 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { MessageCircle } from "lucide-react"
 import { SidebarNav } from "@/components/sidebar-nav"
 import { ThemeToggle } from "@/components/theme-toggle"
-
+import { BackButton } from "@/components/back-button"
 import { MobileNav } from "@/components/mobile-nav"
 import { CampusHubLogo } from "@/components/campushub-logo"
 import { UserMenu } from "@/components/user-menu"
@@ -59,15 +62,22 @@ export default async function AppLayout({
       <div className="flex flex-1 flex-col min-w-0 min-h-0">
         {/* Navbar */}
         <header className="flex h-16 items-center gap-3 border-b px-4 shrink-0">
+          
           <div className="flex items-center gap-2 md:hidden">
+           
             <MobileNav />
           </div>
-
+ <BackButton />
           <div className="hidden sm:block flex-1 max-w-md">
   <GlobalSearch />
 </div>
 
           <div className="ml-auto flex items-center gap-2">
+            <Link href="/ai-assistant">
+  <Button variant="ghost" size="icon">
+    <MessageCircle className="h-4 w-4" />
+  </Button>
+</Link>
             <NotificationBell />
             <ThemeToggle />
            
@@ -75,7 +85,7 @@ export default async function AppLayout({
         </header>
 
         {/* Page content */}
-        <main className="flex-1 min-h-o overflow-y-auto overflow-x-hidden p-4 sm:p-6 pb-20 md:pb-6 overflow-x-hidden bg-muted/20">{children}</main>
+        <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 pb-20 md:pb-6 overflow-x-hidden bg-muted/20">{children}</main>
         <BottomNav />
         <FeedbackButton />
       </div>

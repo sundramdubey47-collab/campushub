@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Combobox } from "@/components/combobox"
+import { ImageCropModal } from "@/components/image-crop-modal"
 
 const CATEGORY_OPTIONS = [
   { value: "BOOKS", label: "Books" },
@@ -35,6 +36,8 @@ export default function CreateListingPage() {
 const [files, setFiles] = useState<File[]>([])
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+const [cropModalOpen, setCropModalOpen] = useState(false)
+const [pendingFile, setPendingFile] = useState<File | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -113,7 +116,13 @@ const [files, setFiles] = useState<File[]>([])
     type="file"
     accept="image/*"
     multiple
-    onChange={(e) => setFiles(Array.from(e.target.files ?? []).slice(0, 5))}
+   onChange={(e) => {
+  const f = e.target.files?.[0]
+  if (f) {
+    setPendingFile(f)
+    setCropModalOpen(true)
+  }
+}}
   />
   {files.length > 0 && (
     <p className="text-xs text-muted-foreground">{files.length} photo(s) selected</p>
@@ -122,6 +131,12 @@ const [files, setFiles] = useState<File[]>([])
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? "Posting..." : "List item"}
         </Button>
+        <ImageCropModal
+  file={pendingFile}
+  open={cropModalOpen}
+  onClose={() => setCropModalOpen(false)}
+  onCropped={(cropped) => setFiles((prev) => [cropped, ...prev.slice(1)])}
+/>
       </form>
     </div>
   )

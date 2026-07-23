@@ -325,7 +325,7 @@ text-sm
 
 <Bot className="h-4 w-4"/>
 
-CampusHub AI Assistant
+24x7 Help Center
 
 </div>
 
@@ -361,18 +361,13 @@ space-y-2
 
 
 <p>
-
-Namaste 👋  
-Main CampusHub AI Assistant hoon.
-
+Welcome 👋
+24x7 Help Center me aapka swagat hai.
 </p>
 
-
 <p>
-
-Padhai, coding, career ya CampusHub
-features ke baare me kuch bhi puch sakte ho.
-
+CampusHub, academics, events, notices, placements,
+marketplace ya kisi bhi college se related help ke liye yahan puch sakte ho.
 </p>
 
 
