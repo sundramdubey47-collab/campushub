@@ -47,6 +47,10 @@ const actualRevenue = registrations.filter((r: any) => r.paymentStatus === "SUCC
   totalCheckedIn,
   actualRevenue,
 },
-    event: { title: event.title, isPaid: event.isPaid, feeAmount: event.feeAmount },
+    event: {
+  title: event.title,
+  paymentType: event.paymentType,
+  feeAmount: event.feeAmount,
+}
   })
 }
