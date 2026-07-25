@@ -42,7 +42,11 @@ const totalCheckedIn = registrations.filter((r) => r.attended).length
 const actualRevenue = registrations.filter((r: any) => r.paymentStatus === "SUCCESS").length * (event.feeAmount ?? 0)
   return NextResponse.json({
     registrations,
-    stats: { totalRegistered, totalCheckedIn, estimatedRevenue },
+    stats: {
+  totalRegistered,
+  totalCheckedIn,
+  actualRevenue,
+},
     event: { title: event.title, isPaid: event.isPaid, feeAmount: event.feeAmount },
   })
 }
