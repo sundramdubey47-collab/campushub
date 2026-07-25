@@ -347,8 +347,7 @@ model Event {
 
   organizerType EventOrganizerType @default(COLLEGE)
   clubName      String?
-
-  isPaid        Boolean   @default(false)
+  paymentType   EventPaymentType @default(FREE)
   feeAmount     Int?
   feeNote       String?
 
@@ -386,11 +385,23 @@ model EventTeamMember {
   @@unique([eventId, userId])
 }
 
+enum RegistrationPaymentStatus {
+  NOT_APPLICABLE
+  PENDING
+  SUCCESS
+  FAILED
+}
+
 model EventRegistration {
   id          Int      @id @default(autoincrement())
   registeredAt DateTime @default(now())
   qrCode      String   @unique
   attended    Boolean  @default(false)
+
+  paymentStatus RegistrationPaymentStatus @default(NOT_APPLICABLE)
+  merchantTransactionId String? @unique
+  transactionId String?
+  amount        Int?
 
   userId      Int
   user        User     @relation(fields: [userId], references: [id])
@@ -399,6 +410,11 @@ model EventRegistration {
   event       Event    @relation(fields: [eventId], references: [id])
 
   @@unique([userId, eventId])
+}
+enum EventPaymentType {
+  FREE
+  CASH
+  ONLINE_PHONEPE
 }
 enum ListingType {
   SELL
@@ -872,6 +888,8 @@ model ClassNotificationLog {
 model CampusChatMessage {
   id        Int      @id @default(autoincrement())
   content   String
+  isEdited  Boolean  @default(false)
+  isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
 
   userId    Int

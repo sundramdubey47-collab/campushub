@@ -12,7 +12,7 @@ export async function GET() {
     where: { collegeId: dbUser.collegeId },
     orderBy: { createdAt: "desc" },
     take: 50,
-    include: { user: { select: { name: true } } },
+    include: { user: { select: { id: true, name: true } } },
   })
 
   return NextResponse.json(messages.reverse())
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
 
   const message = await prisma.campusChatMessage.create({
     data: { content, userId: dbUser.id, collegeId: dbUser.collegeId },
-    include: { user: { select: { name: true } } },
+    include: { user: { select: { id: true, name: true } } },
   })
 
   return NextResponse.json(message)

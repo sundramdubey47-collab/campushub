@@ -21,7 +21,7 @@ const baseLinks = [
   { href: "/timetable", label: "Timetable", icon: Clock },
   { href: "/attendance", label: "Attendance", icon: CalendarCheck },
   { href: "/tests", label: "Tests Arena", icon: Brain },
-  { href: "/ai-assistant", label: "24x7 Help Center", icon: MessageCircle },
+{ href: "/ai-assistant", label: "Study Buddy", icon: MessageCircle },
   { href: "/premium", label: "Premium", icon: Crown },
   { href: "/profile", label: "Profile", icon: User },
 ]

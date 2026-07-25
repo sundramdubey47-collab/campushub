@@ -76,18 +76,20 @@ export function NoticeCardClient({ notice, canManage }: { notice: Notice; canMan
         </div>
 
         {notice.attachmentUrl && (
-          <div className="pt-1">
-            {isImage ? (
-              <a href={notice.attachmentUrl} target="_blank" rel="noopener noreferrer">
-               <img src={notice.attachmentUrl} alt="Notice attachment" className="w-full max-h-80 rounded-lg border object-contain bg-muted/20" />
-              </a>
-            ) : (
-              <a href={notice.attachmentUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-primary underline underline-offset-2">
-                <Paperclip className="h-3.5 w-3.5" /> View Attachment
-              </a>
-            )}
-          </div>
-        )}
+  <div className="pt-1 -mx-4">
+    {isImage ? (
+      <a href={notice.attachmentUrl} target="_blank" rel="noopener noreferrer">
+        <img src={notice.attachmentUrl} alt="Notice attachment" className="w-full max-h-96 object-cover" />
+      </a>
+    ) : (
+      <div className="px-4">
+        <a href={notice.attachmentUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-primary underline underline-offset-2">
+          <Paperclip className="h-3.5 w-3.5" /> View Attachment
+        </a>
+      </div>
+    )}
+  </div>
+)}
 
         <div className="flex items-center justify-between pt-2 border-t border-dashed">
           <p className="text-[11px] text-muted-foreground">

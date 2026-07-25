@@ -35,6 +35,7 @@ const [clubName, setClubName] = useState("")
 const [isPaid, setIsPaid] = useState(false)
 const [feeAmount, setFeeAmount] = useState("")
 const [feeNote, setFeeNote] = useState("")
+const [paymentType, setPaymentType] = useState("FREE")
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -59,7 +60,7 @@ const [feeNote, setFeeNote] = useState("")
         endDate: endDate || null,
         registrationDeadline: registrationDeadline || null,
         seatLimit: seatLimit || null,
-        organizerType, clubName, isPaid, feeAmount, feeNote,
+        organizerType, clubName,paymentType, feeAmount, feeNote, 
       }),
     })
 
@@ -94,7 +95,7 @@ const [feeNote, setFeeNote] = useState("")
         <div className="space-y-2">
           <Label>Event Type</Label>
           <Combobox
-            placeholder="Type chuno..."
+            placeholder="Type ..."
             value={type}
             onChange={setType}
             options={TYPE_OPTIONS}
@@ -129,13 +130,32 @@ const [feeNote, setFeeNote] = useState("")
 {isPaid && (
   <>
     <div className="space-y-2">
-      <Label>Fee Amount (₹)</Label>
-      <Input type="number" value={feeAmount} onChange={(e) => setFeeAmount(e.target.value)} />
-    </div>
-    <div className="space-y-2">
-      <Label>Payment Instructions</Label>
-      <Input value={feeNote} onChange={(e) => setFeeNote(e.target.value)} placeholder="e.g. Pay in cash at the registration desk" />
-    </div>
+  <Label>Payment Type</Label>
+  <Combobox
+    placeholder="Choose..."
+    value={paymentType}
+    onChange={setPaymentType}
+    options={[
+      { value: "FREE", label: "Free" },
+      { value: "CASH", label: "Cash (pay at venue)" },
+      { value: "ONLINE_PHONEPE", label: "Online Payment (PhonePe)" },
+    ]}
+  />
+</div>
+
+{paymentType !== "FREE" && (
+  <div className="space-y-2">
+    <Label>Fee Amount (₹)</Label>
+    <Input type="number" value={feeAmount} onChange={(e) => setFeeAmount(e.target.value)} />
+  </div>
+)}
+
+{paymentType === "CASH" && (
+  <div className="space-y-2">
+    <Label>Payment Instructions</Label>
+    <Input value={feeNote} onChange={(e) => setFeeNote(e.target.value)} placeholder="e.g. Pay in cash at the registration desk" />
+  </div>
+)}
   </>
 )}
 

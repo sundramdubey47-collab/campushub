@@ -11,7 +11,6 @@ import {
   Calendar,
   Plus,
   Sparkles,
-  ArrowRight,
 } from "lucide-react"
 
 export default async function EventsPage() {
@@ -58,17 +57,15 @@ const organizerEventIds = new Set(myMemberships.filter((m) => m.role === "ORGANI
         },
       })
     : []
-
-  const serializedEvents = events.map((e) => ({
+const serializedEvents = events.map((e) => ({
   ...e,
   eventDate: e.eventDate.toISOString(),
   endDate: e.endDate?.toISOString() ?? null,
   registrationDeadline: e.registrationDeadline?.toISOString() ?? null,
 
-  // 👇 Ye 5 fields add karo
   organizerType: e.organizerType,
   clubName: e.clubName,
-  isPaid: e.isPaid,
+  paymentType: e.paymentType,
   feeAmount: e.feeAmount,
   feeNote: e.feeNote,
 }))
@@ -125,27 +122,6 @@ const organizerEventIds = new Set(myMemberships.filter((m) => m.role === "ORGANI
 
   </div>
 
-  {/* Event Count */}
-
-  <div className="flex items-center justify-between rounded-2xl border bg-card px-6 py-4">
-
-    <div>
-
-      <h2 className="font-semibold">
-        Upcoming Events
-      </h2>
-
-      <p className="text-sm text-muted-foreground">
-        {serializedEvents.length} event{serializedEvents.length !== 1 && "s"} available
-      </p>
-
-    </div>
-
-    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
-      <ArrowRight className="h-5 w-5 text-primary" />
-    </div>
-
-  </div>
     {serializedEvents.length === 0 ? (
     <div className="rounded-3xl border bg-card p-10">
       <EmptyState

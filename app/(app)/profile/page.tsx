@@ -7,6 +7,7 @@ import { AvatarEdit } from "@/components/avatar-edit"
 import { Phone } from "lucide-react"
 import { DigitalIdCard } from "@/components/digital-id-card"
 import { ChevronRight, FileUp, Download, Ticket, ShoppingBag, Bookmark, Crown, Package, Mail, GraduationCap, ShieldCheck, Gift, } from "lucide-react"
+import { ProfileQrTrigger } from "@/components/profile-qr-trigger"
 
 export default async function ProfilePage() {
   const session = await auth()
@@ -90,7 +91,7 @@ export default async function ProfilePage() {
 
   <div className="min-w-0 flex-1">
     <h1 className="text-xl font-bold truncate">
-      {dbUser.name}
+      {dbUser.name}   <ProfileQrTrigger />
     </h1>
 
     <p className="text-sm text-muted-foreground truncate">
@@ -136,7 +137,7 @@ export default async function ProfilePage() {
       {dbUser.section && <span className="text-[10px] bg-muted px-2 py-0.5 rounded-full">Section {dbUser.section}</span>}
 
     </div>
-    <DigitalIdCard />
+   
   </div>
 </div>
 {!dbUser.isPremium && (

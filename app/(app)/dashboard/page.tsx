@@ -6,7 +6,7 @@ import { timeAgo, daysUntil } from "@/lib/time-ago"
 import {
   Bell, Calendar, FileText, ShoppingBag, Package, Search,
   MessageCircle, Brain, ArrowRight, Crown, Megaphone, BookOpen,
-  Code2, Trophy, Zap, ChevronRight,
+  Code2, Trophy, Zap, ChevronRight, Clock
 } from "lucide-react"
 import Image from "next/image"
 import { NowInClass } from "@/components/now-in-class"
@@ -20,12 +20,13 @@ const TimetableLiveCard = dynamic(() => import("@/components/timetable-live-card
 })
 
 const quickLinks = [
-  { href: "/notes", label: "Resources", icon: FileText },
-  { href: "/marketplace", label: "Marketplace", icon: ShoppingBag },
-  { href: "/rentals", label: "Rentals", icon: Package },
-  { href: "/lost-found", label: "Lost & Found", icon: Search },
-  { href: "/tests", label: "Tests Arena", icon: Brain, color: "oklch(0.55 0.15 278)"},
-{ href: "/ai-assistant", label: "24x7 Help", icon: MessageCircle, color: "oklch(0.55 0.13 145)" },
+  { href: "/notes", label: "Resources", icon: FileText, color: "oklch(0.55 0.15 278)" },
+    { href: "/events", label: "Events", icon: Calendar },
+  { href: "/timetable", label: "Timetable", icon: Clock, color: "oklch(0.6 0.18 25)" },
+  { href: "/marketplace", label: "Marketplace", icon: ShoppingBag, color: "oklch(0.55 0.13 145)" },
+  { href: "/rentals", label: "Rentals", icon: Package, color: "oklch(0.72 0.15 60)" },
+  { href: "/lost-found", label: "Lost & Found", icon: Search, color: "oklch(0.6 0.18 25)" },
+  
 ]
 
 const NOTICE_ICONS = [Megaphone, BookOpen, Code2]

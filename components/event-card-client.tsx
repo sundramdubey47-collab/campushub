@@ -20,9 +20,10 @@ type Event = {
   _count: { registrations: number }
   organizerType?: string
 clubName?: string | null
-isPaid?: boolean
+
 feeAmount?: number | null
 feeNote?: string | null
+paymentType?: string
 }
 
 const TYPE_STYLES: Record<string, string> = {
@@ -111,21 +112,53 @@ export function EventCardClient({ event, canManage, isOrganizer }: { event: Even
       })
   }, [event.id])
 
-  async function handleRegister() {
-    setLoading(true)
-    setError("")
-    const res = await fetch(`/api/events/${event.id}/register`, { method: "POST" })
-    const data = await res.json()
-    setLoading(false)
+  async function handlePhonePeRegister() {
+  setLoading(true)
+  setError("")
 
-    if (!res.ok) {
-      setError(data.error)
-      return
-    }
-    setRegistered(true)
-    setQrImage(data.qrImage)
+  const res = await fetch("/api/payment/create-order", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ eventId: event.id }),
+  })
+
+  const data = await res.json()
+  setLoading(false)
+
+  if (!res.ok) {
+    setError(data.error)
+    return
   }
 
+  window.location.href = data.paymentUrl
+}
+async function handleRegister() {
+  setLoading(true)
+  setError("")
+
+  try {
+    const res = await fetch(`/api/events/${event.id}/register`, {
+      method: "POST",
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      setError(data.error || "Registration failed")
+      return
+    }
+
+    setRegistered(true)
+
+    if (data.qrImage) {
+      setQrImage(data.qrImage)
+    }
+  } catch (err) {
+    setError("Something went wrong")
+  } finally {
+    setLoading(false)
+  }
+}
   const seatsLeft = event.seatLimit ? event.seatLimit - event._count.registrations : null
   const seatsFull = seatsLeft === 0
   const dateObj = new Date(event.eventDate)
@@ -155,7 +188,7 @@ export function EventCardClient({ event, canManage, isOrganizer }: { event: Even
     {event.clubName || "Club Event"}
   </span>
 )}
-{event.isPaid && (
+{event.paymentType !== "FREE" && (
   <span className="inline-block mt-1 ml-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-[oklch(var(--premium)/0.15)] text-[oklch(var(--premium))]">
     ₹{event.feeAmount}
   </span>
@@ -201,16 +234,17 @@ export function EventCardClient({ event, canManage, isOrganizer }: { event: Even
 
         {!hasEnded && (
           <div className="pt-1 space-y-2">
-            {registered && qrImage ? (
-              <div className="flex items-center gap-3 rounded-xl border bg-muted/40 p-3">
-                <img src={qrImage} alt="QR Code" className="w-14 h-14 rounded-lg border bg-white shrink-0" />
-                <p className="text-xs text-[oklch(var(--success))] font-medium">You're in! ✅<br/><span className="text-muted-foreground font-normal">Show this QR code at entry</span></p>
-              </div>
-            ) : (
-              <Button size="sm" className="w-full" onClick={handleRegister} disabled={loading || seatsFull}>
-                {loading ? "Registering..." : seatsFull ? "Seats Full" : "Register Now"}
-              </Button>
-            )}
+            {!registered && (
+  event.paymentType === "ONLINE_PHONEPE" ? (
+    <Button size="sm" className="w-full" onClick={handlePhonePeRegister} disabled={loading}>
+      {loading ? "Redirecting..." : `Pay ₹${(event as any).feeAmount} & Register`}
+    </Button>
+  ) : (
+    <Button size="sm" className="w-full" onClick={handleRegister} disabled={loading || seatsFull}>
+      {loading ? "Registering..." : seatsFull ? "Seats Full" : "Register Now"}
+    </Button>
+  )
+)}
 
             <WhatsAppShare
               text={`Check out this event: "${event.title}" on CampusHub`}

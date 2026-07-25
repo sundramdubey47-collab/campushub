@@ -36,10 +36,10 @@ export async function GET(
     include: { user: { select: { name: true, email: true, phone: true } } },
   })
 
-  const totalRegistered = registrations.length
-  const totalCheckedIn = registrations.filter((r) => r.attended).length
-  const estimatedRevenue = event.isPaid && event.feeAmount ? event.feeAmount * totalRegistered : 0
-
+  const successfulPayments = registrations.filter((r: any) => r.paymentStatus === "SUCCESS" || r.paymentStatus === "NOT_APPLICABLE")
+const totalRegistered = successfulPayments.length
+const totalCheckedIn = registrations.filter((r) => r.attended).length
+const actualRevenue = registrations.filter((r: any) => r.paymentStatus === "SUCCESS").length * (event.feeAmount ?? 0)
   return NextResponse.json({
     registrations,
     stats: { totalRegistered, totalCheckedIn, estimatedRevenue },

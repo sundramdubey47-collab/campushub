@@ -3,14 +3,14 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
-import { Home, Calendar, FileText, MessageCircle, User } from "lucide-react"
+import { Home, Calendar, FileText, MessageCircle, User,Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
   { href: "/dashboard", label: "Home", icon: Home },
-  { href: "/events", label: "Events", icon: Calendar },
+   { href: "/timetable", label: "Timetable", icon: Clock, color: "oklch(0.6 0.18 25)" },
   { href: "/notes", label: "Resources", icon: FileText },
-  { href: "/ai-assistant", label: "Messages", icon: MessageCircle },
+  { href: "/chat", label: "Campus Chat", icon: MessageCircle, color: "oklch(0.55 0.13 145)" },
   { href: "/profile", label: "Profile", icon: User },
 ]
 

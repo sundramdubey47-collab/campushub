@@ -16,12 +16,13 @@ type Listing = {
   description: string | null
   category: string
   type: string
+  sellerId: number
   price: number | null
   imageUrl: string | null
   images: { id: number; imageUrl: string }[]
   location: string | null
   status: string
-  seller: { id: number; name: string }
+ seller: { id: number; name: string; phone: string | null }
 }
 
 type Message = {
@@ -34,8 +35,8 @@ type Message = {
 export default function ListingDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const { data: session } = useSession()
   const listingId = params.id
+const { data: session } = useSession()
 
   const [listing, setListing] = useState<Listing | null>(null)
   const [wishlisted, setWishlisted] = useState(false)
@@ -76,6 +77,11 @@ export default function ListingDetailPage() {
     setNewMessage("")
   }
 
+async function handleDelete() {
+  if (!confirm("Delete this listing permanently?")) return
+  const res = await fetch(`/api/listings/${listingId}`, { method: "DELETE" })
+  if (res.ok) router.push("/marketplace")
+}
   async function handleBuy() {
     setError("")
     const res = await fetch(`/api/listings/${listingId}/order`, { method: "POST" })
@@ -127,14 +133,22 @@ export default function ListingDetailPage() {
 
         {listing.price && <p className="text-xl font-bold">₹{listing.price}</p>}
         {listing.location && <p className="text-sm text-muted-foreground">Location: {listing.location}</p>}
-        <p className="text-sm text-muted-foreground">Seller: {listing.seller.name}</p>
-       <BlockUserButton targetUserId={listing.seller.id} /> 
+<p className="text-sm text-muted-foreground">Seller: {listing.seller.name}</p>
+{listing.seller.phone && (
+  <p className="text-sm text-muted-foreground">📞 {listing.seller.phone}</p>
+)}
+       <BlockUserButton targetUserId={listing.seller.id}/> 
 <ReportButton type="LISTING" targetId={listing.id} />
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {error && <p  className="text-sm text-red-500">{error}</p>}
 
         {!isOwner && listing.status === "AVAILABLE" && (
           <Button onClick={handleBuy}>Buy </Button>
         )}
+        {isOwner && (
+  <Button variant="outline" className="text-red-500 border-red-300" onClick={handleDelete}>
+    Delete Listing
+  </Button>
+)}
       </div>
 <WhatsAppShare
   text={`Check out "${listing.title}" on CampusHub Marketplace`}

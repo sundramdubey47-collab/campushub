@@ -27,6 +27,7 @@ type Item = {
   pricingType: string
   price: number
   securityDeposit: number
+  sellerId: number
   imageUrl: string | null
   owner: {
     name: string
