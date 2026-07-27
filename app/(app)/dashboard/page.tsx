@@ -9,8 +9,12 @@ import {
   Code2, Trophy, Zap, ChevronRight, Clock
 } from "lucide-react"
 import Image from "next/image"
+import { getISTGreeting } from "@/lib/time-utils"
 import { NowInClass } from "@/components/now-in-class"
 import dynamic from "next/dynamic"
+const DailyTriviaCard = dynamic(() => import("@/components/daily-trivia-card").then((m) => m.DailyTriviaCard), {
+  loading: () => <div className="h-40 rounded-2xl bg-muted animate-pulse" />,
+})
 
 const DashboardCarousel = dynamic(() => import("@/components/dashboard-carousel").then((m) => m.DashboardCarousel), {
   loading: () => <div className="h-60 rounded-3xl bg-muted animate-pulse" />,
@@ -95,9 +99,9 @@ export default async function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold flex items-center gap-1.5">
-            Hi {dbUser.name.split(" ")[0]} 👋
-          </h1>
+          <h1 className="text-xl font-bold tracking-tight">
+  {getISTGreeting()}, {dbUser.name.split(" ")[0]} 👋
+</h1>
           <p className="text-sm text-muted-foreground">Here's what's happening on campus today.</p>
         </div>
         <div className="flex flex-col items-center gap-1 shrink-0">
@@ -198,9 +202,10 @@ export default async function DashboardPage() {
           </Link>
         )}
       </div>
-
+<DailyTriviaCard />
       {/* Quick Access */}
       <div className="space-y-2">
+        
         <div className="flex items-center gap-2 px-1">
           <Zap className="h-4 w-4 text-primary" />
           <h2 className="font-semibold text-sm">Quick Access</h2>

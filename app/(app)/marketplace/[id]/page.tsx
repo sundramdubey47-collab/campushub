@@ -37,7 +37,7 @@ export default function ListingDetailPage() {
   const router = useRouter()
   const listingId = params.id
 const { data: session } = useSession()
-
+const [buying, setBuying] = useState(false)
   const [listing, setListing] = useState<Listing | null>(null)
   const [wishlisted, setWishlisted] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
@@ -82,18 +82,20 @@ async function handleDelete() {
   const res = await fetch(`/api/listings/${listingId}`, { method: "DELETE" })
   if (res.ok) router.push("/marketplace")
 }
-  async function handleBuy() {
-    setError("")
-    const res = await fetch(`/api/listings/${listingId}/order`, { method: "POST" })
-    const data = await res.json()
+async function handleBuy() {
+  setError("")
+  setBuying(true)
+  const res = await fetch(`/api/listings/${listingId}/order`, { method: "POST" })
+  const data = await res.json()
+  setBuying(false)
 
-    if (!res.ok) {
-      setError(data.error)
-      return
-    }
-
-    router.push("/marketplace")
+  if (!res.ok) {
+    setError(data.error)
+    return
   }
+
+  router.push("/marketplace")
+}
 
   if (!listing) return <p className="text-muted-foreground">Loading...</p>
 
@@ -141,9 +143,13 @@ async function handleDelete() {
 <ReportButton type="LISTING" targetId={listing.id} />
         {error && <p  className="text-sm text-red-500">{error}</p>}
 
-        {!isOwner && listing.status === "AVAILABLE" && (
-          <Button onClick={handleBuy}>Buy </Button>
-        )}
+        {!isOwner && (
+  listing.status === "AVAILABLE" ? (
+    <Button onClick={handleBuy} disabled={buying}>{buying ? "Processing..." : "Buy Now"}</Button>
+  ) : (
+    <Button disabled variant="outline">Item No Longer Available</Button>
+  )
+)}
         {isOwner && (
   <Button variant="outline" className="text-red-500 border-red-300" onClick={handleDelete}>
     Delete Listing

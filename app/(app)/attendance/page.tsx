@@ -3,7 +3,9 @@ import { prisma } from "@/lib/prisma"
 import { PageHeader } from "@/components/page-header"
 import { EmptyState } from "@/components/empty-state"
 import { AttendanceHistoryClient } from "@/components/attendance-history-client"
-import { CalendarCheck, TrendingUp } from "lucide-react"
+import { CalendarCheck, TrendingUp, ChevronLeft } from "lucide-react"
+import Link from "next/link"
+import { AttendanceRing } from "@/components/attendance-ring"
 
 export default async function AttendancePage() {
   const session = await auth()
@@ -57,11 +59,16 @@ export default async function AttendancePage() {
   return (
     <div className="max-w-2xl space-y-6">
       <PageHeader title="Attendance" description="Track your class attendance, subject by subject" />
-
+<Link href="/timetable" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+  <ChevronLeft className="h-4 w-4" /> Back to Timetable
+</Link>
       {overallTotal === 0 ? (
         <EmptyState icon={CalendarCheck} title="No attendance marked yet" description="Mark your attendance from the dashboard as classes happen" />
       ) : (
         <>
+        <div className="flex justify-center py-2">
+  <AttendanceRing percent={overallPercent} />
+</div>
           <div className="grid grid-cols-3 gap-3">
             <div className="rounded-xl border bg-card p-4 text-center space-y-1">
               <p className="text-2xl font-bold">{overallPercent}%</p>
@@ -86,16 +93,22 @@ export default async function AttendancePage() {
                 <div key={s.subject} className="rounded-xl border bg-card p-4 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="font-medium text-sm">{s.subject}</p>
-                    <span className={`text-sm font-bold ${s.percentage < 75 ? "text-red-500" : "text-[oklch(var(--success))]"}`}>
+<span
+  className="text-sm font-bold"
+  style={{ color: s.percentage >= 75 ? "oklch(var(--success))" : s.percentage >= 50 ? "oklch(0.72 0.15 60)" : "oklch(0.6 0.18 25)" }}
+>
                       {s.percentage}%
                     </span>
                   </div>
                   <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${s.percentage < 75 ? "bg-red-500" : "bg-[oklch(var(--success))]"}`}
-                      style={{ width: `${s.percentage}%` }}
-                    />
-                  </div>
+  <div
+    className="h-full rounded-full"
+    style={{
+      width: `${s.percentage}%`,
+      backgroundColor: s.percentage >= 75 ? "oklch(var(--success))" : s.percentage >= 50 ? "oklch(0.72 0.15 60)" : "oklch(0.6 0.18 25)",
+    }}
+  />
+</div>
                   <p className="text-xs text-muted-foreground">Present: {s.present} • Absent: {s.absent}</p>
                 </div>
               ))}

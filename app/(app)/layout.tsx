@@ -73,11 +73,6 @@ export default async function AppLayout({
 </div>
 
           <div className="ml-auto flex items-center gap-2">
-            <Link href="/ai-assistant">
-  <Button variant="ghost" size="icon">
-    <MessageCircle className="h-4 w-4" />
-  </Button>
-</Link>
             <NotificationBell />
             <ThemeToggle />
            

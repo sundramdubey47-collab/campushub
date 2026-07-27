@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-
+import { ChevronLeft } from "lucide-react"
 import {
   Select,
   SelectContent,
@@ -264,8 +264,15 @@ font-bold
           </div>
 
         </div>
+        
         {/* RIGHT FORM */}
 
+<button
+  onClick={() => router.back()}
+  className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
+>
+  <ChevronLeft className="h-4 w-4" /> Back
+</button>
         <div className="
 bg-background
 border

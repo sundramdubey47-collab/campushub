@@ -159,81 +159,43 @@ async function verifyOTP(){
   }
 
 }
-  async function handleSubmit(e:React.FormEvent){
+ async function handleSubmit(e: React.FormEvent) {
+  e.preventDefault()
+  setError("")
 
-    e.preventDefault()
-
-
-    if(honeypot){
-      return
-    }
-
-
-    setError("")
-
-    if(!otpVerified){
-
-  setError(
-    "Please verify your phone number first"
-  )
-
-  return
-
-}
-
-    if(!agreed){
-
-      setError(
-        "Please agree to Terms and Privacy Policy"
-      )
-
-      return
-    }
-
-
-    setLoading(true)
-
-console.log("Signup Token:", firebaseToken)
-    const res = await fetch("/api/signup",{
-
-      method:"POST",
-
-      headers:{
-        "Content-Type":"application/json"
-      },
-body:JSON.stringify({
-  name,
-  email,
-  phone,
-  password,
-  referralCode,
-  firebaseToken
-})
-    })
-
-
-    const data = await res.json()
-
-
-    setLoading(false)
-
-
-
-    if(!res.ok){
-
-      setError(data.error)
-
-      return
-
-    }
-
-
-    router.push("/login")
-
+  if (!agreed) {
+    setError("Please agree to the Terms and Privacy Policy to continue")
+    return
   }
 
+  setLoading(true)
 
+  const res = await fetch("/api/signup", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, email, password, referralCode }),
+  })
 
+  const data = await res.json()
+
+  if (!res.ok) {
+    setLoading(false)
+    setError(data.error)
+    return
+  }
+
+  // Signup ke turant baad automatically login bhi kar dete hain, taaki student
+  // seedha onboarding par pahunch jaaye bina dobara login form bhare
+  const loginResult = await signIn("credentials", { email, password, redirect: false })
+  setLoading(false)
+
+  if (loginResult?.error) {
+    router.push("/login")
+    return
+  }
+
+  router.push("/onboarding")
+}
 
   return (
 

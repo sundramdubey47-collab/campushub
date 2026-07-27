@@ -85,7 +85,6 @@ export default function CampusChatPage() {
   }
 
   function startPress(msg: Message) {
-    if (msg.user.id.toString() !== (session?.user as any)?.id) return
     pressTimer.current = setTimeout(() => setActiveMenuId(msg.id), 500)
   }
 
@@ -142,24 +141,32 @@ export default function CampusChatPage() {
                   onPointerLeave={cancelPress}
                 >
                   {!isMe && <p className="text-[10px] font-semibold opacity-70 mb-0.5">{m.user.name}</p>}
-                  <p className="text-sm whitespace-pre-wrap">{m.content}</p>
+                  <p className={`text-[9px] mt-0.5 ${isMe ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+  {new Date(m.createdAt).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", hour12: true })}
+</p>
                   {m.isEdited && <p className="text-[9px] opacity-60 mt-0.5">edited</p>}
-                  {!isMe && <div className="mt-1"><BlockUserButton targetUserId={m.user.id} /></div>}
                 </div>
-
-                {activeMenuId === m.id && isMe && (
-                  <div className="absolute -top-9 right-0 flex gap-1 rounded-lg border bg-card shadow-lg p-1 z-10">
-                    <button onClick={() => startEdit(m)} className="p-1.5 hover:bg-muted rounded">
-                      <Pencil className="h-3.5 w-3.5" />
-                    </button>
-                    <button onClick={() => deleteMessage(m.id)} className="p-1.5 hover:bg-muted rounded text-red-500">
-                      <Trash2 className="h-3.5 w-3.5" />
+                {activeMenuId === m.id && !isMe && (
+                  <div className="absolute -top-9 left-0 flex gap-1 rounded-lg border bg-card shadow-lg p-1 z-10">
+                    <button
+                      onClick={async () => {
+                        await fetch("/api/block-user", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ targetUserId: m.user.id }),
+                        })
+                        setActiveMenuId(null)
+                      }}
+                      className="px-2 py-1.5 text-xs hover:bg-muted rounded flex items-center gap-1 text-red-500"
+                    >
+                      Block User
                     </button>
                     <button onClick={() => setActiveMenuId(null)} className="p-1.5 hover:bg-muted rounded">
                       <X className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 )}
+
               </div>
             )
           })

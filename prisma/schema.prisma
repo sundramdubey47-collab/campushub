@@ -134,6 +134,8 @@ model User {
   attendances Attendance[]
   blockedUsers BlockedUser[] @relation("Blocker")
   blockedByUsers BlockedUser[] @relation("Blocked")
+  triviaAttempts TriviaAttempt[]
+  userStreak     UserStreak?
   emailVerified DateTime?
   phoneVerified Boolean  @default(false)
   avatarUrl    String?
@@ -911,4 +913,37 @@ model BlockedUser {
   blocked   User     @relation("Blocked", fields: [blockedId], references: [id])
 
   @@unique([blockerId, blockedId])
+}
+model DailyTrivia {
+  id        Int      @id @default(autoincrement())
+  question  String
+  options   Json
+  correctIndex Int
+  date      DateTime @unique
+  createdAt DateTime @default(now())
+  attempts TriviaAttempt[]
+}
+
+model TriviaAttempt {
+  id        Int      @id @default(autoincrement())
+  isCorrect Boolean
+  createdAt DateTime @default(now())
+
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+
+  triviaId  Int
+  trivia    DailyTrivia @relation(fields: [triviaId], references: [id])
+
+  @@unique([userId, triviaId])
+}
+
+model UserStreak {
+  id            Int      @id @default(autoincrement())
+  currentStreak Int      @default(0)
+  bestStreak    Int      @default(0)
+  lastPlayedDate DateTime?
+
+  userId        Int      @unique
+  user          User     @relation(fields: [userId], references: [id])
 }

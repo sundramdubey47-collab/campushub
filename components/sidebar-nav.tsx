@@ -6,13 +6,14 @@ import { useSession } from "next-auth/react"
 import { cn } from "@/lib/utils"
 import {
   LayoutDashboard, FileText, Bell, ShoppingBag, User, Calendar, Search,
-  Package, ShieldCheck, Crown, MessageCircle, Brain, Clock, CalendarCheck, MessageSquare
+  Package, ShieldCheck, Crown,HelpCircle, MessageCircle, Brain, Clock, CalendarCheck, MessageSquare
 } from "lucide-react"
 
 const baseLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/notes", label: "Resources", icon: FileText },
-  { href: "/notices", label: "Notices", icon: Bell },
+  { href: "/notes/requests", label: "Requests", icon: HelpCircle },
+  { href: "/notices", label: "Notice", icon: Bell },
   { href: "/chat", label: "Campus Chat", icon: MessageCircle },
   { href: "/events", label: "Events", icon: Calendar },
   { href: "/marketplace", label: "Marketplace", icon: ShoppingBag },
@@ -20,7 +21,7 @@ const baseLinks = [
   { href: "/lost-found", label: "Lost & Found", icon: Search },
   { href: "/timetable", label: "Timetable", icon: Clock },
   { href: "/attendance", label: "Attendance", icon: CalendarCheck },
-  { href: "/tests", label: "Tests Arena", icon: Brain },
+  { href: "/tests", label: "Test Arena", icon: Brain },
 { href: "/ai-assistant", label: "Study Buddy", icon: MessageCircle },
   { href: "/premium", label: "Premium", icon: Crown },
   { href: "/profile", label: "Profile", icon: User },

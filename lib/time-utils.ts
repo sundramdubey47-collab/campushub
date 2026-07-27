@@ -42,3 +42,12 @@ export function minutesBetween(hhmmA: string, hhmmB: string): number {
   const [hb, mb] = normalizeHHMM(hhmmB).split(":").map(Number)
   return (hb * 60 + mb) - (ha * 60 + ma)
 }
+export function getISTGreeting(): string {
+  const { hhmm } = getISTParts()
+  const hour = Number(hhmm.split(":")[0])
+
+  if (hour < 12) return "Good Morning"
+  if (hour < 17) return "Good Afternoon"
+  if (hour < 21) return "Good Evening"
+  return "Good Night"
+}
