@@ -105,12 +105,16 @@ const fulfillsRequestId = formData.get("fulfillsRequestId") as string
       subjectId: subjectId ? Number(subjectId) : null,
     },
   })
-
 if (fulfillsRequestId) {
   const req = await prisma.resourceRequest.update({
     where: { id: Number(fulfillsRequestId) },
-    data: { status: "FULFILLED", fulfilledAt: new Date(), fulfilledNoteId: note.id },
+    data: {
+      status: "FULFILLED",
+      fulfilledAt: new Date(),
+      fulfilledNoteId: note.id,
+    },
   })
+
   await notifyUser({
     userId: req.requestedById,
     type: "RESOURCE_FULFILLED",
@@ -119,7 +123,6 @@ if (fulfillsRequestId) {
     link: `/notes/${note.id}`,
   })
 }
-}
 
-  return NextResponse.json({ message: "Uploaded successfully", note })
+return NextResponse.json({ message: "Uploaded successfully", note })
 }
