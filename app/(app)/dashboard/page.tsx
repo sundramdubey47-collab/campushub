@@ -8,6 +8,7 @@ import {
   MessageCircle, Brain, ArrowRight, Crown, Megaphone, BookOpen,
   Code2, Trophy, Zap, ChevronRight, Clock
 } from "lucide-react"
+const CampusPulse = dynamic(() => import("@/components/campus-pulse").then((m) => m.CampusPulse))
 import Image from "next/image"
 import { getISTGreeting } from "@/lib/time-utils"
 import { NowInClass } from "@/components/now-in-class"
@@ -171,7 +172,7 @@ export default async function DashboardPage() {
           View All Announcements
         </Link>
       </div>
-
+<CampusPulse />
       {/* Upcoming Events */}
       <div className="rounded-2xl border bg-card p-4 space-y-3">
         <div className="flex items-center justify-between px-1">

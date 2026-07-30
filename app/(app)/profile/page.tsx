@@ -104,6 +104,11 @@ export default async function ProfilePage() {
     <span>{dbUser.phone}</span>
   </div>
 )}
+{!dbUser.emailVerified && (
+  <Link href="/verify-email" className="text-[10px] bg-red-500/10 text-red-500 px-2 py-0.5 rounded-full">
+    Verify Email
+  </Link>
+)}
     <div className="flex flex-wrap gap-2 pt-3">
 
       <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium">

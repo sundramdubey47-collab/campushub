@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { sendPushNotification } from "@/lib/notification-service"
+import { notifyUser } from "@/lib/notify"
 import { getISTParts, getISTMidnightUTC, minutesBetween, normalizeHHMM } from "@/lib/time-utils"
 
 export async function GET(req: Request) {
@@ -15,7 +15,6 @@ export async function GET(req: Request) {
   const todaySlots = await prisma.timetableSlot.findMany({ where: { dayOfWeek } })
 
   let notified = 0
-  const checked: any[] = []
 
   for (const slot of todaySlots) {
     const slotStart = normalizeHHMM(slot.startTime)
@@ -23,8 +22,6 @@ export async function GET(req: Request) {
     const minsToStart = minutesBetween(currentTime, slotStart)
     const isUpcoming = minsToStart > 0 && minsToStart <= 10
     const isLive = slotStart <= currentTime && slotEnd > currentTime
-
-    checked.push({ subject: slot.subjectName, slotStart, minsToStart, isUpcoming, isLive })
 
     if (!isUpcoming && !isLive) continue
 
@@ -49,17 +46,18 @@ export async function GET(req: Request) {
     })
 
     for (const student of students) {
-      await sendPushNotification({
+      await notifyUser({
         userId: student.id,
+        type: notifType === "UPCOMING" ? "CLASS_UPCOMING" : "CLASS_LIVE",
         title: notifType === "UPCOMING" ? "⏰ Class starting in 10 minutes" : "🔴 Class is live now",
         body: notifType === "UPCOMING"
           ? `${slot.subjectName} starts at ${slotStart}${slot.room ? ` in ${slot.room}` : ""}`
           : `${slot.subjectName} has started${slot.room ? ` in ${slot.room}` : ""}. Don't miss it!`,
-        url: "/dashboard",
+        link: "/dashboard",
       })
       notified++
     }
   }
 
-  return NextResponse.json({ success: true, notified, currentTime, dayOfWeek, checked })
+  return NextResponse.json({ success: true, notified })
 }

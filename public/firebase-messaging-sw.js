@@ -1,5 +1,6 @@
-importScripts("https://www.gstatic.com/firebasejs/12.16.0/firebase-app-compat.js");
-importScripts("https://www.gstatic.com/firebasejs/12.16.0/firebase-messaging-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js")
+importScripts("https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging-compat.js")
+
 
 firebase.initializeApp({
 
@@ -20,44 +21,25 @@ firebase.initializeApp({
 
 
 });
-const messaging = firebase.messaging();
+
+
+
+const messaging = firebase.messaging()
 
 messaging.onBackgroundMessage((payload) => {
-  console.log("[firebase-messaging-sw] Background Message:", payload);
+  const notificationTitle = payload.notification?.title || "CampusHub"
+  const notificationOptions = {
+    body: payload.notification?.body || "",
+    icon: "/icon-192.png",
+    badge: "/icon-192.png",
+    data: { url: payload.data?.url || "/dashboard" },
+  }
 
-  const notification = payload.notification || {};
-
-  self.registration.showNotification(
-    notification.title || "CampusHub",
-    {
-      body: notification.body || "",
-      icon: "/icon-192.png",
-      badge: "/icon-192.png",
-      data: payload.data || {},
-    }
-  );
-});
+  self.registration.showNotification(notificationTitle, notificationOptions)
+})
 
 self.addEventListener("notificationclick", (event) => {
-  event.notification.close();
-
-  const url = event.notification.data?.url || "/dashboard";
-
-  event.waitUntil(
-    clients.matchAll({
-      type: "window",
-      includeUncontrolled: true,
-    }).then((clientList) => {
-      for (const client of clientList) {
-        if ("focus" in client) {
-          client.navigate(url);
-          return client.focus();
-        }
-      }
-
-      if (clients.openWindow) {
-        return clients.openWindow(url);
-      }
-    })
-  );
-});
+  event.notification.close()
+  const url = event.notification.data?.url || "/dashboard"
+  event.waitUntil(clients.openWindow(url))
+})

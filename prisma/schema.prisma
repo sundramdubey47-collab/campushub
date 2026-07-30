@@ -136,6 +136,8 @@ model User {
   blockedByUsers BlockedUser[] @relation("Blocked")
   triviaAttempts TriviaAttempt[]
   userStreak     UserStreak?
+  notifications Notification[]
+  devices UserDevice[]
   emailVerified DateTime?
   phoneVerified Boolean  @default(false)
   avatarUrl    String?
@@ -185,7 +187,7 @@ model User {
   testAttempts   TestAttempt[]
   testPurchases  TestPurchase[]
   coupons Coupon[]
-  devices UserDevice[]
+ 
 }
 
 enum NoteCategory {
@@ -808,21 +810,7 @@ model ResourceRequest {
   fulfilledNoteId Int?
   fulfilledNote   Note?     @relation(fields: [fulfilledNoteId], references: [id])
 }
-model UserDevice {
-  id         Int      @id @default(autoincrement())
 
-  userId     Int
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  fcmToken   String   @unique
-  platform   String
-  deviceName String?
-
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@index([userId])
-}
 model TimetableSlot {
   id          Int      @id @default(autoincrement())
   dayOfWeek   Int
@@ -946,4 +934,43 @@ model UserStreak {
 
   userId        Int      @unique
   user          User     @relation(fields: [userId], references: [id])
+}
+enum NotificationType {
+  NOTICE
+  EVENT
+  MARKETPLACE
+  RENTAL
+  RESOURCE
+  RESOURCE_REQUEST
+  RESOURCE_FULFILLED
+  RENTAL_REQUEST
+  RENTAL_APPROVED
+  CLASS_UPCOMING
+  CLASS_LIVE
+  SYSTEM
+}
+
+model Notification {
+  id        Int              @id @default(autoincrement())
+  type      NotificationType
+  title     String
+  body      String
+  link      String?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  userId    Int
+  user      User             @relation(fields: [userId], references: [id])
+
+  @@index([userId, isRead, createdAt])
+}
+model UserDevice {
+  id        Int      @id @default(autoincrement())
+  fcmToken  String   @unique
+  createdAt DateTime @default(now())
+
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }

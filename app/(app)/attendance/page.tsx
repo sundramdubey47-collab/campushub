@@ -58,7 +58,12 @@ export default async function AttendancePage() {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <PageHeader title="Attendance" description="Track your class attendance, subject by subject" />
+     <div className="flex items-center gap-3">
+  <AttendanceRing percent={overallPercent} />
+  <div className="flex-1">
+    <PageHeader title="Attendance" description="Track your class attendance, subject by subject" />
+  </div>
+</div>
 <Link href="/timetable" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
   <ChevronLeft className="h-4 w-4" /> Back to Timetable
 </Link>
@@ -66,9 +71,7 @@ export default async function AttendancePage() {
         <EmptyState icon={CalendarCheck} title="No attendance marked yet" description="Mark your attendance from the dashboard as classes happen" />
       ) : (
         <>
-        <div className="flex justify-center py-2">
-  <AttendanceRing percent={overallPercent} />
-</div>
+      
           <div className="grid grid-cols-3 gap-3">
             <div className="rounded-xl border bg-card p-4 text-center space-y-1">
               <p className="text-2xl font-bold">{overallPercent}%</p>

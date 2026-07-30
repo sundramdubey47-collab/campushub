@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { adminMessaging } from "@/lib/firebase-admin"
 
 type NotificationPayload = {
   userId: number
@@ -13,41 +14,21 @@ export async function sendPushNotification({
   body,
   url = "/dashboard",
 }: NotificationPayload) {
-  const { adminMessaging } = await import("@/lib/firebase-admin")
-
-  const devices = await prisma.userDevice.findMany({
-    where: {
-      userId,
-    },
-  })
+  const devices = await prisma.userDevice.findMany({ where: { userId } })
 
   if (!devices.length) {
-    console.log("No registered devices found.")
+    console.log(`No registered devices for user ${userId}`)
     return
   }
 
   const tokens = devices.map((d) => d.fcmToken)
 
-  console.log("Sending notification to", tokens.length, "device(s)")
-
   const result = await adminMessaging.sendEachForMulticast({
     tokens,
-
-    notification: {
-      title,
-      body,
-    },
-
-    data: {
-      url,
-      click_action: "FLUTTER_NOTIFICATION_CLICK",
-    },
-
+    notification: { title, body },
+    data: { url },
     webpush: {
-      headers: {
-        Urgency: "high",
-      },
-
+      headers: { Urgency: "high" },
       notification: {
         title,
         body,
@@ -55,43 +36,15 @@ export async function sendPushNotification({
         badge: "/icon-192.png",
         requireInteraction: true,
       },
-
-      fcmOptions: {
-        link: url,
-      },
+      fcmOptions: { link: url },
     },
   })
 
-  console.log(
-    `Push Result: ${result.successCount} success, ${result.failureCount} failed`
-  )
-  console.log("FCM Responses:")
-
-result.responses.forEach((response, index) => {
-  console.log({
-    token: tokens[index],
-    success: response.success,
-    error: response.error?.code,
-    message: response.error?.message,
-  })
-})
-
-  // Remove invalid tokens automatically
+  // Invalid/expired tokens automatically hata dete hain
   for (let i = 0; i < result.responses.length; i++) {
     const response = result.responses[i]
-
-    if (
-      !response.success &&
-      response.error?.code ===
-        "messaging/registration-token-not-registered"
-    ) {
-      console.log("Removing invalid token:", tokens[i])
-
-      await prisma.userDevice.deleteMany({
-        where: {
-          fcmToken: tokens[i],
-        },
-      })
+    if (!response.success && response.error?.code === "messaging/registration-token-not-registered") {
+      await prisma.userDevice.deleteMany({ where: { fcmToken: tokens[i] } })
     }
   }
 }
@@ -109,47 +62,23 @@ export async function sendPushNotificationToCollege({
   body,
   url = "/dashboard",
 }: CollegeNotificationPayload) {
-  const { adminMessaging } = await import("@/lib/firebase-admin")
-
   const devices = await prisma.userDevice.findMany({
-    where: {
-      user: {
-        collegeId,
-      },
-    },
-    include: {
-      user: true,
-    },
+    where: { user: { collegeId } },
   })
 
   if (!devices.length) {
-    console.log("No registered devices found for this college.")
+    console.log(`No registered devices for college ${collegeId}`)
     return
   }
 
   const tokens = [...new Set(devices.map((d) => d.fcmToken))]
 
-  console.log(
-    `Sending notification to ${tokens.length} device(s) in college ${collegeId}`
-  )
-
   const result = await adminMessaging.sendEachForMulticast({
     tokens,
-
-    notification: {
-      title,
-      body,
-    },
-
-    data: {
-      url,
-    },
-
+    notification: { title, body },
+    data: { url },
     webpush: {
-      headers: {
-        Urgency: "high",
-      },
-
+      headers: { Urgency: "high" },
       notification: {
         title,
         body,
@@ -157,30 +86,14 @@ export async function sendPushNotificationToCollege({
         badge: "/icon-192.png",
         requireInteraction: true,
       },
-
-      fcmOptions: {
-        link: url,
-      },
+      fcmOptions: { link: url },
     },
   })
 
-  console.log(
-    `College Push Result: ${result.successCount} success, ${result.failureCount} failed`
-  )
-
   for (let i = 0; i < result.responses.length; i++) {
     const response = result.responses[i]
-
-    if (
-      !response.success &&
-      response.error?.code ===
-        "messaging/registration-token-not-registered"
-    ) {
-      await prisma.userDevice.deleteMany({
-        where: {
-          fcmToken: tokens[i],
-        },
-      })
+    if (!response.success && response.error?.code === "messaging/registration-token-not-registered") {
+      await prisma.userDevice.deleteMany({ where: { fcmToken: tokens[i] } })
     }
   }
 }

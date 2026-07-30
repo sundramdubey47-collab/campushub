@@ -6,26 +6,21 @@ import { PageHeader } from "@/components/page-header"
 import { EmptyState } from "@/components/empty-state"
 import { Bell, FileText, Calendar, ShoppingBag, Package, HelpCircle, CheckCircle2 } from "lucide-react"
 
-type NotifItem = { id: number; title: string; createdAt: string; type: string; link: string }
+type NotifItem = { id: number; title: string; body: string; createdAt: string; type: string; link: string | null; isRead: boolean }
 
 const ICONS: Record<string, any> = {
-  notice: Bell,
-  event: Calendar,
-  marketplace: ShoppingBag,
-  rental: Package,
-  resource: FileText,
-  request: HelpCircle,
-  fulfilled: CheckCircle2,
-}
-
-const CATEGORY_LABELS: Record<string, string> = {
-  notice: "Notice",
-  event: "Event",
-  marketplace: "Marketplace",
-  rental: "Rental",
-  resource: "Resource",
-  request: "Request",
-  fulfilled: "Fulfilled",
+  NOTICE: Bell,
+  EVENT: Calendar,
+  MARKETPLACE: ShoppingBag,
+  RENTAL: Package,
+  RENTAL_REQUEST: Package,
+  RENTAL_APPROVED: Package,
+  RESOURCE: FileText,
+  RESOURCE_REQUEST: HelpCircle,
+  RESOURCE_FULFILLED: CheckCircle2,
+  CLASS_UPCOMING: Bell,
+  CLASS_LIVE: Bell,
+  SYSTEM: Bell,
 }
 
 export default function NotificationsPage() {
@@ -33,13 +28,13 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch("/api/notifications")
+    fetch("/api/notifications-v2")
       .then((r) => r.json())
       .then((data) => {
         setItems(data.items)
         setLoading(false)
       })
-    fetch("/api/notifications/mark-seen", { method: "POST" })
+    fetch("/api/notifications-v2/mark-read", { method: "POST" })
   }, [])
 
   return (
@@ -55,17 +50,15 @@ export default function NotificationsPage() {
           {items.map((item) => {
             const Icon = ICONS[item.type] || Bell
             return (
-              <Link key={`${item.type}-${item.id}`} href={item.link}>
-                <div className="flex items-start gap-3 rounded-xl border bg-card p-4 hover:bg-muted/50 transition-colors">
+              <Link key={item.id} href={item.link || "/dashboard"}>
+                <div className={`flex items-start gap-3 rounded-xl border p-4 hover:bg-muted/50 transition-colors ${!item.isRead ? "bg-primary/5 border-primary/20" : "bg-card"}`}>
                   <div className="rounded-lg bg-primary/10 p-2 shrink-0">
                     <Icon className="h-4 w-4 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <span className="text-[9px] font-semibold uppercase tracking-wide text-primary bg-primary/10 px-1.5 py-0.5 rounded">
-                      {CATEGORY_LABELS[item.type] || "Update"}
-                    </span>
-                    <p className="text-sm font-medium mt-1">{item.title}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{new Date(item.createdAt).toLocaleString()}</p>
+                    <p className="text-sm font-medium">{item.title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{item.body}</p>
+                    <p className="text-[11px] text-muted-foreground mt-1">{new Date(item.createdAt).toLocaleString()}</p>
                   </div>
                 </div>
               </Link>

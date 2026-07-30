@@ -50,6 +50,5 @@ export async function GET() {
     current: current ? { ...current, markedStatus: markedMap[current.id] ?? null } : null,
     next: next ? { ...next, markedStatus: markedMap[next.id] ?? null } : null,
     following: following ? { ...following, markedStatus: markedMap[following.id] ?? null } : null,
-    _debug: { currentTime, dayOfWeek },
   })
 }

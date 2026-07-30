@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
+import { notifyUser } from "@/lib/notify"
 import { prisma } from "@/lib/prisma"
-import { sendPushNotification } from "@/lib/notification-service"
+
 
 export async function POST(
   req: Request,
@@ -82,13 +83,13 @@ const booking = await prisma.rentalBooking.create({
   },
 })
 
-await sendPushNotification({
-    userId: item.ownerId,
-    title: "📦 New Rental Request",
-    body: `${dbUser.name} wants to rent your "${item.title}". Check your requests.`,
-    url: "/rentals/my-bookings",
-  })
-
+await notifyUser({
+  userId: item.ownerId,
+  type: "RENTAL_REQUEST",
+  title: "📦 New Rental Request",
+  body: `${dbUser.name} wants to rent your "${item.title}"`,
+  link: "/rentals/my-bookings",
+})
   
 return NextResponse.json(booking)
 }

@@ -3,6 +3,7 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import cloudinary from "@/lib/cloudinary"
 import { validateFile, validateFileSignature, ALLOWED_DOCUMENT_TYPES } from "@/lib/file-validation"
+import { notifyUser } from "@/lib/notify"
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -106,10 +107,18 @@ const fulfillsRequestId = formData.get("fulfillsRequestId") as string
   })
 
 if (fulfillsRequestId) {
-  await prisma.resourceRequest.update({
+  const req = await prisma.resourceRequest.update({
     where: { id: Number(fulfillsRequestId) },
     data: { status: "FULFILLED", fulfilledAt: new Date(), fulfilledNoteId: note.id },
   })
+  await notifyUser({
+    userId: req.requestedById,
+    type: "RESOURCE_FULFILLED",
+    title: "🎉 Your request is fulfilled!",
+    body: `"${req.title}" is now available on CampusHub`,
+    link: `/notes/${note.id}`,
+  })
+}
 }
 
   return NextResponse.json({ message: "Uploaded successfully", note })

@@ -14,6 +14,8 @@ import { prisma } from "@/lib/prisma"
 import { GlobalSearch } from "@/components/global-search"
 import { FeedbackButton } from "@/components/feedback-button"
 import { BottomNav } from "@/components/bottom-nav"
+import { NotificationPermission } from "@/components/notification-permission"
+
 export default async function AppLayout({
   children,
 }: {
@@ -82,6 +84,7 @@ export default async function AppLayout({
         {/* Page content */}
         <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 pb-20 md:pb-6 overflow-x-hidden bg-muted/20">{children}</main>
         <BottomNav />
+        <NotificationPermission />
         <FeedbackButton />
       </div>
     </div>
