@@ -1,4 +1,5 @@
 import { initializeApp, getApps, cert } from "firebase-admin/app"
+import { getAuth } from "firebase-admin/auth"
 import { getMessaging } from "firebase-admin/messaging"
 
 function getAdminApp() {
@@ -11,7 +12,11 @@ function getAdminApp() {
       }),
     })
   }
+
   return getApps()[0]
 }
 
-export const adminMessaging = getMessaging(getAdminApp())
+const app = getAdminApp()
+
+export const adminAuth = getAuth(app)
+export const adminMessaging = getMessaging(app)
