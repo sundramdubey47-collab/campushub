@@ -967,7 +967,10 @@ model Notification {
 model UserDevice {
   id        Int      @id @default(autoincrement())
   fcmToken  String   @unique
+
+  platform  String?
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
