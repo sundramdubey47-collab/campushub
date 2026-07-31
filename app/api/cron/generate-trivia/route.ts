@@ -17,9 +17,17 @@ export async function GET(req: Request) {
 
   // Sabhi active branches (jinme kam se kam 1 student hai) ke liye alag-alag quiz banayenge
   const courses = await prisma.course.findMany({
-    where: { students: { some: {} } },
-    select: { id: true, name: true, departmentId: true },
-  })
+  where: { students: { some: {} } },
+  select: {
+    id: true,
+    name: true,
+    department: {
+      select: {
+        collegeId: true,
+      },
+    },
+  },
+})
 
   let generated = 0
 
@@ -51,7 +59,7 @@ Return ONLY a JSON array, no other text, in this exact format:
       await prisma.dailyTrivia.create({
         data: {
           date: today,
-          courseId: course.id,
+          collegeId: course.department.collegeId,
           question: JSON.stringify(questions), // Poore 5 questions yahan JSON string ki tarah store
           options: [],
           correctIndex: 0,
