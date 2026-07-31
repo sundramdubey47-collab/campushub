@@ -6,19 +6,22 @@ import { getISTDateString } from "@/lib/time-utils"
 export async function GET() {
   const session = await auth()
   const dbUser = await prisma.user.findUnique({ where: { email: session?.user?.email ?? "" } })
-  if (!dbUser?.collegeId) return NextResponse.json([])
+  if (!dbUser?.courseId) return NextResponse.json([])
 
   const today = new Date(`${getISTDateString()}T00:00:00.000Z`)
-  const trivia = await prisma.dailyTrivia.findUnique({ where: { date: today } })
+  const trivia = await prisma.dailyTrivia.findUnique({
+    where: { date_courseId: { date: today, courseId: dbUser.courseId } },
+  })
   if (!trivia) return NextResponse.json([])
 
-  // Aaj sahi answer dene wale, sबसे pehले answer karने walon ko upar rakhते hue
   const attempts = await prisma.triviaAttempt.findMany({
-    where: { triviaId: trivia.id, isCorrect: true, user: { collegeId: dbUser.collegeId } },
-    orderBy: { createdAt: "asc" },
-    take: 10,
+    where: { triviaId: trivia.id },
+    orderBy: [{ isCorrect: "desc" }, { createdAt: "asc" }],
+    take: 20,
     include: { user: { select: { name: true } } },
   })
 
-  return NextResponse.json(attempts.map((a, i) => ({ rank: i + 1, name: a.user.name, time: a.createdAt })))
+  return NextResponse.json(
+    attempts.map((a, i) => ({ rank: i + 1, name: a.user.name, isCorrect: a.isCorrect, time: a.createdAt }))
+  )
 }

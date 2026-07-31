@@ -134,18 +134,25 @@ export default function CampusChatPage() {
 
             return (
               <div key={m.id} className={`flex ${isMe ? "justify-end" : "justify-start"} relative`}>
-                <div
-                  className={`max-w-[80%] rounded-lg px-3 py-2 select-none ${isMe ? "bg-primary text-primary-foreground" : "bg-muted"}`}
-                  onPointerDown={() => startPress(m)}
-                  onPointerUp={cancelPress}
-                  onPointerLeave={cancelPress}
-                >
-                  {!isMe && <p className="text-[10px] font-semibold opacity-70 mb-0.5">{m.user.name}</p>}
-                  <p className={`text-[9px] mt-0.5 ${isMe ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-  {new Date(m.createdAt).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", hour12: true })}
-</p>
-                  {m.isEdited && <p className="text-[9px] opacity-60 mt-0.5">edited</p>}
-                </div>
+               <div
+  className={`max-w-[80%] rounded-lg px-3 py-1.5 select-none ${isMe ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted rounded-bl-sm"}`}
+  onPointerDown={() => startPress(m)}
+  onPointerUp={cancelPress}
+  onPointerLeave={cancelPress}
+>
+  {!isMe && (
+    <p className="text-[11px] font-semibold mb-0.5" style={{ color: "oklch(0.55 0.15 278)" }}>
+      {m.user.name}
+    </p>
+  )}
+  <p className="text-sm whitespace-pre-wrap break-words">{m.content}</p>
+  <div className="flex items-center justify-end gap-1 mt-0.5">
+    {m.isEdited && <span className={`text-[9px] ${isMe ? "text-primary-foreground/60" : "text-muted-foreground"}`}>edited</span>}
+    <span className={`text-[9px] ${isMe ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+      {new Date(m.createdAt).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", hour12: true })}
+    </span>
+  </div>
+</div>
                 {activeMenuId === m.id && !isMe && (
                   <div className="absolute -top-9 left-0 flex gap-1 rounded-lg border bg-card shadow-lg p-1 z-10">
                     <button

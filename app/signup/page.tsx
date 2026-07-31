@@ -83,12 +83,7 @@ const verifier = new RecaptchaVerifier(
 
     win.recaptchaVerifier = verifier
 
-    console.log("Phone sending:", phone)
-console.log("Firebase format:", `+91${phone}`)
-console.log("PHONE STATE:", phone)
-console.log("FINAL NUMBER:", `+91${phone}`)
-console.log("LENGTH:", phone.length)
-
+   
     const confirmation =
       await signInWithPhoneNumber(
         auth,
@@ -167,15 +162,24 @@ async function verifyOTP(){
     setError("Please agree to the Terms and Privacy Policy to continue")
     return
   }
-
+if (!otpVerified) {
+  setError("Please verify your phone number first")
+  return
+}
   setLoading(true)
 
-  const res = await fetch("/api/signup", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, email, password, referralCode }),
-  })
-
+const res = await fetch("/api/signup", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    name,
+    email,
+    phone,
+    password,
+    referralCode,
+    firebaseToken,
+  }),
+})
   const data = await res.json()
 
   if (!res.ok) {

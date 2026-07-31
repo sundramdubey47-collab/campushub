@@ -172,7 +172,7 @@ export default async function DashboardPage() {
           View All Announcements
         </Link>
       </div>
-<CampusPulse />
+
       {/* Upcoming Events */}
       <div className="rounded-2xl border bg-card p-4 space-y-3">
         <div className="flex items-center justify-between px-1">

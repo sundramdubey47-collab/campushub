@@ -79,7 +79,8 @@ model Course {
   notes        Note[]
   notices Notice[]
   timetableSlots TimetableSlot[]
-tests Test[]
+  tests Test[]
+  dailyTrivias DailyTrivia[]
   @@unique([departmentId, code])
 }
 
@@ -903,15 +904,19 @@ model BlockedUser {
   @@unique([blockerId, blockedId])
 }
 model DailyTrivia {
-  id        Int      @id @default(autoincrement())
-  question  String
-  options   Json
+  id           Int      @id @default(autoincrement())
+  question     String
+  options      Json
   correctIndex Int
-  date      DateTime @unique
-  createdAt DateTime @default(now())
-  attempts TriviaAttempt[]
-}
+  date         DateTime
+  courseId     Int
+  createdAt    DateTime @default(now())
 
+  course       Course   @relation(fields: [courseId], references: [id])
+  attempts     TriviaAttempt[]
+
+  @@unique([date, courseId])
+}
 model TriviaAttempt {
   id        Int      @id @default(autoincrement())
   isCorrect Boolean

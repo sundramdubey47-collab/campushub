@@ -135,30 +135,18 @@ export function EventCardClient({ event, canManage, isOrganizer }: { event: Even
 async function handleRegister() {
   setLoading(true)
   setError("")
+  const res = await fetch(`/api/events/${event.id}/register`, { method: "POST" })
+  const data = await res.json()
+  setLoading(false)
 
-  try {
-    const res = await fetch(`/api/events/${event.id}/register`, {
-      method: "POST",
-    })
-
-    const data = await res.json()
-
-    if (!res.ok) {
-      setError(data.error || "Registration failed")
-      return
-    }
-
-    setRegistered(true)
-
-    if (data.qrImage) {
-      setQrImage(data.qrImage)
-    }
-  } catch (err) {
-    setError("Something went wrong")
-  } finally {
-    setLoading(false)
+  if (!res.ok) {
+    setError(data.error)
+    return
   }
+  setRegistered(true)
+  setQrImage(data.qrImage)
 }
+
   const seatsLeft = event.seatLimit ? event.seatLimit - event._count.registrations : null
   const seatsFull = seatsLeft === 0
   const dateObj = new Date(event.eventDate)

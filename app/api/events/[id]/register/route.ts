@@ -11,7 +11,7 @@ export async function POST(
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login to continue" }, { status: 401 })
+    return NextResponse.json({ error: "Login is required" }, { status: 401 })
   }
 
   const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
@@ -28,15 +28,19 @@ export async function POST(
   })
 
   if (!event) {
-    return NextResponse.json({ error: "Event not Found" }, { status: 404 })
+    return NextResponse.json({ error: "Event not found" }, { status: 404 })
+  }
+
+  if (event.paymentType === "ONLINE_PHONEPE") {
+    return NextResponse.json({ error: "This event requires online payment. Please use the Pay & Register option." }, { status: 400 })
   }
 
   if (event.registrationDeadline && new Date() > event.registrationDeadline) {
-    return NextResponse.json({ error: "Oops! Registration already closed" }, { status: 400 })
+    return NextResponse.json({ error: "Registration is closed" }, { status: 400 })
   }
 
   if (event.seatLimit && event._count.registrations >= event.seatLimit) {
-    return NextResponse.json({ error: "Try next time, All seats are full" }, { status: 400 })
+    return NextResponse.json({ error: "All seats are full" }, { status: 400 })
   }
 
   const existing = await prisma.eventRegistration.findUnique({
@@ -44,13 +48,18 @@ export async function POST(
   })
 
   if (existing) {
-    return NextResponse.json({ error: "you are alredy register" }, { status: 400 })
+    return NextResponse.json({ error: "You are already registered for this event" }, { status: 400 })
   }
 
   const qrCode = crypto.randomBytes(16).toString("hex")
 
   const registration = await prisma.eventRegistration.create({
-    data: { userId: dbUser.id, eventId, qrCode },
+    data: {
+      userId: dbUser.id,
+      eventId,
+      qrCode,
+      paymentStatus: event.paymentType === "CASH" ? "NOT_APPLICABLE" : "NOT_APPLICABLE",
+    },
   })
 
   const qrImageDataUrl = await QRCode.toDataURL(qrCode)

@@ -20,6 +20,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json()
+    console.log("Signup body:", body)
     const parsed = signupSchema.safeParse(body)
 
     if (!parsed.success) {
@@ -119,7 +120,9 @@ emailVerified:new Date(),
 
    referredById,
  },
+ 
 })
+console.log("Created user:", user)
     return NextResponse.json(
       { message: "Account created successfully", userId: user.id },
       { status: 201 }
