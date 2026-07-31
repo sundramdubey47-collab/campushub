@@ -56,26 +56,26 @@ Return ONLY a JSON array, no other text, in this exact format:
       if (!Array.isArray(questions) || questions.length === 0) continue
 
       // Pehla question hi "aaj ka quiz" ban jaata hai (5 questions ek session me)
-      await prisma.dailyTrivia.create({
-        data: {
-          date: today,
-          collegeId: course.department.collegeId,
-          question: JSON.stringify(questions), // Poore 5 questions yahan JSON string ki tarah store
-          options: [],
-          correctIndex: 0,
-        },
-      })
+    await prisma.dailyTrivia.create({
+  data: {
+    date: today,
+    courseId: course.id,
+    question: JSON.stringify(questions),
+    options: [],
+    correctIndex: 0,
+  },
+})
 
       generated++
 
       // Us branch ke students ko notification
-      await notifyCollege({
-        collegeId: course.collegeId,
-        type: "QUIZ_LIVE",
-        title: "🧠 Today's Quiz is Live!",
-        body: `5 new questions for ${course.name} students — test your knowledge now!`,
-        link: "/dashboard",
-      })
+     await notifyCollege({
+  collegeId: course.department.collegeId,
+  type: "QUIZ_LIVE",
+  title: "🧠 Today's Quiz is Live!",
+  body: `5 new questions for ${course.name} students — test your knowledge now!`,
+  link: "/dashboard",
+})
     } catch (err) {
       console.error(`Trivia generation failed for course ${course.id}:`, err)
     }
