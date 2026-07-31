@@ -15,6 +15,7 @@ import { GlobalSearch } from "@/components/global-search"
 import { FeedbackButton } from "@/components/feedback-button"
 import { BottomNav } from "@/components/bottom-nav"
 import { NotificationPermission } from "@/components/notification-permission"
+import { ShowOnRootPage } from "@/components/show-on-root-page"
 
 export default async function AppLayout({
   children,
@@ -44,6 +45,7 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-screen overflow-hidden">
+      <ShowOnRootPage>
       <aside className="hidden md:flex w-64 flex-col border-r shrink-0">
   <div className="flex items-center gap-2 px-4 py-4 border-b shrink-0">
     <CampusHubLogo className="h-7 w-7" />
@@ -59,15 +61,16 @@ export default async function AppLayout({
           />
   </div>
 </aside>
-
+</ShowOnRootPage>
       {/* Main area */}
       <div className="flex flex-1 flex-col min-w-0 min-h-0">
         {/* Navbar */}
         <header className="flex h-16 items-center gap-3 border-b px-4 shrink-0">
           
           <div className="flex items-center gap-2 md:hidden">
-           
+           <ShowOnRootPage>
             <MobileNav />
+            </ShowOnRootPage>
           </div>
  <BackButton />
           <div className="hidden sm:block flex-1 max-w-md">
@@ -83,7 +86,9 @@ export default async function AppLayout({
 
         {/* Page content */}
         <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 pb-20 md:pb-6 overflow-x-hidden bg-muted/20">{children}</main>
+        <ShowOnRootPage>
         <BottomNav />
+        </ShowOnRootPage>
         <NotificationPermission />
         <FeedbackButton />
       </div>

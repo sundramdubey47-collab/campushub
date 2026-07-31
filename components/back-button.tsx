@@ -2,12 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation"
 import { ChevronLeft } from "lucide-react"
-
-const ROOT_PAGES = [
-  "/dashboard", "/notes", "/notices", "/events", "/marketplace",
-  "/rentals", "/lost-found", "/tests", "/ai-assistant", "/premium",
-  "/profile", "/timetable", "/attendance", "/chat", "/admin", "/super-admin",
-]
+import { ROOT_PAGES } from "@/components/show-on-root-page"
 
 export function BackButton() {
   const pathname = usePathname()

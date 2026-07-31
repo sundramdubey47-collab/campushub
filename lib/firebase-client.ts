@@ -28,7 +28,9 @@ export async function requestNotificationPermissionAndToken(): Promise<string | 
   const messaging = getMessaging(app)
 
   try {
-    const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js")
+    const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js", {
+      scope: "/firebase-cloud-messaging-push-scope",
+    })
     const token = await getToken(messaging, {
       vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
       serviceWorkerRegistration: registration,

@@ -18,7 +18,7 @@ export async function GET(req: Request) {
   // Sabhi active branches (jinme kam se kam 1 student hai) ke liye alag-alag quiz banayenge
   const courses = await prisma.course.findMany({
     where: { students: { some: {} } },
-    select: { id: true, name: true, collegeId: true, departmentId: true },
+    select: { id: true, name: true, departmentId: true },
   })
 
   let generated = 0

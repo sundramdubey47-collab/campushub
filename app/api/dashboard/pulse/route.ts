@@ -10,11 +10,12 @@ export async function GET() {
   const todayStart = new Date()
   todayStart.setHours(0, 0, 0, 0)
 
-  const [newNotes, testAttempts, chatMessages] = await Promise.all([
+  const [newNotes, testAttempts, chatMessages, newEvents] = await Promise.all([
     prisma.note.count({ where: { university: { colleges: { some: { id: dbUser.collegeId } } }, createdAt: { gte: todayStart } } }),
     prisma.testAttempt.count({ where: { user: { collegeId: dbUser.collegeId }, startedAt: { gte: todayStart } } }),
     prisma.campusChatMessage.count({ where: { collegeId: dbUser.collegeId, createdAt: { gte: todayStart } } }),
+    prisma.event.count({ where: { collegeId: dbUser.collegeId, createdAt: { gte: todayStart } } }),
   ])
 
-  return NextResponse.json({ newNotes, testAttempts, chatMessages })
+  return NextResponse.json({ newNotes, testAttempts, chatMessages, newEvents })
 }
