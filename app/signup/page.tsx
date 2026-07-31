@@ -62,27 +62,22 @@ const win = window as WindowWithRecaptcha
 
       return
     }
+if (!win.recaptchaVerifier) {
+  win.recaptchaVerifier = new RecaptchaVerifier(
+    auth,
+    "recaptcha-container",
+    {
+      size: "invisible",
+      callback: () => {
+        console.log("Recaptcha solved")
+      },
+    }
+  )
 
-if (win.recaptchaVerifier) {
-  win.recaptchaVerifier.clear()
-  win.recaptchaVerifier = null
+  await win.recaptchaVerifier.render()
 }
 
-const verifier = new RecaptchaVerifier(
-  auth,
-  "recaptcha-container",
-  {
-    size: "invisible",
-    callback: () => {
-      console.log("Recaptcha solved")
-    },
-  }
-)
-
-
-
-    win.recaptchaVerifier = verifier
-
+const verifier = win.recaptchaVerifier
    
     const confirmation =
       await signInWithPhoneNumber(
