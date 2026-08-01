@@ -104,9 +104,6 @@ export async function POST(req: Request) {
       role: "ORGANIZER",
     },
   })
-
-  return NextResponse.json(event)
-}
 await notifyCollege({
   collegeId: dbUser.collegeId,
   type: "EVENT",
@@ -115,6 +112,9 @@ await notifyCollege({
   link: "/events",
   excludeUserId: dbUser.id,
 })
+  return NextResponse.json(event)
+}
+
 export async function GET() {
   const session = await auth()
 
