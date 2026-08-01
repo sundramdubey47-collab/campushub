@@ -10,12 +10,19 @@ type NotifyParams = {
 }
 
 export async function notifyUser({ userId, type, title, body, link }: NotifyParams) {
-  await prisma.notification.create({
-    data: { userId, type: type as any, title, body, link: link || null },
-  })
+  try {
+    await prisma.notification.create({
+      data: { userId, type: type as any, title, body, link: link || null },
+    })
+  } catch (err) {
+    console.error("[notifyUser] Failed to save notification row:", err)
+  }
 
-  // Push notification bhi bhejte hain (agar device registered hai)
-  await sendPushNotification({ userId, title, body, url: link || "/dashboard" })
+  try {
+    await sendPushNotification({ userId, title, body, url: link || "/dashboard" })
+  } catch (err) {
+    console.error("[notifyUser] Failed to send push:", err)
+  }
 }
 
 export async function notifyCollege({
@@ -33,20 +40,28 @@ export async function notifyCollege({
   link?: string
   excludeUserId?: number
 }) {
-  const users = await prisma.user.findMany({
-    where: { collegeId, ...(excludeUserId ? { id: { not: excludeUserId } } : {}) },
-    select: { id: true },
-  })
+  try {
+    const users = await prisma.user.findMany({
+      where: { collegeId, ...(excludeUserId ? { id: { not: excludeUserId } } : {}) },
+      select: { id: true },
+    })
 
-  await prisma.notification.createMany({
-    data: users.map((u) => ({
-      userId: u.id,
-      type: type as any,
-      title,
-      body,
-      link: link || null,
-    })),
-  })
+    await prisma.notification.createMany({
+      data: users.map((u) => ({
+        userId: u.id,
+        type: type as any,
+        title,
+        body,
+        link: link || null,
+      })),
+    })
+  } catch (err) {
+    console.error("[notifyCollege] Failed to save notification rows:", err)
+  }
 
-  await sendPushNotificationToCollege({ collegeId, title, body, url: link || "/dashboard" })
+  try {
+    await sendPushNotificationToCollege({ collegeId, title, body, url: link || "/dashboard" })
+  } catch (err) {
+    console.error("[notifyCollege] Failed to send push:", err)
+  }
 }

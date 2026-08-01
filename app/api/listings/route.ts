@@ -48,7 +48,7 @@ export async function POST(req: Request) {
 
       const uploadResult = await new Promise<any>((resolve, reject) => {
         cloudinary.uploader
-          .upload_stream({ resource_type: "image", folder: "campushub-marketplace" }, (err, result) => {
+          .upload_stream({ resource_type: "image", folder: "campushub-marketplace" , quality:"auto:best"}, (err, result) => {
             if (err) reject(err)
             else resolve(result)
           })

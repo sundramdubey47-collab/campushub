@@ -14,14 +14,15 @@ export async function GET() {
   })
   if (!trivia) return NextResponse.json([])
 
+  // Sबसे zyada sahi jawab, फिर sबसे kam time — yahी sahi ranking hai
   const attempts = await prisma.triviaAttempt.findMany({
     where: { triviaId: trivia.id },
-    orderBy: [{ isCorrect: "desc" }, { createdAt: "asc" }],
+    orderBy: [{ score: "desc" }, { createdAt: "asc" }],
     take: 20,
     include: { user: { select: { name: true } } },
   })
 
   return NextResponse.json(
-    attempts.map((a, i) => ({ rank: i + 1, name: a.user.name, isCorrect: a.isCorrect, time: a.createdAt }))
+    attempts.map((a, i) => ({ rank: i + 1, name: a.user.name, score: (a as any).score, time: a.createdAt }))
   )
 }

@@ -920,6 +920,7 @@ model DailyTrivia {
 model TriviaAttempt {
   id        Int      @id @default(autoincrement())
   isCorrect Boolean
+  score     Int      @default(0)
   createdAt DateTime @default(now())
 
   userId    Int

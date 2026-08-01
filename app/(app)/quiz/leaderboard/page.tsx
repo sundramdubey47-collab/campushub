@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
 import { Trophy, ArrowLeft } from "lucide-react"
 
-type Entry = { rank: number; name: string; isCorrect: boolean; time: string }
+type Entry = { rank: number; name: string; score: number; time: string }
 
 const RANK_EMOJI: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" }
 
@@ -29,7 +28,7 @@ export default function QuizLeaderboardPage() {
       <div className="text-center space-y-1">
         <Trophy className="h-8 w-8 text-yellow-500 mx-auto" />
         <h1 className="text-xl font-bold">Today's Leaderboard</h1>
-        <p className="text-sm text-muted-foreground">Top scorers from your branch</p>
+        <p className="text-sm text-muted-foreground">Ranked by correct answers, then speed</p>
       </div>
 
       {loading ? (
@@ -46,13 +45,13 @@ export default function QuizLeaderboardPage() {
               }`}
             >
               <div className="flex items-center gap-3">
-                <span className="w-6 text-center font-bold">
+                <span className="w-6 text-center font-bold text-sm">
                   {RANK_EMOJI[entry.rank] || entry.rank}
                 </span>
                 <span className="text-sm font-medium">{entry.name}</span>
               </div>
-              <span className={`text-xs px-2 py-0.5 rounded-full ${entry.isCorrect ? "bg-[oklch(var(--success)/0.15)] text-[oklch(var(--success))]" : "bg-muted text-muted-foreground"}`}>
-                {entry.isCorrect ? "Passed" : "Tried"}
+              <span className="text-xs font-semibold text-primary">
+                {entry.score}/5
               </span>
             </div>
           ))}

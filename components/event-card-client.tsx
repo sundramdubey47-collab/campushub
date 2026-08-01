@@ -16,14 +16,21 @@ type Event = {
   endDate: string | null
   registrationDeadline: string | null
   seatLimit: number | null
-  createdBy: { name: string }
-  _count: { registrations: number }
-  organizerType?: string
-clubName?: string | null
 
-feeAmount?: number | null
-feeNote?: string | null
-paymentType?: string
+  createdBy: {
+    name: string
+  }
+
+  _count: {
+    registrations: number
+  }
+
+  organizerType?: string
+  clubName?: string | null
+
+  feeAmount?: number | null
+  feeNote?: string | null
+  paymentType?: string
 }
 
 const TYPE_STYLES: Record<string, string> = {
@@ -103,14 +110,28 @@ export function EventCardClient({ event, canManage, isOrganizer }: { event: Even
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
-  useEffect(() => {
-    fetch(`/api/events/${event.id}/register`)
-      .then((r) => r.json())
-      .then((d) => {
-        setRegistered(d.registered)
-        if (d.qrImage) setQrImage(d.qrImage)
-      })
-  }, [event.id])
+ useEffect(() => {
+  async function loadRegistration() {
+    try {
+      const res = await fetch(`/api/events/${event.id}/register`)
+
+      if (!res.ok) return
+
+      const data = await res.json()
+
+      setRegistered(data.registered)
+
+      if (data.qrImage) {
+        setQrImage(data.qrImage)
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  loadRegistration()
+}, [event.id])
+
 
   async function handlePhonePeRegister() {
   setLoading(true)
@@ -135,22 +156,42 @@ export function EventCardClient({ event, canManage, isOrganizer }: { event: Even
 async function handleRegister() {
   setLoading(true)
   setError("")
-  const res = await fetch(`/api/events/${event.id}/register`, { method: "POST" })
-  const data = await res.json()
-  setLoading(false)
 
-  if (!res.ok) {
-    setError(data.error)
-    return
+  try {
+    const res = await fetch(`/api/events/${event.id}/register`, { method: "POST" })
+    const data = await res.json()
+
+    if (!res.ok) {
+      console.error("[Event Register] API error:", data)
+      setError(data.error || "Registration failed. Please try again.")
+      setLoading(false)
+      return
+    }
+
+    if (!data.qrImage) {
+      console.error("[Event Register] No QR image in response:", data)
+      setError("Registered, but couldn't generate QR. Please refresh the page.")
+      setRegistered(true)
+      setLoading(false)
+      return
+    }
+
+    setRegistered(true)
+    setQrImage(data.qrImage)
+    setLoading(false)
+  } catch (err) {
+    console.error("[Event Register] Network/unexpected error:", err)
+    setError("Something went wrong. Check your internet connection and try again.")
+    setLoading(false)
   }
-  setRegistered(true)
-  setQrImage(data.qrImage)
 }
 
   const seatsLeft = event.seatLimit ? event.seatLimit - event._count.registrations : null
   const seatsFull = seatsLeft === 0
   const dateObj = new Date(event.eventDate)
-  const hasEnded = event.endDate ? Date.now() > new Date(event.endDate).getTime() : false
+ const hasEnded = event.endDate
+  ? Date.now() > new Date(event.endDate).getTime()
+  : Date.now() > new Date(event.eventDate).getTime()
 
   return (
     <div className={`group relative overflow-hidden rounded-2xl border bg-card shadow-sm hover:shadow-lg transition-shadow duration-300 ${hasEnded ? "opacity-60" : ""}`}>
@@ -222,16 +263,63 @@ async function handleRegister() {
 
         {!hasEnded && (
           <div className="pt-1 space-y-2">
-            {!registered && (
-  event.paymentType === "ONLINE_PHONEPE" ? (
-    <Button size="sm" className="w-full" onClick={handlePhonePeRegister} disabled={loading}>
-      {loading ? "Redirecting..." : `Pay ₹${(event as any).feeAmount} & Register`}
-    </Button>
+     
+{registered ? (
+  qrImage ? (
+    <div className="flex items-center gap-3 rounded-xl border bg-muted/40 p-3">
+      <img
+        src={qrImage}
+        alt="QR Code"
+        className="w-14 h-14 rounded-lg border bg-white"
+      />
+
+      <p className="text-xs text-[oklch(var(--success))] font-medium">
+        You're in! ✅
+        <br />
+        <span className="text-muted-foreground font-normal">
+          Show this QR code at entry
+        </span>
+      </p>
+    </div>
   ) : (
-    <Button size="sm" className="w-full" onClick={handleRegister} disabled={loading || seatsFull}>
-      {loading ? "Registering..." : seatsFull ? "Seats Full" : "Register Now"}
-    </Button>
+    <div className="rounded-xl border bg-muted/40 p-3 space-y-2">
+      <p className="text-xs text-[oklch(var(--success))] font-medium">
+        You're registered! ✅
+      </p>
+
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => window.location.reload()}
+      >
+        Refresh to see QR
+      </Button>
+    </div>
   )
+) : event.paymentType === "ONLINE_PHONEPE" ? (
+  <Button
+    size="sm"
+    className="w-full"
+    onClick={handlePhonePeRegister}
+    disabled={loading}
+  >
+    {loading
+      ? "Redirecting..."
+      : `Pay ₹${event.feeAmount ?? 0} & Register`}
+  </Button>
+) : (<Button
+    size="sm"
+    className="w-full"
+    onClick={handleRegister}
+    disabled={loading || seatsFull}
+  >
+    {loading
+      ? "Registering..."
+      : seatsFull
+      ? "Seats Full"
+      : "Register Now"}
+  </Button>
+  
 )}
 
             <WhatsAppShare

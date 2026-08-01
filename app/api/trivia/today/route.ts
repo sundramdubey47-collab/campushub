@@ -56,8 +56,8 @@ export async function POST(req: Request) {
   const isOverallCorrect = correctCount >= 3 // 5 me se 3+ sahi ho to "pass" mानते hain streak ke liye
 
   await prisma.triviaAttempt.create({
-    data: { userId: dbUser.id, triviaId: trivia.id, isCorrect: isOverallCorrect },
-  })
+  data: { userId: dbUser.id, triviaId: trivia.id, isCorrect: isOverallCorrect, score: correctCount },
+})
 
   const streak = await prisma.userStreak.findUnique({ where: { userId: dbUser.id } })
   let newStreak = 1

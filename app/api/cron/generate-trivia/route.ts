@@ -8,9 +8,13 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
 export async function GET(req: Request) {
   const authHeader = req.headers.get("authorization")
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const expectedHeader = `Bearer ${process.env.CRON_SECRET}`
+
+  if (authHeader !== expectedHeader) {
+    console.error("[Cron Auth Failed] Received:", authHeader?.slice(0, 15), "Expected prefix:", expectedHeader.slice(0, 15))
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
+  // ...baaki function same rahega
 
   const todayStr = getISTDateString()
   const today = new Date(`${todayStr}T00:00:00.000Z`)

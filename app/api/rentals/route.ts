@@ -46,7 +46,7 @@ if (fileError) {
 
     const uploadResult = await new Promise<any>((resolve, reject) => {
       cloudinary.uploader
-        .upload_stream({ resource_type: "image", folder: "campushub-rentals" }, (err, result) => {
+        .upload_stream({ resource_type: "image", folder: "campushub-rentals", quality: "auto:best" }, (err, result) => {
           if (err) reject(err)
           else resolve(result)
         })
