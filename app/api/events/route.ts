@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { notifyCollege } from "@/lib/notify"
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -106,7 +107,14 @@ export async function POST(req: Request) {
 
   return NextResponse.json(event)
 }
-
+await notifyCollege({
+  collegeId: dbUser.collegeId,
+  type: "EVENT",
+  title: "🎉 New Event Posted",
+  body: title,
+  link: "/events",
+  excludeUserId: dbUser.id,
+})
 export async function GET() {
   const session = await auth()
 

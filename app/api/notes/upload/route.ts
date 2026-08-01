@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import cloudinary from "@/lib/cloudinary"
 import { validateFile, validateFileSignature, ALLOWED_DOCUMENT_TYPES } from "@/lib/file-validation"
 import { notifyUser } from "@/lib/notify"
+import { notifyCollege } from "@/lib/notify"
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -105,6 +106,15 @@ const fulfillsRequestId = formData.get("fulfillsRequestId") as string
       subjectId: subjectId ? Number(subjectId) : null,
     },
   })
+  await notifyCollege({
+  collegeId: college.id,
+  type: "RESOURCE",
+  title: "📄 New Resource Uploaded",
+  body: `"${title}" is now available`,
+  link: `/notes/${note.id}`,
+  excludeUserId: dbUser.id,
+})
+
 if (fulfillsRequestId) {
   const req = await prisma.resourceRequest.update({
     where: { id: Number(fulfillsRequestId) },
@@ -123,6 +133,7 @@ if (fulfillsRequestId) {
     link: `/notes/${note.id}`,
   })
 }
+
 
 return NextResponse.json({ message: "Uploaded successfully", note })
 }

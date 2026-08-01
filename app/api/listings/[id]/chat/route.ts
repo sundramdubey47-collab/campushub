@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { notifyUser } from "@/lib/notify"
 
 export async function GET(
   req: Request,
@@ -41,6 +42,15 @@ export async function POST(
     data: { content, senderId: dbUser.id, listingId: Number(id) },
     include: { sender: { select: { name: true, id: true } } },
   })
-
+const listing = await prisma.listing.findUnique({ where: { id: Number(id) } })
+if (listing && listing.sellerId !== dbUser.id) {
+  await notifyUser({
+    userId: listing.sellerId,
+    type: "MARKETPLACE",
+    title: "💬 New Message",
+    body: `${dbUser.name}: ${content.slice(0, 50)}`,
+    link: `/marketplace/${id}`,
+  })
+}
   return NextResponse.json(message)
 }

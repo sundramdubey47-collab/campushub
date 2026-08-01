@@ -3,6 +3,7 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import cloudinary from "@/lib/cloudinary"
 import { validateFile, validateFileSignature, ALLOWED_IMAGE_TYPES } from "@/lib/file-validation"
+import { notifyCollege } from "@/lib/notify"
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -74,7 +75,14 @@ export async function POST(req: Request) {
       },
     },
   })
-
+await notifyCollege({
+  collegeId: dbUser.collegeId,
+  type: "MARKETPLACE",
+  title: "🛍️ New Item Listed",
+  body: title,
+  link: `/marketplace/${listing.id}`,
+  excludeUserId: dbUser.id,
+})
   return NextResponse.json(listing)
 }
 

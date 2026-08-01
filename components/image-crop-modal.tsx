@@ -85,7 +85,7 @@ export function ImageCropModal({
   async function handleCrop() {
     if (!imgRef.current || !containerRef.current || !file) return
 
-    const OUTPUT_SIZE = 600
+   const OUTPUT_SIZE = 1000
     const canvas = document.createElement("canvas")
     canvas.width = OUTPUT_SIZE
     canvas.height = OUTPUT_SIZE
@@ -109,7 +109,7 @@ export function ImageCropModal({
       const croppedFile = new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" })
       onCropped(croppedFile)
       onClose()
-    }, "image/jpeg", 0.92)
+    }, "image/jpeg", 0.95)
   }
 
   return (

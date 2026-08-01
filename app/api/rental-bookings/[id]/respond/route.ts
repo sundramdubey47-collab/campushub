@@ -40,7 +40,7 @@ await notifyUser({
   userId: booking.renterId,
   type: "RENTAL_APPROVED",
   title: "✅ Rental Approved",
-  body: `Your request for "${booking.item.title}" was approved. Check your rentals for the pickup code.`,
+body: `Your request for "${booking.item.title}" is approved! Your pickup OTP is ready — check My Rentals.`,
   link: "/rentals/my-bookings",
 })
     
