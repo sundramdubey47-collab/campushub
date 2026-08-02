@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 import { requestNotificationPermissionAndToken, listenForForegroundMessages } from "@/lib/firebase-client"
+import { updateAppBadge } from "@/lib/app-badge"
 
 export function NotificationPermission() {
   useEffect(() => {
@@ -30,15 +31,20 @@ export function NotificationPermission() {
 
     setup()
 
-    listenForForegroundMessages((payload) => {
-      console.log("[Notifications] Foreground message received:", payload)
-      if (Notification.permission === "granted") {
-        new Notification(payload.notification?.title || "CampusHub", {
-          body: payload.notification?.body || "",
-          icon: "/icon-192.png",
-        })
-      }
+   listenForForegroundMessages((payload) => {
+  console.log("[Notifications] Foreground message received:", payload)
+  if (Notification.permission === "granted") {
+    new Notification(payload.notification?.title || "CampusHub", {
+      body: payload.notification?.body || "",
+      icon: "/icon-192.png",
     })
+  }
+
+  // Foreground me bhi badge refresh kar dete hain
+  fetch("/api/notifications-v2")
+    .then((r) => r.json())
+    .then((data) => updateAppBadge(data.unreadCount))
+})
   }, [])
 
   return null

@@ -4,15 +4,17 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { updateAppBadge } from "@/lib/app-badge"
 
 export function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0)
 
-  async function load() {
-    const res = await fetch("/api/notifications-v2")
-    const data = await res.json()
-    setUnreadCount(data.unreadCount)
-  }
+ async function load() {
+  const res = await fetch("/api/notifications-v2")
+  const data = await res.json()
+  setUnreadCount(data.unreadCount)
+  updateAppBadge(data.unreadCount)
+}
 
   useEffect(() => {
     load()

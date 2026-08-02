@@ -24,26 +24,38 @@ export async function requestNotificationPermissionAndToken(): Promise<string | 
   const permission = await Notification.requestPermission()
   if (permission !== "granted") return null
 
+  const rawVapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY
+
+  if (!rawVapidKey) {
+    console.error("[FCM] VAPID key is missing from environment variables")
+    return null
+  }
+
+  // Kabhi-kabhi .env me quotes ya extra whitespace/newline aa jaते hain copy-paste ke waqt —
+  // ye unhe saaf kar deता hai taaki base64 decode fail na ho
+  const vapidKey = rawVapidKey.trim().replace(/^["']|["']$/g, "")
+
+  if (vapidKey.length < 80) {
+    console.error("[FCM] VAPID key looks too short/malformed:", vapidKey.length, "characters")
+    return null
+  }
+
   const app = getFirebaseApp()
   const messaging = getMessaging(app)
 
   try {
-    // Ab hum khud se naya service worker register nahi karте —
-    // next-pwa ne already ek combined SW register kar rakha hai (worker/index.js se banी hui),
-    // hum bas usी ke ready hone ka wait karте hain
     const registration = await navigator.serviceWorker.ready
 
     const token = await getToken(messaging, {
-      vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+      vapidKey,
       serviceWorkerRegistration: registration,
     })
     return token
   } catch (err) {
-    console.error("FCM token error:", err)
+    console.error("[FCM] getToken failed:", err)
     return null
   }
 }
-
 export function listenForForegroundMessages(callback: (payload: any) => void) {
   isSupported().then((supported) => {
     if (!supported) return

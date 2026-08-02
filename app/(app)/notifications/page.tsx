@@ -5,6 +5,7 @@ import Link from "next/link"
 import { PageHeader } from "@/components/page-header"
 import { EmptyState } from "@/components/empty-state"
 import { Bell, FileText, Calendar, ShoppingBag, Package, HelpCircle, CheckCircle2, Activity, Brain } from "lucide-react"
+import { updateAppBadge } from "@/lib/app-badge"
 
 type NotifItem = { id: number; title: string; body: string; createdAt: string; type: string; link: string | null; isRead: boolean }
 type PulseData = { newNotes: number; testAttempts: number; chatMessages: number }
@@ -58,16 +59,16 @@ export default function NotificationsPage() {
   const [pulse, setPulse] = useState<PulseData | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetch("/api/notifications-v2")
-      .then((r) => r.json())
-      .then((data) => {
-        setItems(data.items)
-        setLoading(false)
-      })
-    fetch("/api/notifications-v2/mark-read", { method: "POST" })
-    fetch("/api/dashboard/pulse").then((r) => r.json()).then(setPulse)
-  }, [])
+ useEffect(() => {
+  fetch("/api/notifications-v2")
+    .then((r) => r.json())
+    .then((data) => {
+      setItems(data.items)
+      setLoading(false)
+    })
+  fetch("/api/notifications-v2/mark-read", { method: "POST" })
+  updateAppBadge(0)
+}, [])
 
   const pulseText = pulse
     ? [

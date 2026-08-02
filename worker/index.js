@@ -23,6 +23,16 @@ messaging.onBackgroundMessage((payload) => {
   }
 
   self.registration.showNotification(notificationTitle, notificationOptions)
+
+  // App icon par number-badge update karte hain (jaise WhatsApp/Instagram par dikhता hai)
+  fetch("/api/notifications-v2")
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.unreadCount > 0 && "setAppBadge" in self.navigator) {
+        self.navigator.setAppBadge(data.unreadCount)
+      }
+    })
+    .catch((err) => console.error("[SW Badge] Failed:", err))
 })
 
 self.addEventListener("notificationclick", (event) => {
