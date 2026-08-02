@@ -36,6 +36,16 @@ export function DashboardCarousel({ collegeName }: { collegeName: string }) {
       })
   }, [])
 
+useEffect(() => {
+  const timer = setInterval(() => {
+    setIndex((i) => (i + 1) % slides.length)
+  }, 5000)
+  return () => clearInterval(timer)
+}, [slides.length])
+
+
+
+
   function next() {
     setIndex((i) => (i + 1) % slides.length)
   }

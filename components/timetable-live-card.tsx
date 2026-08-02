@@ -83,11 +83,7 @@ export function TimetableLiveCard() {
     return () => clearInterval(interval)
   }, [])
 
-  // Auto-slide har 5 second me
-  useEffect(() => {
-    const timer = setInterval(() => setIndex((i) => (i + 1) % 3), 5000)
-    return () => clearInterval(timer)
-  }, [])
+ 
 
   async function markAttendance(slotId: number, status: string) {
     setMarking(slotId)

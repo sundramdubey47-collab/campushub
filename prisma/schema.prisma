@@ -881,6 +881,9 @@ model CampusChatMessage {
   content   String
   isEdited  Boolean  @default(false)
   isDeleted Boolean  @default(false)
+  replyToId Int?
+  replyTo   CampusChatMessage?  @relation("Replies", fields: [replyToId], references: [id])
+  replies   CampusChatMessage[] @relation("Replies")
   createdAt DateTime @default(now())
 
   userId    Int
