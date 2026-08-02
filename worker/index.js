@@ -23,16 +23,25 @@ messaging.onBackgroundMessage((payload) => {
   }
 
   self.registration.showNotification(notificationTitle, notificationOptions)
+})
 
-  // App icon par number-badge update karte hain (jaise WhatsApp/Instagram par dikhता hai)
-  fetch("/api/notifications-v2")
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.unreadCount > 0 && "setAppBadge" in self.navigator) {
-        self.navigator.setAppBadge(data.unreadCount)
-      }
-    })
-    .catch((err) => console.error("[SW Badge] Failed:", err))
+// Badge sirf yahan set karte hain — is listener ko event.waitUntil() milta hai
+// (onBackgroundMessage ke andar nahi milta), isliye fetch + setAppBadge poora
+// complete hone tak service worker zinda rehta hai. Ye hi wajah thi ki badge
+// pehle set hi nahi ho raha tha.
+self.addEventListener("push", (event) => {
+  event.waitUntil(
+    fetch("/api/notifications-v2")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.unreadCount > 0 && "setAppBadge" in self.navigator) {
+          return self.navigator.setAppBadge(data.unreadCount)
+        } else if ("clearAppBadge" in self.navigator) {
+          return self.navigator.clearAppBadge()
+        }
+      })
+      .catch((err) => console.error("[SW Badge] Failed:", err))
+  )
 })
 
 self.addEventListener("notificationclick", (event) => {
@@ -41,7 +50,6 @@ self.addEventListener("notificationclick", (event) => {
   event.waitUntil(clients.openWindow(url))
 })
 
-// next-pwa ka apna precaching yahi single service worker file me integrate ho raha hai
 if (workbox) {
   workbox.precaching.precacheAndRoute(self.__WB_MANIFEST)
 }
