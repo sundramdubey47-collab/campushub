@@ -28,9 +28,11 @@ export async function requestNotificationPermissionAndToken(): Promise<string | 
   const messaging = getMessaging(app)
 
   try {
-    const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js", {
-      scope: "/firebase-cloud-messaging-push-scope",
-    })
+    // Ab hum khud se naya service worker register nahi karте —
+    // next-pwa ne already ek combined SW register kar rakha hai (worker/index.js se banी hui),
+    // hum bas usी ke ready hone ka wait karте hain
+    const registration = await navigator.serviceWorker.ready
+
     const token = await getToken(messaging, {
       vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
       serviceWorkerRegistration: registration,

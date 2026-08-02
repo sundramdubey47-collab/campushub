@@ -18,23 +18,12 @@ const nextConfig: NextConfig = {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
 };
-
 const pwaConfig = withPWA({
   dest: "public",
   disable: process.env.NODE_ENV === "development",
   register: true,
   skipWaiting: true,
-  runtimeCaching: [
-    {
-      urlPattern: /^https?.*/,
-      handler: "NetworkFirst",
-      options: {
-        cacheName: "campushub-runtime",
-        networkTimeoutSeconds: 10,
-        expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 }, // 1 din
-      },
-    },
-  ],
+  swSrc: "worker/index.js",
 });
 
 export default pwaConfig(nextConfig);
