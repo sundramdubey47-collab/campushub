@@ -28,20 +28,23 @@ export default async function AppLayout({
     redirect("/login")
   }
 
+ 
   const dbUser = await prisma.user.findUnique({
-    where: { email: session.user!.email! },
-    select: {
-      name: true,
-      role: true,
-      collegeId: true,
-      course: { select: { name: true } },
-      semester: { select: { number: true } },
-    },
-  })
+  where: { email: session.user!.email! },
+  select: {
+    name: true,
+    role: true,
+    collegeId: true,
+    course: { select: { name: true } },
+    semester: { select: { number: true } },
+  },
+})
 
-  if (!dbUser?.collegeId) {
-    redirect("/onboarding")
-  }
+console.log("dbUser:", dbUser)
+
+if (!dbUser?.collegeId) {
+  redirect("/onboarding")
+}
 
   return (
     <div className="flex min-h-screen overflow-hidden">
@@ -94,4 +97,4 @@ export default async function AppLayout({
       </div>
     </div>
   )
-}
+ }
