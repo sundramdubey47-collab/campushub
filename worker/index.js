@@ -25,22 +25,32 @@ messaging.onBackgroundMessage((payload) => {
   self.registration.showNotification(notificationTitle, notificationOptions)
 })
 
-// Badge sirf yahan set karte hain — is listener ko event.waitUntil() milta hai
-// (onBackgroundMessage ke andar nahi milta), isliye fetch + setAppBadge poora
-// complete hone tak service worker zinda rehta hai. Ye hi wajah thi ki badge
-// pehle set hi nahi ho raha tha.
 self.addEventListener("push", (event) => {
+  console.log("[Badge Debug] push event fired")
+
   event.waitUntil(
     fetch("/api/notifications-v2")
-      .then((res) => res.json())
+      .then((res) => {
+        console.log("[Badge Debug] /api/notifications-v2 status:", res.status)
+        return res.json()
+      })
       .then((data) => {
+        console.log("[Badge Debug] response data:", data)
+        console.log("[Badge Debug] unreadCount:", data.unreadCount)
+        console.log("[Badge Debug] setAppBadge supported:", "setAppBadge" in self.navigator)
+
         if (data.unreadCount > 0 && "setAppBadge" in self.navigator) {
           return self.navigator.setAppBadge(data.unreadCount)
+            .then(() => console.log("[Badge Debug] setAppBadge SUCCESS, count:", data.unreadCount))
+            .catch((e) => console.error("[Badge Debug] setAppBadge FAILED:", e))
         } else if ("clearAppBadge" in self.navigator) {
+          console.log("[Badge Debug] no unread — clearing badge")
           return self.navigator.clearAppBadge()
+        } else {
+          console.log("[Badge Debug] setAppBadge NOT supported on this browser")
         }
       })
-      .catch((err) => console.error("[SW Badge] Failed:", err))
+      .catch((err) => console.error("[SW Badge] fetch failed:", err))
   )
 })
 
