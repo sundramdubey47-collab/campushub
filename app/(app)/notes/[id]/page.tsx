@@ -76,15 +76,15 @@ type Note = {
 
 type Comment = {
 
-  id:number
+  id: number
 
-  content:string
+  content: string
 
-  createdAt:string
+  createdAt: string
 
 
-  user:{
-    name:string
+  user: {
+    name: string
   }
 
 }
@@ -94,7 +94,7 @@ type Comment = {
 
 
 
-export default function NoteDetailPage(){
+export default function NoteDetailPage() {
 
 
 
@@ -109,57 +109,57 @@ export default function NoteDetailPage(){
 
 
 
-  const [note,setNote] = useState<Note | null>(null)
+  const [note, setNote] = useState<Note | null>(null)
 
 
 
-  const [rating,setRating] = useState({
+  const [rating, setRating] = useState({
 
-    average:0,
+    average: 0,
 
-    count:0
+    count: 0
 
   })
 
 
 
-  const [myRating,setMyRating] = useState(0)
+  const [myRating, setMyRating] = useState(0)
 
 
 
-  const [bookmarked,setBookmarked] = useState(false)
+  const [bookmarked, setBookmarked] = useState(false)
 
 
 
-  const [comments,setComments] = useState<Comment[]>([])
+  const [comments, setComments] = useState<Comment[]>([])
 
 
 
-  const [newComment,setNewComment] = useState("")
-
-
-
-
+  const [newComment, setNewComment] = useState("")
 
 
 
 
-  useEffect(()=>{
 
 
-    if(!noteId) return
+
+
+  useEffect(() => {
+
+
+    if (!noteId) return
 
 
 
     fetch(`/api/notes/${noteId}`)
 
-    .then(res=>res.json())
+      .then(res => res.json())
 
-    .then(data=>{
+      .then(data => {
 
-      setNote(data)
+        setNote(data)
 
-    })
+      })
 
 
 
@@ -168,13 +168,13 @@ export default function NoteDetailPage(){
 
     fetch(`/api/notes/${noteId}/rating`)
 
-    .then(res=>res.json())
+      .then(res => res.json())
 
-    .then(data=>{
+      .then(data => {
 
-      setRating(data)
+        setRating(data)
 
-    })
+      })
 
 
 
@@ -185,13 +185,13 @@ export default function NoteDetailPage(){
 
     fetch(`/api/notes/${noteId}/bookmark`)
 
-    .then(res=>res.json())
+      .then(res => res.json())
 
-    .then(data=>{
+      .then(data => {
 
-      setBookmarked(data.bookmarked)
+        setBookmarked(data.bookmarked)
 
-    })
+      })
 
 
 
@@ -203,19 +203,19 @@ export default function NoteDetailPage(){
 
     fetch(`/api/notes/${noteId}/comments`)
 
-    .then(res=>res.json())
+      .then(res => res.json())
 
-    .then(data=>{
+      .then(data => {
 
-      setComments(data)
+        setComments(data)
 
-    })
-
-
+      })
 
 
-  },[noteId])
-    async function handleRate(value:number){
+
+
+  }, [noteId])
+  async function handleRate(value: number) {
 
 
     setMyRating(value)
@@ -228,13 +228,13 @@ export default function NoteDetailPage(){
 
       {
 
-        method:"POST",
+        method: "POST",
 
-        headers:{
-          "Content-Type":"application/json"
+        headers: {
+          "Content-Type": "application/json"
         },
 
-        body:JSON.stringify({
+        body: JSON.stringify({
           value
         })
 
@@ -258,7 +258,7 @@ export default function NoteDetailPage(){
 
 
 
-  async function handleBookmarkToggle(){
+  async function handleBookmarkToggle() {
 
 
 
@@ -268,7 +268,7 @@ export default function NoteDetailPage(){
 
       {
 
-        method:"POST"
+        method: "POST"
 
       }
 
@@ -295,7 +295,7 @@ export default function NoteDetailPage(){
 
 
 
-  async function handleDownload(){
+  async function handleDownload() {
 
 
 
@@ -305,16 +305,16 @@ export default function NoteDetailPage(){
 
       {
 
-        method:"POST",
+        method: "POST",
 
-        headers:{
-          "Content-Type":"application/json"
+        headers: {
+          "Content-Type": "application/json"
         },
 
 
-        body:JSON.stringify({
+        body: JSON.stringify({
 
-          action:"download"
+          action: "download"
 
         })
 
@@ -326,7 +326,7 @@ export default function NoteDetailPage(){
 
 
 
-    if(res.status === 403){
+    if (res.status === 403) {
 
 
       const data = await res.json()
@@ -358,16 +358,16 @@ export default function NoteDetailPage(){
 
   async function handleCommentSubmit(
 
-    e:React.FormEvent
+    e: React.FormEvent
 
-  ){
+  ) {
 
 
     e.preventDefault()
 
 
 
-    if(!newComment.trim()) return
+    if (!newComment.trim()) return
 
 
 
@@ -379,16 +379,16 @@ export default function NoteDetailPage(){
 
       {
 
-        method:"POST",
+        method: "POST",
 
-        headers:{
-          "Content-Type":"application/json"
+        headers: {
+          "Content-Type": "application/json"
         },
 
 
-        body:JSON.stringify({
+        body: JSON.stringify({
 
-          content:newComment
+          content: newComment
 
         })
 
@@ -432,7 +432,7 @@ export default function NoteDetailPage(){
 
 
 
-  if(!note){
+  if (!note) {
 
 
     return (
@@ -596,7 +596,7 @@ export default function NoteDetailPage(){
                     ">
 
 
-                      <Crown className="h-3 w-3"/>
+                      <Crown className="h-3 w-3" />
 
                       Premium
 
@@ -682,30 +682,30 @@ export default function NoteDetailPage(){
 
                   bookmarked
 
-                  ?
+                    ?
 
-                  <BookmarkCheck
+                    <BookmarkCheck
 
-                    className="
+                      className="
                       h-5
                       w-5
                       text-primary
                     "
 
-                  />
+                    />
 
 
-                  :
+                    :
 
 
-                  <Bookmark
+                    <Bookmark
 
-                    className="
+                      className="
                       h-5
                       w-5
                     "
 
-                  />
+                    />
 
 
                 }
@@ -760,7 +760,7 @@ export default function NoteDetailPage(){
                   text-muted-foreground
                 ">
 
-                  <GraduationCap className="h-4 w-4"/>
+                  <GraduationCap className="h-4 w-4" />
 
                   <span className="text-xs">
 
@@ -807,7 +807,7 @@ export default function NoteDetailPage(){
                 ">
 
 
-                  <Building2 className="h-4 w-4"/>
+                  <Building2 className="h-4 w-4" />
 
 
                   <span className="text-xs">
@@ -856,7 +856,7 @@ export default function NoteDetailPage(){
                 ">
 
 
-                  <CalendarDays className="h-4 w-4"/>
+                  <CalendarDays className="h-4 w-4" />
 
 
                   <span className="text-xs">
@@ -905,7 +905,7 @@ export default function NoteDetailPage(){
                 ">
 
 
-                  <User className="h-4 w-4"/>
+                  <User className="h-4 w-4" />
 
 
                   <span className="text-xs">
@@ -986,7 +986,7 @@ export default function NoteDetailPage(){
                   ">
 
 
-                    <Eye className="h-4 w-4"/>
+                    <Eye className="h-4 w-4" />
 
                     Views
 
@@ -1023,7 +1023,7 @@ export default function NoteDetailPage(){
                   ">
 
 
-                    <Download className="h-4 w-4"/>
+                    <Download className="h-4 w-4" />
 
 
                     Downloads
@@ -1069,14 +1069,14 @@ export default function NoteDetailPage(){
                 "
 
 
-                onClick={async()=>{
+                onClick={async () => {
 
 
                   const allowed = await handleDownload()
 
 
 
-                  if(allowed){
+                  if (allowed) {
 
                     window.open(
 
@@ -1096,7 +1096,7 @@ export default function NoteDetailPage(){
 
 
 
-                <Download className="h-5 w-5 mr-2"/>
+                <Download className="h-5 w-5 mr-2" />
 
 
                 Preview / Download
@@ -1130,8 +1130,8 @@ export default function NoteDetailPage(){
 
                 url={
                   typeof window !== "undefined"
-                  ? window.location.href
-                  : ""
+                    ? window.location.href
+                    : ""
                 }
 
               />
@@ -1185,14 +1185,14 @@ export default function NoteDetailPage(){
                 <div className="flex gap-1">
 
 
-                  {[1,2,3,4,5].map((star)=>(
+                  {[1, 2, 3, 4, 5].map((star) => (
 
 
                     <button
 
                       key={star}
 
-                      onClick={()=>handleRate(star)}
+                      onClick={() => handleRate(star)}
 
                       className="
                         transition
@@ -1208,8 +1208,7 @@ export default function NoteDetailPage(){
                           h-7
                           w-7
 
-                          ${
-                            star <= myRating
+                          ${star <= myRating
 
                             ?
 
@@ -1246,10 +1245,10 @@ export default function NoteDetailPage(){
 
                   {
                     rating.average
-                    ?
-                    rating.average.toFixed(1)
-                    :
-                    "0"
+                      ?
+                      rating.average.toFixed(1)
+                      :
+                      "0"
                   }
 
                   {" "}
@@ -1297,7 +1296,7 @@ export default function NoteDetailPage(){
               ">
 
 
-                <MessageCircle className="h-5 w-5 text-primary"/>
+                <MessageCircle className="h-5 w-5 text-primary" />
 
 
                 <h2 className="
@@ -1335,11 +1334,11 @@ export default function NoteDetailPage(){
 
                 <Textarea
 
-                  placeholder="Apna comment likho..."
+                  placeholder=" write down your thoughts ..."
 
                   value={newComment}
 
-                  onChange={(e)=>
+                  onChange={(e) =>
                     setNewComment(e.target.value)
                   }
 
@@ -1391,17 +1390,17 @@ export default function NoteDetailPage(){
 
 
 
-              {
+                {
 
-                comments.length === 0
-
-
-                ?
+                  comments.length === 0
 
 
-                (
+                    ?
 
-                  <div className="
+
+                    (
+
+                      <div className="
                     text-center
                     py-8
                     rounded-2xl
@@ -1409,9 +1408,9 @@ export default function NoteDetailPage(){
                   ">
 
 
-                    <MessageCircle
+                        <MessageCircle
 
-                      className="
+                          className="
                         h-8
                         w-8
                         mx-auto
@@ -1419,52 +1418,52 @@ export default function NoteDetailPage(){
                         text-muted-foreground
                       "
 
-                    />
+                        />
 
 
 
-                    <p className="
+                        <p className="
                       text-sm
                       text-muted-foreground
                     ">
 
-                      No comments available yet
+                          No comments available yet
 
-                    </p>
+                        </p>
 
 
 
-                    <p className="
+                        <p className="
                       text-xs
                       text-muted-foreground
                       mt-1
                     ">
 
-                      Be the first one to comment
+                          Be the first one to comment
 
-                    </p>
-
-
-                  </div>
-
-                )
+                        </p>
 
 
+                      </div>
 
-                :
+                    )
 
 
 
-                (
-
-                  comments.map((c)=>(
+                    :
 
 
-                    <div
 
-                      key={c.id}
+                    (
 
-                      className="
+                      comments.map((c) => (
+
+
+                        <div
+
+                          key={c.id}
+
+                          className="
                         rounded-2xl
                         border
                         bg-muted/20
@@ -1472,11 +1471,11 @@ export default function NoteDetailPage(){
                         space-y-2
                       "
 
-                    >
+                        >
 
 
 
-                      <div className="
+                          <div className="
                         flex
                         items-center
                         justify-between
@@ -1484,67 +1483,67 @@ export default function NoteDetailPage(){
 
 
 
-                        <p className="
+                            <p className="
                           font-semibold
                           text-sm
                         ">
 
 
-                          {c.user.name}
+                              {c.user.name}
 
 
-                        </p>
+                            </p>
 
 
 
 
-                        <p className="
+                            <p className="
                           text-xs
                           text-muted-foreground
                         ">
 
 
-                          {
-                            new Date(
-                              c.createdAt
-                            ).toLocaleDateString()
-                          }
+                              {
+                                new Date(
+                                  c.createdAt
+                                ).toLocaleDateString()
+                              }
 
 
-                        </p>
-
-
-
-                      </div>
+                            </p>
 
 
 
+                          </div>
 
 
-                      <p className="
+
+
+
+                          <p className="
                         text-sm
                         text-muted-foreground
                         leading-relaxed
                       ">
 
 
-                        {c.content}
+                            {c.content}
 
 
-                      </p>
+                          </p>
 
 
 
-                    </div>
+                        </div>
 
 
-                  ))
+                      ))
 
 
-                )
+                    )
 
 
-              }
+                }
 
 
 

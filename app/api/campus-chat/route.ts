@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit"
-import { notifyCollege } from "@/lib/notify"
+import { notifyCollege, notifyUser } from "@/lib/notify"
 
 export async function GET() {
   const session = await auth()
@@ -46,19 +46,31 @@ export async function POST(req: Request) {
     data: { content, userId: dbUser.id, collegeId: dbUser.collegeId, replyToId },
     include: {
       user: { select: { id: true, name: true } },
-      replyTo: { include: { user: { select: { name: true } } } },
+      replyTo: { include: { user: { select: { id: true, name: true } } } },
     },
   })
 
   try {
-    await notifyCollege({
-      collegeId: dbUser.collegeId,
-      type: "SYSTEM",
-      title: "💬 Campus Chat",
-      body: `${dbUser.name}: ${content.slice(0, 50)}`,
-      link: "/chat",
-      excludeUserId: dbUser.id,
-    })
+    if (replyToId && message.replyTo && message.replyTo.user.id !== dbUser.id) {
+      // Ye ek reply hai — sirf jisko reply kiya, sirf usी ko notification jaayegi
+      await notifyUser({
+        userId: message.replyTo.user.id,
+        type: "SYSTEM",
+        title: "💬 Someone replied to you",
+        body: `${dbUser.name}: ${content.slice(0, 50)}`,
+        link: "/chat",
+      })
+    } else if (!replyToId) {
+      // Normal message (reply nahi) — poore college ko jaayegi jaisa pehले tha
+      await notifyCollege({
+        collegeId: dbUser.collegeId,
+        type: "SYSTEM",
+        title: "💬 Campus Chat",
+        body: `${dbUser.name}: ${content.slice(0, 50)}`,
+        link: "/chat",
+        excludeUserId: dbUser.id,
+      })
+    }
   } catch (err) {
     console.error("[campus-chat] notify failed:", err)
   }

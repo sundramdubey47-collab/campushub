@@ -41,15 +41,58 @@ export async function GET(req: Request) {
     })
     if (existing) continue
 
-    const prompt = `Generate exactly 5 multiple-choice quiz questions relevant to a student studying "${course.name}". 
-Mix of subject-specific and general-knowledge-for-this-field questions. Keep them interesting and not too hard.
-Return ONLY a JSON array, no other text, in this exact format:
-[{"question": "...", "options": ["A","B","C","D"], "correctIndex": 0}, ...]`
+
+    const previousQuizzes = await prisma.dailyTrivia.findMany({
+  where: {
+    courseId: course.id,
+  },
+  orderBy: {
+    date: "desc",
+  },
+  take: 10,
+  select: {
+    question: true,
+  },
+})
+
+const previousQuestions = previousQuizzes
+  .flatMap((quiz) => {
+    try {
+      return JSON.parse(quiz.question).map((q: any) => q.question)
+    } catch {
+      return []
+    }
+  })
+  .join("\n")
+
+   const prompt = `
+Generate EXACTLY 5 multiple-choice quiz questions relevant to a student studying "${course.name}".
+
+Requirements:
+- Questions must be completely NEW and UNIQUE.
+- DO NOT repeat or closely rephrase any previous question.
+- Avoid asking the same concept in different words.
+- Mix subject-specific and general knowledge related to this field.
+- Keep them interesting and not too hard.
+
+Previously generated questions (DO NOT repeat these):
+
+${previousQuestions}
+
+Return ONLY a JSON array in this exact format:
+[
+  {
+    "question": "...",
+    "options": ["A","B","C","D"],
+    "correctIndex": 0
+  }
+]
+`
 
     try {
       const response = await groq.chat.completions.create({
         model: "llama-3.3-70b-versatile",
-        max_tokens: 1500,
+        max_tokens: 800,
         messages: [{ role: "user", content: prompt }],
       })
 

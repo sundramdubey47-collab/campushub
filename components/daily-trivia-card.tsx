@@ -31,12 +31,14 @@ export function DailyTriviaCard() {
           </div>
           <div>
             <p className="font-semibold text-sm">Today's Quiz</p>
-            <p className="text-[10px] text-muted-foreground">5 questions for your branch</p>
+            <p className="text-[10px] text-muted-foreground">5 questions closer to your placement</p>
           </div>
         </div>
-        <span className="flex items-center gap-1 text-xs font-bold text-[oklch(0.72_0.15_60)]">
-          <Flame className="h-3.5 w-3.5" /> {data.streak}
-        </span>
+      <span className="flex items-center gap-1 text-xs font-bold text-[oklch(0.72_0.15_60)]">
+  <Flame className="h-3.5 w-3.5" />
+  {data.streak}
+  <span className="text-[10px] font-medium opacity-80"> Streak </span>
+</span>
       </div>
 
       <div className="p-4">

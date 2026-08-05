@@ -82,21 +82,21 @@ async function handleDelete() {
   const res = await fetch(`/api/listings/${listingId}`, { method: "DELETE" })
   if (res.ok) router.push("/marketplace")
 }
-async function handleBuy() {
-  setError("")
-  setBuying(true)
-  const res = await fetch(`/api/listings/${listingId}/order`, { method: "POST" })
-  const data = await res.json()
-  setBuying(false)
+const [marking, setMarking] = useState(false)
 
-  if (!res.ok) {
-    setError(data.error)
-    return
+async function handleMarkSold() {
+  if (!confirm("Mark this item as sold? It will be removed from the marketplace listing.")) return
+  setMarking(true)
+  const res = await fetch(`/api/listings/${listingId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status: "SOLD" }),
+  })
+  setMarking(false)
+  if (res.ok) {
+    router.refresh()
   }
-
-  router.push("/marketplace")
 }
-
   if (!listing) return <p className="text-muted-foreground">Loading...</p>
 
   const isOwner = (session?.user as any)?.id === listing.seller.id.toString()
@@ -143,12 +143,14 @@ async function handleBuy() {
 <ReportButton type="LISTING" targetId={listing.id} />
         {error && <p  className="text-sm text-red-500">{error}</p>}
 
-        {!isOwner && (
-  listing.status === "AVAILABLE" ? (
-    <Button onClick={handleBuy} disabled={buying}>{buying ? "Processing..." : "Buy Now"}</Button>
-  ) : (
-    <Button disabled variant="outline">Item No Longer Available</Button>
-  )
+     {!isOwner && listing.status !== "AVAILABLE" && (
+  <Button disabled variant="outline" className="w-full">Item No Longer Available</Button>
+)}
+
+{isOwner && listing.status === "AVAILABLE" && (
+  <Button variant="outline" className="w-full" onClick={handleMarkSold} disabled={marking}>
+    {marking ? "Updating..." : "Mark as Sold"}
+  </Button>
 )}
         {isOwner && (
   <Button variant="outline" className="text-red-500 border-red-300" onClick={handleDelete}>

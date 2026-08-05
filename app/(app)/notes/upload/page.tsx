@@ -147,7 +147,7 @@ function UploadForm() {
         </div>
 
         {/* Form Card */}
-        <form onSubmit={handleSubmit} className="rounded-3xl border bg-white p-5 shadow-xl space-y-6 sm:p-8">
+        <form onSubmit={handleSubmit} className="rounded-3xl border bg-background p-5 shadow-xl space-y-6 sm:p-8">
           {error && (
             <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-600">
               {error}
@@ -177,8 +177,8 @@ function UploadForm() {
           </div>
 
           {/* Academic Details Section */}
-          <div className="rounded-2xl border bg-slate-50 p-4 space-y-5 sm:p-6">
-            <h2 className="text-lg font-bold text-slate-800">📖 Academic Information</h2>
+          <div className="rounded-2xl border bg-muted/40 p-4 space-y-5 sm:p-6">
+            <h2 className="text-lg font-bold text-foreground">📖 Academic Information</h2>
 
             <div className="grid gap-5 md:grid-cols-2">
               <div className="space-y-2">
@@ -223,8 +223,8 @@ function UploadForm() {
           </div>
 
           {/* Resource Category */}
-          <div className="rounded-2xl border bg-white p-4 space-y-3 sm:p-6">
-            <h2 className="text-lg font-bold text-slate-800">📂 Resource Category</h2>
+          <div className="rounded-2xl border bg-card p-4 space-y-3 sm:p-6">
+            <h2 className="text-lg font-bold text-foreground">📂 Resource Category</h2>
             <Combobox
               placeholder="Select Resource Type"
               value={category}
@@ -236,8 +236,8 @@ function UploadForm() {
           {/* Fulfilling a Request */}
           {openRequests.length > 0 && (
             <div className="rounded-2xl border border-green-200 bg-green-50 p-4 space-y-3 sm:p-6">
-              <h2 className="text-lg font-bold text-slate-800">🙋 Fulfilling a Request?</h2>
-              <p className="text-xs text-slate-600">
+              <h2 className="text-lg font-bold text-foreground">🙋 Fulfilling a Request?</h2>
+              <p className="text-xs text-muted-foreground">
                 If someone requested this resource, select it below — they'll be notified instantly.
               </p>
               <Combobox
@@ -263,7 +263,7 @@ function UploadForm() {
                 <Label htmlFor="isPremium" className="cursor-pointer font-semibold text-slate-800">
                   ⭐ Mark as Premium Resource
                 </Label>
-                <p className="mt-1 text-xs text-slate-600 sm:text-sm">
+                <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
                   Only Premium members will be able to access this resource.
                 </p>
               </div>
@@ -274,8 +274,8 @@ function UploadForm() {
           <div className="rounded-2xl border-2 border-dashed border-blue-200 bg-blue-50/50 p-5 sm:p-6">
             <div className="mb-3 text-center">
               <div className="text-4xl">📄</div>
-              <h3 className="mt-2 font-semibold text-slate-800">Upload PDF / Image</h3>
-              <p className="text-sm text-slate-500">PDF, JPG, PNG supported</p>
+              <h3 className="mt-2 font-semibold text-foreground">Upload PDF / Image</h3>
+              <p className="text-sm text-muted-foreground">PDF, JPG, PNG supported</p>
             </div>
 
             <Input

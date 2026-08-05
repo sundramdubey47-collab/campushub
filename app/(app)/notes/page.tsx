@@ -25,79 +25,79 @@ import {
 
 
 type Option = {
-  id:number
-  name?:string
-  number?:number
+  id: number
+  name?: string
+  number?: number
 }
 
 
 
 const CATEGORY_OPTIONS = [
 
-{
-value:"NOTES",
-label:"Notes"
-},
+  {
+    value: "NOTES",
+    label: "Notes"
+  },
 
-{
-value:"ASSIGNMENT",
-label:"Assignment"
-},
+  {
+    value: "ASSIGNMENT",
+    label: "Assignment"
+  },
 
-{
-value:"LAB_RECORD",
-label:"Lab Record"
-},
+  {
+    value: "LAB_RECORD",
+    label: "Lab Record"
+  },
 
-{
-value:"PREVIOUS_YEAR_PAPER",
-label:"Previous Year Paper"
-},
+  {
+    value: "PREVIOUS_YEAR_PAPER",
+    label: "Previous Year Paper"
+  },
 
-{
-value:"BOOK",
-label:"Books"
-},
+  {
+    value: "BOOK",
+    label: "Books"
+  },
 
-{
-value:"PRESENTATION",
-label:"Presentation"
-},
+  {
+    value: "PRESENTATION",
+    label: "Presentation"
+  },
 
-{
-value:"PRACTICAL_FILE",
-label:"Practical File"
-},
+  {
+    value: "PRACTICAL_FILE",
+    label: "Practical File"
+  },
 
-{
-value:"QUESTION_BANK",
-label:"Question Bank"
-},
+  {
+    value: "QUESTION_BANK",
+    label: "Question Bank"
+  },
 
-{
-value:"FACULTY_NOTES",
-label:"Faculty Notes"
-},
+  {
+    value: "FACULTY_NOTES",
+    label: "Faculty Notes"
+  },
 
-{
-value:"VIVA_QUESTIONS",
-label:"Viva Questions"
-},
+  {
+    value: "VIVA_QUESTIONS",
+    label: "Viva Questions"
+  },
 
-{
-value:"PROJECT",
-label:"Project"
-},
+  {
+    value: "PROJECT",
+    label: "Project"
+  },
 
-{
-value:"SYLLABUS",
-label:"Syllabus"
-},
+  {
+    value: "SYLLABUS",
+    label: "Syllabus"
+  },
 
-{
-value:"OTHERS",
-label:"Others"
-},
+  {
+    value: "OTHERS",
+    label: "Others"
+  },
 
 ]
 
@@ -106,305 +106,55 @@ label:"Others"
 
 type Note = {
 
-id:number
+  id: number
 
-title:string
+  title: string
 
-description:string | null
+  description: string | null
 
-fileUrl:string
+  fileUrl: string
 
-isPremium:boolean
+  isPremium: boolean
 
-createdAt:string
+  createdAt: string
 
-category:string
+  category: string
 
-unit:string | null
+  unit: string | null
 
-views:number
+  views: number
 
-downloads:number
+  downloads: number
 
 
-uploadedBy:{
-name:string
+  uploadedBy: {
+    name: string
 
-college:{
-name:string
-}|null
+    college: {
+      name: string
+    } | null
 
-}
+  }
 
 
-university:{
-name:string
-}
+  university: {
+    name: string
+  }
 
 
-course:{
-name:string
-}
+  course: {
+    name: string
+  }
 
 
-semester:{
-number:number
-}
+  semester: {
+    number: number
+  }
 
 
-subject:{
-name:string
-}|null
-
-
-}
-
-
-
-
-
-export default function NotesPage(){
-
-
-const router = useRouter()
-
-
-
-const [notes,setNotes] = useState<Note[]>([])
-
-const [loading,setLoading] = useState(true)
-
-const [showFilters,setShowFilters] = useState(false)
-
-
-
-const [universities,setUniversities] = useState<Option[]>([])
-
-const [colleges,setColleges] = useState<Option[]>([])
-
-const [courses,setCourses] = useState<Option[]>([])
-
-const [semesters,setSemesters] = useState<Option[]>([])
-
-const [subjects,setSubjects] = useState<Option[]>([])
-
-
-
-const [universityId,setUniversityId] = useState("")
-
-const [collegeId,setCollegeId] = useState("")
-
-const [courseId,setCourseId] = useState("")
-
-const [semesterId,setSemesterId] = useState("")
-
-const [subjectId,setSubjectId] = useState("")
-
-const [category,setCategory] = useState("")
-
-
-
-
-
-useEffect(()=>{
-
-fetch("/api/universities")
-.then(res=>res.json())
-.then(setUniversities)
-
-},[])
-
-
-
-
-
-useEffect(()=>{
-
-if(!universityId){
-
-setColleges([])
-
-setCollegeId("")
-
-return
-
-}
-
-
-fetch(`/api/colleges?universityId=${universityId}`)
-
-.then(res=>res.json())
-
-.then(setColleges)
-
-
-},[universityId])
-
-
-
-
-
-useEffect(()=>{
-
-if(!collegeId){
-
-setCourses([])
-
-setCourseId("")
-
-return
-
-}
-
-
-fetch(`/api/college-courses-by-id?collegeId=${collegeId}`)
-
-.then(res=>res.json())
-
-.then(setCourses)
-
-
-},[collegeId])
-
-
-
-
-
-useEffect(()=>{
-
-
-if(!courseId){
-
-setSemesters([])
-
-setSemesterId("")
-
-return
-
-}
-
-
-fetch(`/api/course-semesters?courseId=${courseId}`)
-
-.then(res=>res.json())
-
-.then(setSemesters)
-
-
-},[courseId])
-
-
-
-
-
-
-useEffect(()=>{
-
-
-if(!semesterId){
-
-setSubjects([])
-
-setSubjectId("")
-
-return
-
-}
-
-
-fetch(`/api/subjects?semesterId=${semesterId}`)
-
-.then(res=>res.json())
-
-.then(setSubjects)
-
-
-
-},[semesterId])
-
-
-
-
-
-
-async function search(){
-
-
-setLoading(true)
-
-
-
-const params = new URLSearchParams()
-
-
-
-if(universityId)
-params.set("universityId",universityId)
-
-
-if(collegeId)
-params.set("collegeId",collegeId)
-
-
-if(courseId)
-params.set("courseId",courseId)
-
-
-if(semesterId)
-params.set("semesterId",semesterId)
-
-
-if(subjectId)
-params.set("subjectId",subjectId)
-
-
-if(category)
-params.set("category",category)
-
-
-
-const res = await fetch(`/api/notes?${params.toString()}`)
-
-
-const data = await res.json()
-
-
-setNotes(data)
-
-
-setLoading(false)
-
-
-
-}
-
-
-
-
-useEffect(()=>{
-
-search()
-
-},[])
-
-
-
-
-
-function clearFilters(){
-
-
-setUniversityId("")
-
-setCollegeId("")
-
-setCourseId("")
-
-setSemesterId("")
-
-setSubjectId("")
-
-setCategory("")
+  subject: {
+    name: string
+  } | null
 
 
 }
@@ -413,84 +163,334 @@ setCategory("")
 
 
 
+export default function NotesPage() {
 
-const activeFilterCount =
-[
-universityId,
-collegeId,
-courseId,
-semesterId,
-subjectId,
-category
-]
-.filter(Boolean)
-.length
+
+  const router = useRouter()
 
 
 
+  const [notes, setNotes] = useState<Note[]>([])
+
+  const [loading, setLoading] = useState(true)
+
+  const [showFilters, setShowFilters] = useState(false)
 
 
 
-async function handleDownload(
-noteId:number,
-fileUrl:string
-){
+  const [universities, setUniversities] = useState<Option[]>([])
 
+  const [colleges, setColleges] = useState<Option[]>([])
 
-const res = await fetch(
-`/api/notes/${noteId}/track`,
-{
+  const [courses, setCourses] = useState<Option[]>([])
 
-method:"POST",
+  const [semesters, setSemesters] = useState<Option[]>([])
 
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-action:"download"
-})
-
-}
-)
+  const [subjects, setSubjects] = useState<Option[]>([])
 
 
 
-if(res.status===403){
+  const [universityId, setUniversityId] = useState("")
 
-const data = await res.json()
+  const [collegeId, setCollegeId] = useState("")
 
-alert(data.message)
+  const [courseId, setCourseId] = useState("")
 
-return
+  const [semesterId, setSemesterId] = useState("")
 
-}
+  const [subjectId, setSubjectId] = useState("")
 
-
-
-window.open(fileUrl,"_blank")
-
-}
-return (
-
-<div className="space-y-6 pb-10">
+  const [category, setCategory] = useState("")
 
 
-{/* HERO SECTION */}
 
-<motion.div
 
-initial={{
-opacity:0,
-y:-15
-}}
 
-animate={{
-opacity:1,
-y:0
-}}
+  useEffect(() => {
 
-className="
+    fetch("/api/universities")
+      .then(res => res.json())
+      .then(setUniversities)
+
+  }, [])
+
+
+
+
+
+  useEffect(() => {
+
+    if (!universityId) {
+
+      setColleges([])
+
+      setCollegeId("")
+
+      return
+
+    }
+
+
+    fetch(`/api/colleges?universityId=${universityId}`)
+
+      .then(res => res.json())
+
+      .then(setColleges)
+
+
+  }, [universityId])
+
+
+
+
+
+  useEffect(() => {
+
+    if (!collegeId) {
+
+      setCourses([])
+
+      setCourseId("")
+
+      return
+
+    }
+
+
+    fetch(`/api/college-courses-by-id?collegeId=${collegeId}`)
+
+      .then(res => res.json())
+
+      .then(setCourses)
+
+
+  }, [collegeId])
+
+
+
+
+
+  useEffect(() => {
+
+
+    if (!courseId) {
+
+      setSemesters([])
+
+      setSemesterId("")
+
+      return
+
+    }
+
+
+    fetch(`/api/course-semesters?courseId=${courseId}`)
+
+      .then(res => res.json())
+
+      .then(setSemesters)
+
+
+  }, [courseId])
+
+
+
+
+
+
+  useEffect(() => {
+
+
+    if (!semesterId) {
+
+      setSubjects([])
+
+      setSubjectId("")
+
+      return
+
+    }
+
+
+    fetch(`/api/subjects?semesterId=${semesterId}`)
+
+      .then(res => res.json())
+
+      .then(setSubjects)
+
+
+
+  }, [semesterId])
+
+
+
+
+
+
+  async function search() {
+
+
+    setLoading(true)
+
+
+
+    const params = new URLSearchParams()
+
+
+
+    if (universityId)
+      params.set("universityId", universityId)
+
+
+    if (collegeId)
+      params.set("collegeId", collegeId)
+
+
+    if (courseId)
+      params.set("courseId", courseId)
+
+
+    if (semesterId)
+      params.set("semesterId", semesterId)
+
+
+    if (subjectId)
+      params.set("subjectId", subjectId)
+
+
+    if (category)
+      params.set("category", category)
+
+
+
+    const res = await fetch(`/api/notes?${params.toString()}`)
+
+
+    const data = await res.json()
+
+
+    setNotes(data)
+
+
+    setLoading(false)
+
+
+
+  }
+
+
+
+
+  useEffect(() => {
+
+    search()
+
+  }, [])
+
+
+
+
+
+  function clearFilters() {
+
+
+    setUniversityId("")
+
+    setCollegeId("")
+
+    setCourseId("")
+
+    setSemesterId("")
+
+    setSubjectId("")
+
+    setCategory("")
+
+
+  }
+
+
+
+
+
+
+  const activeFilterCount =
+    [
+      universityId,
+      collegeId,
+      courseId,
+      semesterId,
+      subjectId,
+      category
+    ]
+      .filter(Boolean)
+      .length
+
+
+
+
+
+
+  async function handleDownload(
+    noteId: number,
+    fileUrl: string
+  ) {
+
+
+    const res = await fetch(
+      `/api/notes/${noteId}/track`,
+      {
+
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+          action: "download"
+        })
+
+      }
+    )
+
+
+
+    if (res.status === 403) {
+
+      const data = await res.json()
+
+      alert(data.message)
+
+      return
+
+    }
+
+
+
+    window.open(fileUrl, "_blank")
+
+  }
+  return (
+
+    <div className="space-y-6 pb-10">
+
+
+      {/* HERO SECTION */}
+
+      <motion.div
+
+        initial={{
+          opacity: 0,
+          y: -15
+        }}
+
+        animate={{
+          opacity: 1,
+          y: 0
+        }}
+
+        className="
 relative
 overflow-hidden
 rounded-3xl
@@ -504,10 +504,10 @@ p-5
 sm:p-8
 "
 
->
+      >
 
 
-<div className="
+        <div className="
 absolute
 right-[-30px]
 top-[-30px]
@@ -515,13 +515,13 @@ top-[-30px]
 opacity-10
 ">
 
-<BookOpen size={180}/>
+          <BookOpen size={180} />
 
-</div>
+        </div>
 
 
 
-<div className="
+        <div className="
 relative
 z-10
 
@@ -535,10 +535,10 @@ gap-5
 ">
 
 
-<div>
+          <div>
 
 
-<div className="
+            <div className="
 flex
 items-center
 gap-3
@@ -546,7 +546,7 @@ mb-3
 ">
 
 
-<div className="
+              <div className="
 h-12
 w-12
 
@@ -560,17 +560,17 @@ justify-center
 ">
 
 
-<FileText
-className="text-primary"
-size={26}
-/>
+                <FileText
+                  className="text-primary"
+                  size={26}
+                />
 
 
-</div>
+              </div>
 
 
 
-<h1 className="
+              <h1 className="
 text-2xl
 sm:text-3xl
 
@@ -579,18 +579,18 @@ font-bold
 tracking-tight
 ">
 
-Campus Library
+                Campus Library
 
-</h1>
-
-
-
-</div>
+              </h1>
 
 
 
+            </div>
 
-<p className="
+
+
+
+            <p className="
 text-sm
 
 text-muted-foreground
@@ -598,15 +598,15 @@ text-muted-foreground
 max-w-xl
 ">
 
-Access Notes, Previous Year Papers,
-Assignments, Lab Records, Books and
-important exam resources shared by students.
+              Access Notes, Previous Year Papers,
+              Assignments, Lab Records, Books and
+              important exam resources shared by students.
 
-</p>
+            </p>
 
 
 
-<div className="
+            <div className="
 flex
 items-center
 gap-2
@@ -614,7 +614,7 @@ mt-4
 ">
 
 
-<span className="
+              <span className="
 flex
 items-center
 gap-1
@@ -633,45 +633,31 @@ text-primary
 font-medium
 ">
 
-<Sparkles size={14}/>
+                <Sparkles size={14} />
 
-Student Community
+              Free Resources
 
-</span>
-
-
-
-<span className="
-text-xs
-
-px-3
-py-1
-
-rounded-full
-
-bg-muted
-">
-
-Free Resources
-
-</span>
-
-
-
-</div>
-
-
-</div>
+              </span>
 
 
 
 
-<Link href="/notes/upload">
 
 
-<Button
+            </div>
 
-className="
+
+          </div>
+
+
+
+
+          <Link href="/notes/upload">
+
+
+            <Button
+
+              className="
 rounded-2xl
 
 h-11
@@ -683,83 +669,83 @@ hover:scale-105
 transition
 "
 
->
+            >
 
-<Upload
-className="h-4 w-4 mr-2"
-/>
+              <Upload
+                className="h-4 w-4 mr-2"
+              />
 
-Upload Notes
+              Upload Notes
 
-</Button>
-
-
-</Link>
+            </Button>
 
 
-
-</div>
-
-
-</motion.div>
+          </Link>
 
 
+
+        </div>
+
+
+      </motion.div>
 
 
 
 
-{/* MOBILE FILTER BUTTON */}
 
 
-<div className="sm:hidden">
+      {/* MOBILE FILTER BUTTON */}
 
 
-<Button
+      <div className="sm:hidden">
 
-variant="outline"
 
-className="
+        <Button
+
+          variant="outline"
+
+          className="
 w-full
 rounded-xl
 h-11
 "
 
-onClick={()=>setShowFilters(!showFilters)}
+          onClick={() => setShowFilters(!showFilters)}
 
->
-
-
-<SlidersHorizontal
-className="h-4 w-4 mr-2"
-/>
+        >
 
 
-Filters
-
-{
-activeFilterCount>0 &&
-` (${activeFilterCount})`
-}
+          <SlidersHorizontal
+            className="h-4 w-4 mr-2"
+          />
 
 
-</Button>
+          Filters
+
+          {
+            activeFilterCount > 0 &&
+            ` (${activeFilterCount})`
+          }
 
 
-</div>
+        </Button>
 
 
+      </div>
 
 
 
 
-{/* FILTER SECTION */}
 
 
-<div
+      {/* FILTER SECTION */}
 
-className={`
 
-${showFilters ? "block":"hidden"}
+      <div
+
+        className={`
+
+${showFilters ? "block" : "hidden"}
 
 sm:block
 
@@ -779,10 +765,10 @@ space-y-4
 
 `}
 
->
+      >
 
 
-<div className="
+        <div className="
 flex
 items-center
 gap-2
@@ -793,22 +779,22 @@ text-sm
 ">
 
 
-<Search
-size={17}
-/>
+          <Search
+            size={17}
+          />
 
 
-Find Learning Material
+          Find Learning Material
 
 
-</div>
-
-
-
+        </div>
 
 
 
-<div className="
+
+
+
+        <div className="
 
 grid
 
@@ -826,25 +812,25 @@ gap-3
 
 
 
-<Autocomplete
+          <Autocomplete
 
-placeholder="University"
+            placeholder="University"
 
-value={universityId}
+            value={universityId}
 
-onChange={setUniversityId}
+            onChange={setUniversityId}
 
-options={
-universities.map(u=>({
+            options={
+              universities.map(u => ({
 
-value:u.id.toString(),
+                value: u.id.toString(),
 
-label:u.name!
+                label: u.name!
 
-}))
-}
+              }))
+            }
 
-/>
+          />
 
 
 
@@ -852,27 +838,27 @@ label:u.name!
 
 
 
-<Autocomplete
+          <Autocomplete
 
-placeholder="College"
+            placeholder="College"
 
-value={collegeId}
+            value={collegeId}
 
-onChange={setCollegeId}
+            onChange={setCollegeId}
 
-disabled={!universityId}
+            disabled={!universityId}
 
-options={
-colleges.map(c=>({
+            options={
+              colleges.map(c => ({
 
-value:c.id.toString(),
+                value: c.id.toString(),
 
-label:c.name!
+                label: c.name!
 
-}))
-}
+              }))
+            }
 
-/>
+          />
 
 
 
@@ -880,27 +866,27 @@ label:c.name!
 
 
 
-<Autocomplete
+          <Autocomplete
 
-placeholder="Branch"
+            placeholder="Branch"
 
-value={courseId}
+            value={courseId}
 
-onChange={setCourseId}
+            onChange={setCourseId}
 
-disabled={!collegeId}
+            disabled={!collegeId}
 
-options={
-courses.map(c=>({
+            options={
+              courses.map(c => ({
 
-value:c.id.toString(),
+                value: c.id.toString(),
 
-label:c.name!
+                label: c.name!
 
-}))
-}
+              }))
+            }
 
-/>
+          />
 
 
 
@@ -908,29 +894,29 @@ label:c.name!
 
 
 
-<Autocomplete
+          <Autocomplete
 
-placeholder="Semester"
+            placeholder="Semester"
 
-value={semesterId}
+            value={semesterId}
 
-onChange={setSemesterId}
+            onChange={setSemesterId}
 
-disabled={!courseId}
+            disabled={!courseId}
 
-options={
+            options={
 
-semesters.map(s=>({
+              semesters.map(s => ({
 
-value:s.id.toString(),
+                value: s.id.toString(),
 
-label:`Semester ${s.number}`
+                label: `Semester ${s.number}`
 
-}))
+              }))
 
-}
+            }
 
-/>
+          />
 
 
 
@@ -939,29 +925,29 @@ label:`Semester ${s.number}`
 
 
 
-<Autocomplete
+          <Autocomplete
 
-placeholder="Subject"
+            placeholder="Subject"
 
-value={subjectId}
+            value={subjectId}
 
-onChange={setSubjectId}
+            onChange={setSubjectId}
 
-disabled={!semesterId}
+            disabled={!semesterId}
 
-options={
+            options={
 
-subjects.map(s=>({
+              subjects.map(s => ({
 
-value:s.id.toString(),
+                value: s.id.toString(),
 
-label:s.name!
+                label: s.name!
 
-}))
+              }))
 
-}
+            }
 
-/>
+          />
 
 
 
@@ -969,110 +955,110 @@ label:s.name!
 
 
 
-<Combobox
+          <Combobox
 
-placeholder="Resource Type"
+            placeholder="Resource Type"
 
-value={category}
+            value={category}
 
-onChange={setCategory}
+            onChange={setCategory}
 
-options={CATEGORY_OPTIONS}
+            options={CATEGORY_OPTIONS}
 
-/>
+          />
 
 
 
 
-</div>
+        </div>
 
 
 
 
 
 
-<div className="
+        <div className="
 flex
 gap-2
 flex-wrap
 ">
 
 
-<Button
+          <Button
 
-onClick={search}
+            onClick={search}
 
-className="
+            className="
 rounded-xl
 "
 
->
+          >
 
-<Search
-className="h-4 w-4 mr-2"
-/>
-
-
-Search Resources
+            <Search
+              className="h-4 w-4 mr-2"
+            />
 
 
-</Button>
+            Search Resources
 
 
+          </Button>
 
 
 
-{
 
-activeFilterCount>0 &&
 
-<Button
+          {
 
-variant="ghost"
+            activeFilterCount > 0 &&
 
-onClick={()=>{
+            <Button
 
-clearFilters()
+              variant="ghost"
 
-search()
+              onClick={() => {
 
-}}
+                clearFilters()
 
-className="
+                search()
+
+              }}
+
+              className="
 rounded-xl
 "
 
->
+            >
 
 
-<X
-className="h-4 w-4 mr-1"
-/>
+              <X
+                className="h-4 w-4 mr-1"
+              />
 
 
-Clear
+              Clear
 
 
-</Button>
+            </Button>
 
 
-}
-
-
-
-</div>
+          }
 
 
 
-</div>
-{/* NOTES GRID */}
+        </div>
 
 
-{
-loading ? (
+
+      </div>
+      {/* NOTES GRID */}
 
 
-<div className="
+      {
+        loading ? (
+
+
+          <div className="
 grid
 grid-cols-1
 sm:grid-cols-2
@@ -1082,37 +1068,37 @@ gap-5
 ">
 
 
-{
-[1,2,3,4,5,6].map((item)=>(
+            {
+              [1, 2, 3, 4, 5, 6].map((item) => (
 
-<Skeleton
+                <Skeleton
 
-key={item}
+                  key={item}
 
-className="
+                  className="
 h-72
 rounded-3xl
 "
 
-/>
+                />
 
-))
+              ))
 
-}
-
-
-</div>
+            }
 
 
-
-)
-
-:
-
-notes.length===0 ? (
+          </div>
 
 
-<div className="
+
+        )
+
+          :
+
+          notes.length === 0 ? (
+
+
+            <div className="
 rounded-3xl
 border
 bg-card
@@ -1125,7 +1111,7 @@ space-y-4
 ">
 
 
-<div className="
+              <div className="
 mx-auto
 
 h-16
@@ -1144,33 +1130,33 @@ justify-center
 ">
 
 
-<FileText
+                <FileText
 
-size={32}
+                  size={32}
 
-className="text-primary"
+                  className="text-primary"
 
-/>
-
-
-</div>
+                />
 
 
+              </div>
 
 
-<h2 className="
+
+
+              <h2 className="
 text-xl
 font-bold
 ">
 
-No Resources Found
+                No Resources Found
 
-</h2>
-
-
+              </h2>
 
 
-<p className="
+
+
+              <p className="
 text-sm
 
 text-muted-foreground
@@ -1180,54 +1166,54 @@ max-w-md
 mx-auto
 ">
 
-No notes available for this filter.
-Try another search or upload your own resource.
+                No notes available for this filter.
+                Try another search or upload your own resource.
 
-</p>
-
-
+              </p>
 
 
-<Link href="/notes/upload">
 
 
-<Button
+              <Link href="/notes/upload">
 
-className="
+
+                <Button
+
+                  className="
 rounded-xl
 "
 
->
+                >
 
-<Upload
+                  <Upload
 
-className="h-4 w-4 mr-2"
+                    className="h-4 w-4 mr-2"
 
-/>
+                  />
 
-Upload Resource
-
-
-</Button>
+                  Upload Resource
 
 
-</Link>
+                </Button>
 
 
-
-</div>
+              </Link>
 
 
 
-)
+            </div>
 
 
-:
 
-(
+          )
 
 
-<div className="
+            :
+
+            (
+
+
+              <div className="
 grid
 
 grid-cols-1
@@ -1240,55 +1226,55 @@ gap-5
 ">
 
 
-{
+                {
 
-notes.map((note,index)=>(
-
-
-
-<motion.div
-
-
-key={note.id}
+                  notes.map((note, index) => (
 
 
 
-initial={{
+                    <motion.div
 
-opacity:0,
 
-y:20
-
-}}
+                      key={note.id}
 
 
 
-animate={{
+                      initial={{
 
-opacity:1,
+                        opacity: 0,
 
-y:0
+                        y: 20
 
-}}
-
-
-
-transition={{
-
-duration:.3,
-
-delay:index*0.05
-
-}}
+                      }}
 
 
 
+                      animate={{
 
-onClick={()=>router.push(`/notes/${note.id}`)}
+                        opacity: 1,
+
+                        y: 0
+
+                      }}
 
 
 
-className="
+                      transition={{
+
+                        duration: .3,
+
+                        delay: index * 0.05
+
+                      }}
+
+
+
+
+                      onClick={() => router.push(`/notes/${note.id}`)}
+
+
+
+                      className="
 
 group
 
@@ -1315,14 +1301,14 @@ duration-300
 
 "
 
->
+                    >
 
 
 
-{/* TOP */}
+                      {/* TOP */}
 
 
-<div className="
+                      <div className="
 flex
 
 justify-between
@@ -1333,7 +1319,7 @@ mb-4
 ">
 
 
-<div className="
+                        <div className="
 
 h-12
 
@@ -1352,28 +1338,28 @@ justify-center
 ">
 
 
-<FileText
+                          <FileText
 
-size={25}
+                            size={25}
 
-className="text-primary"
+                            className="text-primary"
 
-/>
-
-
-</div>
+                          />
 
 
+                        </div>
 
 
 
-{
 
-note.isPremium &&
 
-<span
+                        {
 
-className="
+                          note.isPremium &&
+
+                          <span
+
+                            className="
 
 text-[11px]
 
@@ -1395,30 +1381,30 @@ border-yellow-500/20
 
 "
 
->
+                          >
 
-⭐ Premium
+                            ⭐ Premium
 
-</span>
+                          </span>
 
-}
-
-
-
-</div>
+                        }
 
 
+
+                      </div>
 
 
 
 
 
-{/* TITLE */}
 
 
-<h2
+                      {/* TITLE */}
 
-className="
+
+                      <h2
+
+                        className="
 
 font-bold
 
@@ -1434,23 +1420,23 @@ transition
 
 "
 
->
+                      >
 
 
-{note.title}
+                        {note.title}
 
 
-</h2>
-
-
-
+                      </h2>
 
 
 
-{/* CATEGORY TAGS */}
 
 
-<div className="
+
+                      {/* CATEGORY TAGS */}
+
+
+                      <div className="
 
 flex
 
@@ -1463,9 +1449,9 @@ mt-4
 ">
 
 
-<span
+                        <span
 
-className="
+                          className="
 
 text-[11px]
 
@@ -1483,47 +1469,19 @@ font-medium
 
 "
 
->
+                        >
 
-{note.category.replace(/_/g," ")}
-
-
-</span>
+                          {note.category.replace(/_/g, " ")}
 
 
-
-
-<span
-
-className="
-
-text-[11px]
-
-px-3
-
-py-1
-
-rounded-full
-
-bg-muted
-
-font-medium
-
-"
-
->
-
-{note.course.name}
-
-</span>
+                        </span>
 
 
 
 
+                        <span
 
-<span
-
-className="
+                          className="
 
 text-[11px]
 
@@ -1539,24 +1497,52 @@ font-medium
 
 "
 
->
+                        >
 
-Semester {note.semester.number}
+                          {note.course.name}
 
-</span>
-
-
+                        </span>
 
 
 
 
-{
 
-note.subject &&
+                        <span
 
-<span
+                          className="
 
-className="
+text-[11px]
+
+px-3
+
+py-1
+
+rounded-full
+
+bg-muted
+
+font-medium
+
+"
+
+                        >
+
+                          Semester {note.semester.number}
+
+                        </span>
+
+
+
+
+
+
+                        {
+
+                          note.subject &&
+
+                          <span
+
+                            className="
 
 text-[11px]
 
@@ -1574,32 +1560,32 @@ line-clamp-1
 
 "
 
->
+                          >
 
-{note.subject.name}
-
-
-</span>
-
-}
+                            {note.subject.name}
 
 
+                          </span>
 
-</div>
+                        }
 
 
+
+                      </div>
 
 
 
 
 
-{
 
-note.description &&
 
-<p
+                      {
 
-className="
+                        note.description &&
+
+                        <p
+
+                          className="
 
 mt-4
 
@@ -1611,27 +1597,27 @@ line-clamp-2
 
 "
 
->
+                        >
 
-{note.description}
-
-
-</p>
+                          {note.description}
 
 
-}
+                        </p>
 
 
+                      }
 
 
 
 
 
 
-{/* USER INFO */}
 
 
-<div className="
+                      {/* USER INFO */}
+
+
+                      <div className="
 
 mt-5
 
@@ -1644,7 +1630,7 @@ space-y-3
 ">
 
 
-<div className="
+                        <div className="
 
 flex
 
@@ -1655,7 +1641,7 @@ gap-3
 ">
 
 
-<div className="
+                          <div className="
 
 h-9
 
@@ -1677,60 +1663,60 @@ font-bold
 
 "
 
->
+                          >
 
 
-{
-note.uploadedBy.name.charAt(0)
-}
+                            {
+                              note.uploadedBy.name.charAt(0)
+                            }
 
 
-</div>
+                          </div>
 
 
 
-<div className="
+                          <div className="
 min-w-0
 ">
 
 
-<p className="
+                            <p className="
 text-sm
 font-medium
 truncate
 ">
 
-{note.uploadedBy.name}
+                              {note.uploadedBy.name}
 
-</p>
+                            </p>
 
 
 
-<p className="
+                            <p className="
 text-xs
 text-muted-foreground
 truncate
 ">
 
-{
-note.uploadedBy.college?.name ?? "Student"
-}
+                              {
+                                note.uploadedBy.college?.name ?? "Student"
+                              }
 
-</p>
-
-
-</div>
+                            </p>
 
 
-</div>
+                          </div>
 
 
+                        </div>
 
 
 
 
 
-<div className="
+
+
+                        <div className="
 
 flex
 
@@ -1743,65 +1729,65 @@ text-muted-foreground
 ">
 
 
-<span className="
+                          <span className="
 flex
 items-center
 gap-1
 ">
 
-<Eye size={13}/>
+                            <Eye size={13} />
 
-{note.views} Views
+                            {note.views} Views
 
-</span>
+                          </span>
 
 
 
-<span className="
+                          <span className="
 flex
 items-center
 gap-1
 ">
 
-<Download size={13}/>
+                            <Download size={13} />
 
-{note.downloads} Downloads
+                            {note.downloads} Downloads
 
-</span>
-
-
-</div>
+                          </span>
 
 
+                        </div>
 
-</div>
 
 
+                      </div>
 
 
 
 
 
-{/* BUTTON */}
+
+
+                      {/* BUTTON */}
 
 
 
-<button
+                      <button
 
-onClick={(e)=>{
+                        onClick={(e) => {
 
-e.stopPropagation()
+                          e.stopPropagation()
 
-handleDownload(
-note.id,
-note.fileUrl
-)
+                          handleDownload(
+                            note.id,
+                            note.fileUrl
+                          )
 
-}}
+                        }}
 
 
 
-className="
+                        className="
 
 mt-4
 
@@ -1830,56 +1816,56 @@ transition
 
 "
 
->
+                      >
 
 
-Preview / Download
+                        Preview / Download
 
 
-</button>
-
-
-
+                      </button>
 
 
 
-</motion.div>
 
 
 
-))
-
-}
-
-
-</div>
-
-
-)
-
-}
+                    </motion.div>
 
 
 
-{/* FOOTER TRUST SECTION */}
+                  ))
 
-<motion.div
+                }
 
-initial={{
-opacity:0,
-y:10
-}}
 
-animate={{
-opacity:1,
-y:0
-}}
+              </div>
 
-transition={{
-duration:.4
-}}
 
-className="
+            )
+
+      }
+
+
+
+      {/* FOOTER TRUST SECTION */}
+
+      <motion.div
+
+        initial={{
+          opacity: 0,
+          y: 10
+        }}
+
+        animate={{
+          opacity: 1,
+          y: 0
+        }}
+
+        transition={{
+          duration: .4
+        }}
+
+        className="
 mt-8
 
 rounded-3xl
@@ -1908,23 +1894,23 @@ gap-4
 
 "
 
->
+      >
 
 
-<div>
+        <div>
 
 
-<h3 className="
+          <h3 className="
 font-semibold
 text-sm
 ">
 
-Help your campus grow 📚
+            Help your campus grow 📚
 
-</h3>
+          </h3>
 
 
-<p className="
+          <p className="
 text-xs
 
 text-muted-foreground
@@ -1933,54 +1919,54 @@ mt-1
 
 ">
 
-Upload your notes and help thousands of students.
+            Upload your notes and help thousands of students.
 
-</p>
-
-
-</div>
+          </p>
 
 
+        </div>
 
 
-<Link href="/notes/upload">
 
 
-<Button
+        <Link href="/notes/upload">
 
-size="sm"
 
-className="
+          <Button
+
+            size="sm"
+
+            className="
 rounded-xl
 "
 
->
+          >
 
-<Upload
+            <Upload
 
-className="h-4 w-4 mr-2"
+              className="h-4 w-4 mr-2"
 
-/>
-
-
-Share Notes
+            />
 
 
-</Button>
+            Share Notes
 
 
-
-</Link>
+          </Button>
 
 
 
-
-</motion.div>
-
+        </Link>
 
 
-</div>
 
-)
+
+      </motion.div>
+
+
+
+    </div>
+
+  )
 
 }

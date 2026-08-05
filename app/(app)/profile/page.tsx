@@ -62,6 +62,7 @@ export default async function ProfilePage() {
     count: dbUser._count.uploadedNotes,
   },
 
+  { href: "/profile/listings", label: "My Listings", icon: ShoppingBag },
   {
     href: "/profile/bookmarks",
     label: "Bookmarked Resources",

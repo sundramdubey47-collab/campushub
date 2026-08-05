@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { timeAgo, daysUntil } from "@/lib/time-ago"
 import {
   Bell, Calendar, FileText, ShoppingBag, Package, Search,
-  MessageCircle, Brain, ArrowRight, Crown, Megaphone, BookOpen,
+  MessageCircle, Brain, ArrowRight, Crown,CalendarCheck, Megaphone, BookOpen,
   Code2, Trophy, Zap, ChevronRight, Clock
 } from "lucide-react"
 const CampusPulse = dynamic(() => import("@/components/campus-pulse").then((m) => m.CampusPulse))
@@ -13,6 +13,7 @@ import Image from "next/image"
 import { getISTGreeting } from "@/lib/time-utils"
 import { NowInClass } from "@/components/now-in-class"
 import dynamic from "next/dynamic"
+
 const DailyTriviaCard = dynamic(() => import("@/components/daily-trivia-card").then((m) => m.DailyTriviaCard), {
   loading: () => <div className="h-40 rounded-2xl bg-muted animate-pulse" />,
 })
@@ -25,9 +26,9 @@ const TimetableLiveCard = dynamic(() => import("@/components/timetable-live-card
 })
 
 const quickLinks = [
-  { href: "/notes", label: "Resources", icon: FileText, color: "oklch(0.55 0.15 278)" },
-    { href: "/events", label: "Events", icon: Calendar },
-  { href: "/timetable", label: "Timetable", icon: Clock, color: "oklch(0.6 0.18 25)" },
+  { href: "/attendance", label: "Attendance", icon: CalendarCheck },
+  { href: "/events", label: "Events", icon: Calendar },
+  { href: "/notices", label: "Notice", icon: Bell },
   { href: "/marketplace", label: "Marketplace", icon: ShoppingBag, color: "oklch(0.55 0.13 145)" },
   { href: "/rentals", label: "Rentals", icon: Package, color: "oklch(0.72 0.15 60)" },
   { href: "/lost-found", label: "Lost & Found", icon: Search, color: "oklch(0.6 0.18 25)" },
