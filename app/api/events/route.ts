@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { notifyCollege } from "@/lib/notifications"
+import { notifyCollege } from "@/lib/notify"
 
 export async function POST(req: NextRequest) {
   try {
@@ -34,7 +34,6 @@ export async function POST(req: NextRequest) {
       seatLimit,
     } = body
 
-    // PhonePe online payment validation
     if (
       paymentType === "ONLINE_PHONEPE" &&
       !process.env.PHONEPE_MERCHANT_ID
@@ -53,7 +52,7 @@ export async function POST(req: NextRequest) {
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+    where: { id: Number(session.user.id) },
       select: { collegeId: true },
     })
 
@@ -82,7 +81,7 @@ export async function POST(req: NextRequest) {
           ? new Date(registrationDeadline)
           : null,
         seatLimit: seatLimit ? Number(seatLimit) : null,
-        createdById: session.user.id,
+      createdById: Number(session.user.id),
         collegeId: user.collegeId,
       },
     })
@@ -91,7 +90,7 @@ export async function POST(req: NextRequest) {
     await prisma.eventTeamMember.create({
       data: {
         eventId: event.id,
-        userId: session.user.id,
+        userId: Number(session.user.id),
         role: "ORGANIZER",
       },
     })
@@ -99,9 +98,11 @@ export async function POST(req: NextRequest) {
     // Notify college users
     await notifyCollege({
       collegeId: user.collegeId,
+      type: "EVENT",
       title: "New Event",
-      message: `${event.title} has been created`,
+      body: `${event.title} has been created`,
       link: `/events/${event.id}`,
+      excludeUserId: Number(session.user.id),
     })
 
     return NextResponse.json(event, { status: 201 })
@@ -127,7 +128,7 @@ export async function GET(req: NextRequest) {
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+     where: { id: Number(session.user.id) },
       select: { collegeId: true },
     })
 
@@ -156,13 +157,12 @@ export async function GET(req: NextRequest) {
           select: {
             id: true,
             name: true,
-            image: true,
           },
         },
         _count: {
           select: {
             registrations: true,
-            teamMembers: true,
+            
           },
         },
       },
