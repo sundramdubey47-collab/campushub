@@ -2381,25 +2381,6 @@ text-muted-foreground
 ">
 
 
-<Link
-href="/login"
-className="hover:text-foreground"
->
-
-Login
-
-</Link>
-
-
-<Link
-href="/signup"
-className="hover:text-foreground"
->
-
-Sign Up
-
-</Link>
-
 
 <Link
 href="/terms"
@@ -2420,6 +2401,9 @@ Privacy
 
 </Link>
 
+
+<Link href="/refund" className="hover:text-foreground">Refund Policy</Link>
+<Link href="/contact" className="hover:text-foreground">Contact</Link>
 
 </div>
 

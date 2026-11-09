@@ -60,17 +60,8 @@ export async function POST(req: Request) {
         body: `${dbUser.name}: ${content.slice(0, 50)}`,
         link: "/chat",
       })
-    } else if (!replyToId) {
-      // Normal message (reply nahi) — poore college ko jaayegi jaisa pehले tha
-      await notifyCollege({
-        collegeId: dbUser.collegeId,
-        type: "SYSTEM",
-        title: "💬 Campus Chat",
-        body: `${dbUser.name}: ${content.slice(0, 50)}`,
-        link: "/chat",
-        excludeUserId: dbUser.id,
-      })
-    }
+    } 
+   
   } catch (err) {
     console.error("[campus-chat] notify failed:", err)
   }

@@ -11,7 +11,9 @@ const PLAN_PRICES: Record<string, number> = {
 
 export async function POST(req: Request) {
   const session = await auth()
-
+  if (process.env.PAYMENTS_ENABLED !== "true") {
+    return NextResponse.json({ error: "Paid plans are launching soon. Everything is free for now!" }, { status: 503 })
+  }
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Login to continue" }, { status: 401 })
   }

@@ -1,151 +1,183 @@
-import { NextResponse } from "next/server"
+
+import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { notifyCollege } from "@/lib/notify"
+import { notifyCollege } from "@/lib/notifications"
 
-export async function POST(req: Request) {
-  const session = await auth()
+export async function POST(req: NextRequest) {
+  try {
+    const session = await auth()
 
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login is required" }, { status: 401 })
-  }
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      )
+    }
 
-  const dbUser = await prisma.user.findUnique({
-    where: { email: session.user.email },
-  })
+    const body = await req.json()
 
-  if (!dbUser) {
-    return NextResponse.json({ error: "User not found" }, { status: 400 })
-  }
-
-  if (!dbUser.collegeId) {
-    return NextResponse.json(
-      { error: "Your college is not set" },
-      { status: 400 }
-    )
-  }
-
-  const body = await req.json()
-
-  const {
-    title,
-    description,
-    type,
-    venue,
-    bannerUrl,
-    eventDate,
-    endDate,
-    registrationDeadline,
-    seatLimit,
-    organizerType,
-    clubName,
-    paymentType,
-    feeAmount,
-    feeNote,
-  } = body
-
-  if (!title || !eventDate) {
-    return NextResponse.json(
-      { error: "Title and Event Date are required" },
-      { status: 400 }
-    )
-  }
-
-  const isCollegeEvent = organizerType === "COLLEGE"
-
-  // Sirf Faculty/Admin official college event bana sakte hain
-  if (
-    isCollegeEvent &&
-    !["FACULTY", "ADMIN", "SUPER_ADMIN"].includes(dbUser.role)
-  ) {
-    return NextResponse.json(
-      { error: "Only Faculty/Admin can create official college events" },
-      { status: 403 }
-    )
-  }
-
-  const event = await prisma.event.create({
-    data: {
+    const {
       title,
       description,
-      type: type || "OTHER",
+      type,
       venue,
       bannerUrl,
+      organizerType,
+      clubName,
+      paymentType,
+      feeAmount,
+      feeNote,
+      eventDate,
+      endDate,
+      registrationDeadline,
+      seatLimit,
+    } = body
 
-      organizerType: organizerType || "COLLEGE",
-      clubName: clubName || null,
+    // PhonePe online payment validation
+    if (
+      paymentType === "ONLINE_PHONEPE" &&
+      !process.env.PHONEPE_MERCHANT_ID
+    ) {
+      return NextResponse.json(
+        { error: "Online payment is not available yet" },
+        { status: 400 }
+      )
+    }
 
-      paymentType: paymentType || "FREE",
-      feeAmount:
-        paymentType === "FREE"
-          ? null
-          : feeAmount
-          ? Number(feeAmount)
+    if (!title || !eventDate) {
+      return NextResponse.json(
+        { error: "Title and event date are required" },
+        { status: 400 }
+      )
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { collegeId: true },
+    })
+
+    if (!user?.collegeId) {
+      return NextResponse.json(
+        { error: "College not found" },
+        { status: 400 }
+      )
+    }
+
+    const event = await prisma.event.create({
+      data: {
+        title,
+        description,
+        type,
+        venue,
+        bannerUrl,
+        organizerType,
+        clubName,
+        paymentType,
+        feeAmount: feeAmount ? Number(feeAmount) : null,
+        feeNote,
+        eventDate: new Date(eventDate),
+        endDate: endDate ? new Date(endDate) : null,
+        registrationDeadline: registrationDeadline
+          ? new Date(registrationDeadline)
           : null,
-      feeNote: feeNote || null,
+        seatLimit: seatLimit ? Number(seatLimit) : null,
+        createdById: session.user.id,
+        collegeId: user.collegeId,
+      },
+    })
 
-      eventDate: new Date(eventDate),
-      endDate: endDate ? new Date(endDate) : null,
-      registrationDeadline: registrationDeadline
-        ? new Date(registrationDeadline)
-        : null,
-      seatLimit: seatLimit ? Number(seatLimit) : null,
+    // Add creator as organizer
+    await prisma.eventTeamMember.create({
+      data: {
+        eventId: event.id,
+        userId: session.user.id,
+        role: "ORGANIZER",
+      },
+    })
 
-      createdById: dbUser.id,
-      collegeId: dbUser.collegeId,
-    },
-  })
+    // Notify college users
+    await notifyCollege({
+      collegeId: user.collegeId,
+      title: "New Event",
+      message: `${event.title} has been created`,
+      link: `/events/${event.id}`,
+    })
 
-  // Event creator automatically organizer banega
-  await prisma.eventTeamMember.create({
-    data: {
-      eventId: event.id,
-      userId: dbUser.id,
-      role: "ORGANIZER",
-    },
-  })
-await notifyCollege({
-  collegeId: dbUser.collegeId,
-  type: "EVENT",
-  title: "🎉 New Event Posted",
-  body: title,
-  link: "/events",
-  excludeUserId: dbUser.id,
-})
-  return NextResponse.json(event)
+    return NextResponse.json(event, { status: 201 })
+  } catch (error) {
+    console.error("Create event error:", error)
+
+    return NextResponse.json(
+      { error: "Failed to create event" },
+      { status: 500 }
+    )
+  }
 }
 
-export async function GET() {
-  const session = await auth()
+export async function GET(req: NextRequest) {
+  try {
+    const session = await auth()
 
-  const dbUser = await prisma.user.findUnique({
-    where: { email: session?.user?.email ?? "" },
-  })
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      )
+    }
 
-  if (!dbUser?.collegeId) {
-    return NextResponse.json([])
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { collegeId: true },
+    })
+
+    if (!user?.collegeId) {
+      return NextResponse.json(
+        { error: "College not found" },
+        { status: 400 }
+      )
+    }
+
+    const { searchParams } = new URL(req.url)
+
+    const type = searchParams.get("type")
+    const upcoming = searchParams.get("upcoming")
+
+    const events = await prisma.event.findMany({
+      where: {
+        collegeId: user.collegeId,
+        ...(type ? { type: type as any } : {}),
+        ...(upcoming === "true"
+          ? { eventDate: { gte: new Date() } }
+          : {}),
+      },
+      include: {
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+        _count: {
+          select: {
+            registrations: true,
+            teamMembers: true,
+          },
+        },
+      },
+      orderBy: {
+        eventDate: "asc",
+      },
+    })
+
+    return NextResponse.json(events)
+  } catch (error) {
+    console.error("Get events error:", error)
+
+    return NextResponse.json(
+      { error: "Failed to fetch events" },
+      { status: 500 }
+    )
   }
-
-  const events = await prisma.event.findMany({
-    where: {
-      collegeId: dbUser.collegeId,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    include: {
-      createdBy: {
-        select: {
-          name: true,
-        },
-      },
-      _count: {
-        select: {
-          registrations: true,
-        },
-      },
-    },
-  })
-
-  return NextResponse.json(events)
 }

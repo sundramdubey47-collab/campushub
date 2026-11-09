@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import { sendPushNotification, sendPushNotificationToCollege } from "@/lib/notification-service"
+import { sendPushNotification, sendPushNotificationToUsers } from "@/lib/notification-service"
 
 type NotifyParams = {
   userId: number
@@ -32,6 +32,8 @@ export async function notifyCollege({
   body,
   link,
   excludeUserId,
+  courseId,
+  semesterId,
 }: {
   collegeId: number
   type: string
@@ -39,28 +41,34 @@ export async function notifyCollege({
   body: string
   link?: string
   excludeUserId?: number
+  courseId?: number
+  semesterId?: number
 }) {
+  let userIds: number[] = []
+
   try {
     const users = await prisma.user.findMany({
-      where: { collegeId, ...(excludeUserId ? { id: { not: excludeUserId } } : {}) },
+      where: {
+        collegeId,
+        ...(excludeUserId ? { id: { not: excludeUserId } } : {}),
+        ...(courseId ? { courseId } : {}),
+        ...(semesterId ? { semesterId } : {}),
+      },
       select: { id: true },
     })
+    userIds = users.map((u) => u.id)
 
-    await prisma.notification.createMany({
-      data: users.map((u) => ({
-        userId: u.id,
-        type: type as any,
-        title,
-        body,
-        link: link || null,
-      })),
-    })
+    if (userIds.length) {
+      await prisma.notification.createMany({
+        data: userIds.map((id) => ({ userId: id, type: type as any, title, body, link: link || null })),
+      })
+    }
   } catch (err) {
     console.error("[notifyCollege] Failed to save notification rows:", err)
   }
 
   try {
-    await sendPushNotificationToCollege({ collegeId, title, body, url: link || "/dashboard" })
+    await sendPushNotificationToUsers({ userIds, title, body, url: link || "/dashboard" })
   } catch (err) {
     console.error("[notifyCollege] Failed to send push:", err)
   }

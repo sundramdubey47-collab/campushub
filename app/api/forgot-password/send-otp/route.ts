@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { resend } from "@/lib/resend"
+import { sendMail } from "@/lib/mailer"
 import { checkRateLimit } from "@/lib/rate-limit"
 import { RATE_LIMITS } from "@/lib/rate-limit"
 
@@ -32,12 +32,11 @@ if (!result.allowed) {
     data: { email, otp, expiresAt },
   })
 
-  try {
-    await resend.emails.send({
-      from: "CampusHub <onboarding@resend.dev>",
+   try {
+    await sendMail({
       to: email,
       subject: "Your CampusHub Password Reset Code",
-      html: `<p>Your OTP is: <strong>${otp}</strong></p><p>This code expires in 10 minutes.</p>`,
+      html: `<p>Your OTP is: <strong>${otp}</strong></p><p>This code expires in 10 minutes. If you didn't request it, ignore this email.</p>`,
     })
   } catch (err) {
     console.error("Email send failed:", err)

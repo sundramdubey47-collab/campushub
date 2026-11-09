@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { resend } from "@/lib/resend"
+import { sendMail } from "@/lib/mailer"
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit"
 
 export async function POST() {
@@ -25,9 +25,8 @@ export async function POST() {
     data: { email: `verify:${dbUser.email}`, otp, expiresAt },
   })
 
-  try {
-    await resend.emails.send({
-      from: "CampusHub <onboarding@resend.dev>",
+     try {
+    await sendMail({
       to: dbUser.email,
       subject: "Verify your CampusHub email",
       html: `<p>Your verification code is: <strong>${otp}</strong></p><p>This code expires in 10 minutes.</p>`,

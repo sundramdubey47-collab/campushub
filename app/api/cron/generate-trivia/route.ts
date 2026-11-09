@@ -176,6 +176,7 @@ Return ONLY a valid JSON array in this exact format:
           title: "🧠 Today's Quiz is Live!",
           body: `5 new questions for ${course.name} students — test your knowledge now!`,
           link: "/dashboard",
+          courseId: course.id,
         })
       } catch (error) {
         failed++
