@@ -9,7 +9,7 @@ import { Autocomplete } from "@/components/autocomplete"
 import { Plus } from "lucide-react"
 import Papa from "papaparse"
 import { Upload, Download, Trash2 } from "lucide-react"
-
+import { AiStructureImport } from "@/components/ai-structure-import"
 type Item = { id: number; name?: string; number?: number }
 
 export default function StructureManagementPage() {
@@ -184,6 +184,8 @@ async function handleBulkImport() {
   <div className="rounded-xl border bg-card p-4 space-y-3">
     <div className="flex items-center justify-between">
       <h3 className="font-semibold text-sm">Bulk Import (CSV)</h3>
+
+
       <button onClick={downloadTemplate} className="text-xs text-primary underline flex items-center gap-1">
         <Download className="h-3 w-3" /> Download Template
       </button>
@@ -203,6 +205,14 @@ async function handleBulkImport() {
       </Button>
     </div>
   </div>
+)}
+{collegeId && (
+  <AiStructureImport
+    collegeId={collegeId}
+    onDone={() =>
+      fetch(`/api/super-admin/departments?collegeId=${collegeId}`).then((r) => r.json()).then(setDepartments)
+    }
+  />
 )}
       {collegeId && (
         <div className="rounded-xl border bg-card p-4 space-y-3">

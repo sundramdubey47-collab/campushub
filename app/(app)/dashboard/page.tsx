@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { timeAgo, daysUntil } from "@/lib/time-ago"
 import {
   Bell, Calendar, FileText, ShoppingBag, Package, Search,
-  MessageCircle, Brain, ArrowRight, Crown,CalendarCheck, Megaphone, BookOpen,
+  MessageCircle, Brain, ArrowRight, Crown,CalendarCheck, Megaphone, BookOpen,Utensils,
   Code2, Trophy, Zap, ChevronRight, Clock
 } from "lucide-react"
 const CampusPulse = dynamic(() => import("@/components/campus-pulse").then((m) => m.CampusPulse))
@@ -26,7 +26,7 @@ const TimetableLiveCard = dynamic(() => import("@/components/timetable-live-card
 })
 
 const quickLinks = [
-  { href: "/attendance", label: "Attendance", icon: CalendarCheck },
+{ href: "/food", label: "Food & Mess", icon: Utensils, color: "oklch(0.72 0.15 60)" },
   { href: "/events", label: "Events", icon: Calendar },
   { href: "/notices", label: "Notice", icon: Bell },
   { href: "/marketplace", label: "Marketplace", icon: ShoppingBag, color: "oklch(0.55 0.13 145)" },

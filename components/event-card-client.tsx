@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { WhatsAppShare } from "@/components/whatsapp-share"
 import { QrCode, MapPin, Clock, Users } from "lucide-react"
+import { FullImage } from "@/components/full-image"
 
 type Event = {
   id: number
@@ -12,6 +13,7 @@ type Event = {
   description: string | null
   type: string
   venue: string | null
+  bannerUrl?: string | null
   eventDate: string
   endDate: string | null
   registrationDeadline: string | null
@@ -196,7 +198,9 @@ async function handleRegister() {
   return (
     <div className={`group relative overflow-hidden rounded-2xl border bg-card shadow-sm hover:shadow-lg transition-shadow duration-300 ${hasEnded ? "opacity-60" : ""}`}>
       <div className="h-1 w-full bg-gradient-to-r from-primary via-primary/60 to-transparent" />
-
+{event.bannerUrl && (
+  <FullImage src={event.bannerUrl} alt={event.title} natural maxH="max-h-72" zoom />
+)}
       <div className="p-5 space-y-3.5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex gap-3 items-start">

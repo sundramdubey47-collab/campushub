@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { motion } from "framer-motion"
-
+import { InstallAppButton } from "@/components/install-app-button"
 import { Button } from "@/components/ui/button"
 import { CampusHubLogo } from "@/components/campushub-logo"
 
@@ -201,23 +201,6 @@ Your Digital Campus
 <div className="flex items-center gap-3">
 
 
-<Link href="/login">
-
-<Button
-variant="outline"
-className="
-rounded-xl
-border-primary/30
-hover:bg-primary/10
-"
->
-Login
-</Button>
-
-</Link>
-
-
-
 <Link href="/signup">
 
 <Button
@@ -227,23 +210,21 @@ shadow-lg
 shadow-primary/20
 "
 >
-Get Started
-<ArrowRight className="ml-2 h-4 w-4"/>
+Signup
+
 </Button>
 
 </Link>
 
 
+<InstallAppButton />
 </div>
 
 
 </div>
+
 
 </header>
-
-
-
-
 
 {/* HERO */}
 

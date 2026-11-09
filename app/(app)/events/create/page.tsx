@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Combobox } from "@/components/combobox"
-
+import { MultiImagePicker } from "@/components/multi-image-picker"
 const TYPE_OPTIONS = [
   { value: "FEST", label: "Fest" },
   { value: "HACKATHON", label: "Hackathon" },
@@ -36,6 +36,7 @@ const [isPaid, setIsPaid] = useState(false)
 const [feeAmount, setFeeAmount] = useState("")
 const [feeNote, setFeeNote] = useState("")
 const [paymentType, setPaymentType] = useState("FREE")
+const [bannerFile, setBannerFile] = useState<File | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -48,6 +49,20 @@ const [paymentType, setPaymentType] = useState("FREE")
 
     setLoading(true)
 
+    let bannerUrl: string | null = null
+if (bannerFile) {
+  const fd = new FormData()
+  fd.append("file", bannerFile)
+  const up = await fetch("/api/events/banner", { method: "POST", body: fd })
+  const upData = await up.json()
+  if (!up.ok) {
+    setError(upData.error)
+    setLoading(false)
+    return
+  }
+  bannerUrl = upData.url
+}
+
     const res = await fetch("/api/events", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -57,6 +72,7 @@ const [paymentType, setPaymentType] = useState("FREE")
         type,
         venue,
         eventDate,
+        bannerUrl,
         endDate: endDate || null,
         registrationDeadline: registrationDeadline || null,
         seatLimit: seatLimit || null,
@@ -100,7 +116,12 @@ const [paymentType, setPaymentType] = useState("FREE")
             onChange={setType}
             options={TYPE_OPTIONS}
           />
+          <div className="space-y-2">
+  <Label>Event Poster / Banner (optional)</Label>
+  <MultiImagePicker max={1} files={bannerFile ? [bannerFile] : []} onChange={(f) => setBannerFile(f[0] ?? null)} />
+</div>
         </div>
+        
 
 <div className="space-y-2">
   <Label>Organized By</Label>

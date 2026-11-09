@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation"
 
 export const ROOT_PAGES = [
   "/dashboard", "/notes", "/notices", "/events", "/marketplace",
-  "/rentals", "/lost-found", "/tests", "/ai-assistant", "/premium",
+  "/rentals", "/lost-found", "/tests", "/ai-assistant", "/premium","/food",
   "/profile", "/timetable", "/attendance", "/chat", "/admin", "/super-admin",
 ]
 

@@ -3,8 +3,8 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 
 export async function GET() {
-  const session = await auth()
-  const dbUser = await prisma.user.findUnique({ where: { email: session?.user?.email ?? "" } })
+const session = await auth()
+const dbUser = await prisma.user.findUnique({ where: { email: session?.user?.email ?? "" } })
 
   if (!dbUser || !["ADMIN", "SUPER_ADMIN"].includes(dbUser.role)) {
     return NextResponse.json({ error: "Permission denied" }, { status: 403 })

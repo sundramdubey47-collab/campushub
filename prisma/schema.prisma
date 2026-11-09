@@ -27,7 +27,7 @@ model College {
   city         String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-
+  foodVendors FoodVendor[]
   universityId Int
   university   University   @relation(fields: [universityId], references: [id])
 
@@ -188,6 +188,9 @@ model User {
   testAttempts   TestAttempt[]
   testPurchases  TestPurchase[]
   coupons Coupon[]
+    managedVendors FoodVendor[] @relation("VendorManager")
+  foodRatings    FoodRating[]
+  foodEnquiries  FoodEnquiry[]
  
 }
 
@@ -957,6 +960,7 @@ enum NotificationType {
   CLASS_UPCOMING
   CLASS_LIVE
   SYSTEM
+  FOOD
 }
 
 model Notification {
@@ -985,4 +989,108 @@ model UserDevice {
   user      User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
+}
+enum VendorType {
+  MESS
+  TIFFIN
+  CANTEEN
+  RESTAURANT
+  CAFE
+  OTHER
+}
+
+enum FoodDiet {
+  VEG
+  NON_VEG
+  EGG
+}
+
+enum FoodEnquiryKind {
+  ORDER_CLICK
+  TRIAL_REQUEST
+}
+
+model FoodVendor {
+  id             Int        @id @default(autoincrement())
+  name           String
+  type           VendorType @default(RESTAURANT)
+  description    String?
+  area           String?
+  address        String?
+  phone          String
+  whatsapp       String?
+  openTime       String?
+  closeTime      String?
+  imageUrl       String?
+  isVegOnly      Boolean    @default(false)
+  hasDelivery    Boolean    @default(false)
+  deliveryNote   String?
+  monthlyPrice   Int?
+  trialMealPrice Int?
+  weeklyMenu     String?
+  isActive       Boolean    @default(true)
+  isOpenNow      Boolean    @default(true)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  collegeId Int
+  college   College @relation(fields: [collegeId], references: [id])
+
+  managerId Int?
+  manager   User?   @relation("VendorManager", fields: [managerId], references: [id])
+
+  menuItems MenuItem[]
+  ratings   FoodRating[]
+  enquiries FoodEnquiry[]
+
+  @@index([collegeId, isActive])
+}
+
+model MenuItem {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  price       Int
+  diet        FoodDiet @default(VEG)
+  category    String?
+  isAvailable Boolean  @default(true)
+  isSpecial   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vendorId Int
+  vendor   FoodVendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId])
+  @@index([name])
+}
+
+model FoodRating {
+  id        Int      @id @default(autoincrement())
+  value     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  vendorId Int
+  vendor   FoodVendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, vendorId])
+}
+
+model FoodEnquiry {
+  id        Int             @id @default(autoincrement())
+  kind      FoodEnquiryKind
+  itemName  String?
+  createdAt DateTime        @default(now())
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  vendorId Int
+  vendor   FoodVendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId, createdAt])
 }

@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from "react"
@@ -7,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Combobox } from "@/components/combobox"
-import { ImageCropModal } from "@/components/image-crop-modal"
+import { MultiImagePicker } from "@/components/multi-image-picker"
 
 const CATEGORY_OPTIONS = [
   { value: "BOOKS", label: "Books" },
@@ -28,6 +29,7 @@ const PRICING_OPTIONS = [
 
 export default function CreateRentalPage() {
   const router = useRouter()
+
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [category, setCategory] = useState("")
@@ -37,8 +39,6 @@ export default function CreateRentalPage() {
   const [file, setFile] = useState<File | null>(null)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
-const [cropModalOpen, setCropModalOpen] = useState(false)
-const [pendingFile, setPendingFile] = useState<File | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -51,88 +51,123 @@ const [pendingFile, setPendingFile] = useState<File | null>(null)
 
     setLoading(true)
 
-    const formData = new FormData()
-    formData.append("title", title)
-    formData.append("description", description)
-    formData.append("category", category)
-    formData.append("pricingType", pricingType)
-    formData.append("price", price)
-    formData.append("securityDeposit", securityDeposit)
-    if (file) formData.append("file", file)
+    try {
+      const formData = new FormData()
 
-    const res = await fetch("/api/rentals", { method: "POST", body: formData })
-    const data = await res.json()
-    setLoading(false)
+      formData.append("title", title)
+      formData.append("description", description)
+      formData.append("category", category)
+      formData.append("pricingType", pricingType)
+      formData.append("price", price)
+      formData.append("securityDeposit", securityDeposit)
 
-    if (!res.ok) {
-      setError(data.error)
-      return
+      if (file) formData.append("file", file)
+
+      const res = await fetch("/api/rentals", {
+        method: "POST",
+        body: formData,
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error || "Rental create nahi ho paya")
+        return
+      }
+
+      router.push("/rentals")
+    } catch {
+      setError("Something went wrong. Please try again.")
+    } finally {
+      setLoading(false)
     }
-
-    router.push("/rentals")
   }
 
   return (
     <div className="max-w-lg space-y-4">
-      <h1 className="text-2xl font-bold"> Rent your Items</h1>
+      <h1 className="text-2xl font-bold">Rent your Items</h1>
 
-      <form onSubmit={handleSubmit} className="space-y-4 border rounded-lg p-6">
-        {error && <p className="text-sm text-red-500">{error}</p>}
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4 border rounded-lg p-6"
+      >
+        {error && (
+          <p className="text-sm text-red-500">{error}</p>
+        )}
 
         <div className="space-y-2">
           <Label>Title</Label>
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} required />
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
         </div>
 
         <div className="space-y-2">
           <Label>Description</Label>
-          <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+          <Textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+          />
         </div>
 
         <div className="space-y-2">
           <Label>Category</Label>
-          <Combobox placeholder="Category..." value={category} onChange={setCategory} options={CATEGORY_OPTIONS} />
+          <Combobox
+            placeholder="Category..."
+            value={category}
+            onChange={setCategory}
+            options={CATEGORY_OPTIONS}
+          />
         </div>
 
         <div className="space-y-2">
           <Label>Pricing Type</Label>
-          <Combobox placeholder="Pricing..." value={pricingType} onChange={setPricingType} options={PRICING_OPTIONS} />
+          <Combobox
+            placeholder="Pricing..."
+            value={pricingType}
+            onChange={setPricingType}
+            options={PRICING_OPTIONS}
+          />
         </div>
 
         <div className="space-y-2">
           <Label>Price (₹)</Label>
-          <Input type="number" value={price} onChange={(e) => setPrice(e.target.value)} required />
+          <Input
+            type="number"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            required
+          />
         </div>
 
         <div className="space-y-2">
           <Label>Security Deposit (₹, optional)</Label>
-          <Input type="number" value={securityDeposit} onChange={(e) => setSecurityDeposit(e.target.value)} />
+          <Input
+            type="number"
+            value={securityDeposit}
+            onChange={(e) => setSecurityDeposit(e.target.value)}
+          />
         </div>
 
         <div className="space-y-2">
           <Label>Photo</Label>
-<Input
-  type="file"
-  accept="image/*"
-  onChange={(e) => {
-    const f = e.target.files?.[0]
-    if (f) {
-      setPendingFile(f)
-      setCropModalOpen(true)
-    }
-  }}
-/>
+          <MultiImagePicker
+            max={1}
+            files={file ? [file] : []}
+            onChange={(f) => setFile(f[0] ?? null)}
+          />
         </div>
 
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={loading}
+        >
           {loading ? "Posting..." : "List"}
         </Button>
-        <ImageCropModal
-  file={pendingFile}
-  open={cropModalOpen}
-  onClose={() => setCropModalOpen(false)}
-  onCropped={(cropped) => setFile(cropped)}
-/>
       </form>
     </div>
   )

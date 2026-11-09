@@ -34,7 +34,11 @@ export async function GET(req: Request) {
       ],
     },
   })
-
+  // Roz raat ko "Aaj ka Special" reset karo (vendor ko naya special khud set karna hoga)
+  await prisma.menuItem.updateMany({
+    where: { isSpecial: true },
+    data: { isSpecial: false },
+  })
   return NextResponse.json({
     success: true,
     deletedEvents: deletedEvents.count,
