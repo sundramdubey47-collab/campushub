@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { getISTDateString } from "@/lib/time-utils"
 
 export async function GET() {
+    if (process.env.QUIZ_ENABLED !== "true") return NextResponse.json({ trivia: null })
   const session = await auth()
   const dbUser = await prisma.user.findUnique({ where: { email: session?.user?.email ?? "" } })
   if (!dbUser?.courseId) return NextResponse.json({ trivia: null })
@@ -32,6 +33,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+    if (process.env.QUIZ_ENABLED !== "true") {
+    return NextResponse.json({ error: "Quiz is not live yet" }, { status: 503 })
+  }
   const session = await auth()
   const dbUser = await prisma.user.findUnique({ where: { email: session?.user?.email ?? "" } })
   if (!dbUser) return NextResponse.json({ error: "Login required" }, { status: 401 })

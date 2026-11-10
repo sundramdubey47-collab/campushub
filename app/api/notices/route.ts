@@ -1,20 +1,28 @@
+
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { sendPushNotificationToCollege } from "@/lib/notification-service"
 import { notifyCollege } from "@/lib/notify"
 
 export async function POST(req: Request) {
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login is required" }, { status: 401 })
+    return NextResponse.json(
+      { error: "Login is required" },
+      { status: 401 }
+    )
   }
 
-  const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
+  const dbUser = await prisma.user.findUnique({
+    where: { email: session.user.email },
+  })
 
   if (!dbUser) {
-    return NextResponse.json({ error: "User not found" }, { status: 400 })
+    return NextResponse.json(
+      { error: "User not found" },
+      { status: 400 }
+    )
   }
 
   if (!["FACULTY", "ADMIN", "SUPER_ADMIN"].includes(dbUser.role)) {
@@ -24,15 +32,30 @@ export async function POST(req: Request) {
     )
   }
 
-  if (!dbUser.collegeId) {
-    return NextResponse.json({ error: "Your college is not set" }, { status: 400 })
+  if (dbUser.collegeId == null) {
+    return NextResponse.json(
+      { error: "Your college is not set" },
+      { status: 400 }
+    )
   }
 
   const body = await req.json()
-  const { title, content, attachmentUrl, departmentId, courseId, semesterId, publishAt } = body
+
+  const {
+    title,
+    content,
+    attachmentUrl,
+    departmentId,
+    courseId,
+    semesterId,
+    publishAt,
+  } = body
 
   if (!title || !content) {
-    return NextResponse.json({ error: "Title and content are required" }, { status: 400 })
+    return NextResponse.json(
+      { error: "Title and content are required" },
+      { status: 400 }
+    )
   }
 
   const notice = await prisma.notice.create({
@@ -49,20 +72,17 @@ export async function POST(req: Request) {
     },
   })
 
+  // Create in-app notifications for relevant students
   await notifyCollege({
-  collegeId: dbUser.collegeId,
-  type: "NOTICE",
-  title: "📢 New Notice",
-  body: title,
-  link: "/notices",
-  excludeUserId: dbUser.id,
-})
-   await sendPushNotificationToCollege({
-  collegeId: dbUser.collegeId,
-  title: "📢 New Notice",
-  body: notice.title, 
-  url: "/notices",
-})
+    collegeId: dbUser.collegeId,
+    courseId: courseId ? Number(courseId) : undefined,
+    semesterId: semesterId ? Number(semesterId) : undefined,
+    type: "NOTICE",
+    title: "📢 New Notice",
+    body: title,
+    link: "/notices",
+    excludeUserId: dbUser.id,
+  })
 
   return NextResponse.json(notice)
 }
@@ -71,10 +91,15 @@ export async function GET() {
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login is required" }, { status: 401 })
+    return NextResponse.json(
+      { error: "Login is required" },
+      { status: 401 }
+    )
   }
 
-  const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
+  const dbUser = await prisma.user.findUnique({
+    where: { email: session.user.email },
+  })
 
   if (!dbUser?.collegeId) {
     return NextResponse.json([])
@@ -86,14 +111,37 @@ export async function GET() {
       isArchived: false,
       publishAt: { lte: new Date() },
       AND: [
-        { OR: [{ departmentId: null }, { departmentId: dbUser.departmentId }] },
-        { OR: [{ courseId: null }, { courseId: dbUser.courseId }] },
-        { OR: [{ semesterId: null }, { semesterId: dbUser.semesterId }] },
+        {
+          OR: [
+            { departmentId: null },
+            { departmentId: dbUser.departmentId },
+          ],
+        },
+        {
+          OR: [
+            { courseId: null },
+            { courseId: dbUser.courseId },
+          ],
+        },
+        {
+          OR: [
+            { semesterId: null },
+            { semesterId: dbUser.semesterId },
+          ],
+        },
       ],
     },
-    orderBy: [{ isPinned: "desc" }, { createdAt: "desc" }],
+    orderBy: [
+      { isPinned: "desc" },
+      { createdAt: "desc" },
+    ],
     include: {
-      postedBy: { select: { name: true, role: true } },
+      postedBy: {
+        select: {
+          name: true,
+          role: true,
+        },
+      },
     },
   })
 

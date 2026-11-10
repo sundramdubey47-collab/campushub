@@ -24,6 +24,9 @@ export async function GET(req: Request) {
       { status: 401 }
     )
   }
+    if (process.env.QUIZ_ENABLED !== "true") {
+    return NextResponse.json({ success: true, skipped: "Quiz is disabled" })
+  }
 
   try {
     const todayStr = getISTDateString()

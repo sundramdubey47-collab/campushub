@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { getISTDateString } from "@/lib/time-utils"
 
 export async function GET() {
+    if (process.env.QUIZ_ENABLED !== "true") return NextResponse.json([])
   const session = await auth()
   const dbUser = await prisma.user.findUnique({ where: { email: session?.user?.email ?? "" } })
   if (!dbUser?.courseId) return NextResponse.json([])

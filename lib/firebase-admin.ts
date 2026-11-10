@@ -1,6 +1,6 @@
+
 import { initializeApp, getApps, cert } from "firebase-admin/app"
 import { getAuth } from "firebase-admin/auth"
-import { getMessaging } from "firebase-admin/messaging"
 
 function getAdminApp() {
   if (!getApps().length) {
@@ -18,5 +18,5 @@ function getAdminApp() {
 
 const app = getAdminApp()
 
+// Required for Firebase Phone Authentication
 export const adminAuth = getAuth(app)
-export const adminMessaging = getMessaging(app)

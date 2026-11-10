@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { sendPushNotificationToCollege } from "@/lib/notification-service"
+import { notifyCollege } from "@/lib/notify"
 
 export async function POST(req: Request) {
   try {
@@ -108,13 +108,16 @@ export async function POST(req: Request) {
       },
     })
 
-    // Notify Students
-    await sendPushNotificationToCollege({
-      collegeId,
-      title: "📅 Timetable Updated",
-      body: "The timetable has been updated. Check your dashboard for the latest schedule.",
-      url: "/timetable",
-    })
+   // Notify Students
+await notifyCollege({
+  collegeId,
+  courseId: Number(courseId),
+  semesterId: Number(semesterId),
+  type: "CLASS_UPCOMING",
+  title: "Timetable Updated",
+  body: "The timetable has been updated. Check your dashboard for the latest schedule.",
+  link: "/timetable",
+})
 
     return NextResponse.json({
       success: true,

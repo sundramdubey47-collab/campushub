@@ -39,6 +39,7 @@ export default async function AppLayout({
     semester: { select: { number: true } },
   },
 })
+if (!dbUser) redirect("/login")
 
 console.log("dbUser:", dbUser)
 

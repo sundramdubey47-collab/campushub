@@ -1,7 +1,8 @@
+
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { sendPushNotification } from "@/lib/notification-service"
+import { notifyUser } from "@/lib/notify"
 
 const LATE_FEE_PER_DAY = 20
 
@@ -12,11 +13,22 @@ export async function POST(
   const session = await auth()
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: "Login is required" }, { status: 401 })
+    return NextResponse.json(
+      { error: "Login is required" },
+      { status: 401 }
+    )
   }
 
-  const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
-  if (!dbUser) return NextResponse.json({ error: "User not found" }, { status: 400 })
+  const dbUser = await prisma.user.findUnique({
+    where: { email: session.user.email },
+  })
+
+  if (!dbUser) {
+    return NextResponse.json(
+      { error: "User not found" },
+      { status: 400 }
+    )
+  }
 
   const { id } = await params
 
@@ -25,22 +37,38 @@ export async function POST(
     include: { item: true },
   })
 
-  if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 404 })
+  if (!booking) {
+    return NextResponse.json(
+      { error: "Booking not found" },
+      { status: 404 }
+    )
+  }
 
   if (booking.item.ownerId !== dbUser.id) {
-    return NextResponse.json({ error: "Only the owner can confirm the return" }, { status: 403 })
+    return NextResponse.json(
+      { error: "Only the owner can confirm the return" },
+      { status: 403 }
+    )
   }
 
   if (booking.status !== "ACTIVE") {
-    return NextResponse.json({ error: "This item is not currently rented out" }, { status: 400 })
+    return NextResponse.json(
+      { error: "This item is not currently rented out" },
+      { status: 400 }
+    )
   }
 
   const now = new Date()
   const expectedReturn = new Date(booking.expectedReturnDate)
 
   let lateFee = 0
+
   if (now > expectedReturn) {
-    const daysLate = Math.ceil((now.getTime() - expectedReturn.getTime()) / (1000 * 60 * 60 * 24))
+    const daysLate = Math.ceil(
+      (now.getTime() - expectedReturn.getTime()) /
+      (1000 * 60 * 60 * 24)
+    )
+
     lateFee = daysLate * LATE_FEE_PER_DAY
   }
 
@@ -57,19 +85,27 @@ export async function POST(
     where: { id: booking.itemId },
     data: { status: "AVAILABLE" },
   })
-await sendPushNotification({
-  userId: booking.renterId,
-  title: "🎉 Rental Completed",
-  body: `Your rental for "${booking.item.title}" has been completed successfully. Thank you for using CampusHub!`,
-  url: "/rentals/my-bookings",
-})
 
-await sendPushNotification({
-  userId: booking.item.ownerId,
-  title: "📦 Item Returned",
-  body: `"${booking.item.title}" has been returned successfully and is now available for rent again.`,
-  url: "/rentals/my-bookings",
-})
+  // Notify renter
+  await notifyUser({
+    userId: booking.renterId,
+    type: "RENTAL",
+    title: "Rental Completed",
+    body: `Your rental for "${booking.item.title}" has been completed successfully. Thank you for using CampusHub!`,
+    link: "/rentals/my-bookings",
+  })
 
-  return NextResponse.json({ success: true, lateFee })
+  // Notify owner
+  await notifyUser({
+    userId: booking.item.ownerId,
+    type: "RENTAL",
+    title: "Item Returned",
+    body: `"${booking.item.title}" has been returned successfully and is now available for rent again.`,
+    link: "/rentals/my-bookings",
+  })
+
+  return NextResponse.json({
+    success: true,
+    lateFee,
+  })
 }
