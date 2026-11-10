@@ -83,8 +83,7 @@ export default function CreateTestPage() {
       setError(data.error)
       return
     }
-
-    router.push("/tests")
+router.push(data?.id ? `/tests/${data.id}/review` : "/tests")
   }
 
   return (

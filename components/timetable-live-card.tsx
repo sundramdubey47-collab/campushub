@@ -79,7 +79,9 @@ export function TimetableLiveCard() {
 
   useEffect(() => {
     load()
-    const interval = setInterval(load, 60000)
+    const interval = setInterval(() => {
+  if (document.visibilityState === "visible") load()
+}, 60000)
     return () => clearInterval(interval)
   }, [])
 

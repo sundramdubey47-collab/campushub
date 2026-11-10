@@ -9,8 +9,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Combobox } from "@/components/combobox"
 
 const TYPE_OPTIONS = [
-  { value: "LOST", label: "Maine Kuch Khoya Hai" },
-  { value: "FOUND", label: "Maine Kuch Paaya Hai" },
+  { value: "LOST", label: "lost" },
+  { value: "FOUND", label: "found" },
 ]
 
 export default function ReportLostFoundPage() {
@@ -30,7 +30,7 @@ export default function ReportLostFoundPage() {
     setError("")
 
     if (!type || !title) {
-      setError("Type aur Title zaroori hai")
+      setError("Type or Title booth are necessary")
       return
     }
 

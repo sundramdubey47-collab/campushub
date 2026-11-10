@@ -56,6 +56,7 @@ export async function POST(req: Request) {
           questionText: q.questionText,
           options: q.options,
           correctIndex: q.correctIndex,
+          isPublished: false,
         })),
       },
     },

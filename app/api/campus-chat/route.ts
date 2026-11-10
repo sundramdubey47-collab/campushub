@@ -1,41 +1,62 @@
-import { NextResponse } from "next/server"
+import { NextResponse, after } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit"
-import { notifyCollege, notifyUser } from "@/lib/notify"
+import { notifyUser } from "@/lib/notify"
 
-export async function GET() {
+const include = {
+  user: { select: { id: true, name: true } },
+  replyTo: { include: { user: { select: { id: true, name: true } } } },
+} as const
+
+async function currentUser() {
   const session = await auth()
-  const dbUser = await prisma.user.findUnique({ where: { email: session?.user?.email ?? "" } })
-  if (!dbUser?.collegeId) return NextResponse.json([])
-
-  const messages = await prisma.campusChatMessage.findMany({
-    where: { collegeId: dbUser.collegeId },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-    include: {
-      user: { select: { id: true, name: true } },
-      replyTo: { include: { user: { select: { name: true } } } },
-    },
+  const email = session?.user?.email
+  if (!email) return null
+  return prisma.user.findUnique({
+    where: { email },
+    select: { id: true, name: true, collegeId: true },
   })
+}
 
-  return NextResponse.json(messages.reverse())
+export async function GET(req: Request) {
+  const me = await currentUser()
+  if (!me?.collegeId) return NextResponse.json([])
+
+  const afterId = Number(new URL(req.url).searchParams.get("after")) || 0
+  const notBlocked = { user: { blockedByUsers: { none: { blockerId: me.id } } } }
+
+  if (afterId > 0) {
+    const fresh = await prisma.campusChatMessage.findMany({
+      where: { collegeId: me.collegeId, id: { gt: afterId }, ...notBlocked },
+      orderBy: { id: "asc" },
+      take: 100,
+      include,
+    })
+    return NextResponse.json(fresh)
+  }
+
+  const latest = await prisma.campusChatMessage.findMany({
+    where: { collegeId: me.collegeId, ...notBlocked },
+    orderBy: { id: "desc" },
+    take: 50,
+    include,
+  })
+  return NextResponse.json(latest.reverse())
 }
 
 export async function POST(req: Request) {
-  const session = await auth()
-  const dbUser = await prisma.user.findUnique({ where: { email: session?.user?.email ?? "" } })
+  const me = await currentUser()
+  if (!me) return NextResponse.json({ error: "Login is required" }, { status: 401 })
+  if (!me.collegeId) return NextResponse.json({ error: "Your college is not set" }, { status: 400 })
 
-  if (!dbUser) return NextResponse.json({ error: "Login is required" }, { status: 401 })
-  if (!dbUser.collegeId) return NextResponse.json({ error: "Your college is not set" }, { status: 400 })
-
-  const result = checkRateLimit(`campus-chat:${dbUser.id}`, RATE_LIMITS.PUBLIC_MODERATE)
-  if (!result.allowed) {
+  const rate = checkRateLimit(`campus-chat:${me.id}`, RATE_LIMITS.PUBLIC_MODERATE)
+  if (!rate.allowed) {
     return NextResponse.json({ error: "You're sending messages too fast. Slow down a little." }, { status: 429 })
   }
 
-  const body = await req.json()
-  const content = body.content?.trim()
+  const body = await req.json().catch(() => ({}))
+  const content = typeof body.content === "string" ? body.content.trim() : ""
   const replyToId = body.replyToId ? Number(body.replyToId) : null
 
   if (!content || content.length > 500) {
@@ -43,27 +64,22 @@ export async function POST(req: Request) {
   }
 
   const message = await prisma.campusChatMessage.create({
-    data: { content, userId: dbUser.id, collegeId: dbUser.collegeId, replyToId },
-    include: {
-      user: { select: { id: true, name: true } },
-      replyTo: { include: { user: { select: { id: true, name: true } } } },
-    },
+    data: { content, userId: me.id, collegeId: me.collegeId, replyToId },
+    include,
   })
 
-  try {
-    if (replyToId && message.replyTo && message.replyTo.user.id !== dbUser.id) {
-      // Ye ek reply hai — sirf jisko reply kiya, sirf usी ko notification jaayegi
-      await notifyUser({
-        userId: message.replyTo.user.id,
+  // Reply par sirf us bande ko notification, aur wo bhi response jaane ke BAAD
+  if (message.replyTo && message.replyTo.user.id !== me.id) {
+    const targetId = message.replyTo.user.id
+    after(() =>
+      notifyUser({
+        userId: targetId,
         type: "SYSTEM",
         title: "💬 Someone replied to you",
-        body: `${dbUser.name}: ${content.slice(0, 50)}`,
+        body: `${me.name}: ${content.slice(0, 50)}`,
         link: "/chat",
       })
-    } 
-   
-  } catch (err) {
-    console.error("[campus-chat] notify failed:", err)
+    )
   }
 
   return NextResponse.json(message)

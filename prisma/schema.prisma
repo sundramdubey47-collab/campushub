@@ -325,7 +325,11 @@ model Notice {
 
   semesterId   Int?
   semester     Semester? @relation(fields: [semesterId], references: [id])
+
+    @@index([collegeId, isArchived, createdAt])
 }
+  
+
 enum EventType {
   FEST
   HACKATHON
@@ -418,6 +422,7 @@ model EventRegistration {
   event       Event    @relation(fields: [eventId], references: [id])
 
   @@unique([userId, eventId])
+  @@index([eventId])
 }
 enum EventPaymentType {
   FREE
@@ -541,6 +546,7 @@ model LostFoundItem {
 
   collegeId     Int
   college       College       @relation(fields: [collegeId], references: [id])
+   @@index([collegeId, isResolved])
 }
 enum RentalCategory {
   BOOKS
@@ -585,6 +591,8 @@ model RentalItem {
   college        College           @relation(fields: [collegeId], references: [id])
 
   bookings       RentalBooking[]
+    @@index([collegeId, status])
+
 }
 enum RentalBookingStatus {
   PENDING
@@ -615,6 +623,8 @@ model RentalBooking {
 
   itemId         Int
   item           RentalItem          @relation(fields: [itemId], references: [id])
+  @@index([itemId, status])
+  @@index([renterId])
 }
 enum PlanType {
   WEEKLY
@@ -704,6 +714,8 @@ model Test {
   questions      TestQuestion[]
   attempts       TestAttempt[]
   purchases      TestPurchase[]
+    isPublished Boolean @default(true)
+  @@index([collegeId, isPublished])
 }
 
 model TestQuestion {
@@ -731,6 +743,7 @@ model TestAttempt {
   test         Test      @relation(fields: [testId], references: [id])
 
   answers      TestAnswer[]
+  @@index([testId, score])
 }
 
 model TestAnswer {
@@ -869,6 +882,8 @@ model Attendance {
   timetableSlotId Int
 timetableSlot   TimetableSlot @relation(fields: [timetableSlotId], references: [id], onDelete: Cascade)
   @@unique([studentId, timetableSlotId, date])
+    @@index([studentId, date])
+
 }
 model ClassNotificationLog {
   id              Int      @id @default(autoincrement())
@@ -896,6 +911,7 @@ model CampusChatMessage {
   college   College  @relation(fields: [collegeId], references: [id])
 
   @@index([collegeId, createdAt])
+   @@index([collegeId, id])
 }
 model BlockedUser {
   id        Int      @id @default(autoincrement())

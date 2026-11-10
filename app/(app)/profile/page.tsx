@@ -42,6 +42,10 @@ export default async function ProfilePage() {
   const initials = dbUser.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()
 
  const menuItems = [
+
+  { href: "/profile/academic",
+     label: "Semester & Section",
+      icon: GraduationCap },
   {
     href: "/profile/orders",
     label: "My Orders",

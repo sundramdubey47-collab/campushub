@@ -19,10 +19,11 @@ export function BottomNav() {
   const [unseenCount, setUnseenCount] = useState(0)
 
   useEffect(() => {
-    fetch("/api/notifications")
-      .then((r) => r.json())
-      .then((d) => setUnseenCount(d.unseenCount || 0))
-  }, [])
+  fetch("/api/notifications-v2/count", { cache: "no-store" })
+    .then((r) => r.json())
+    .then((d) => setUnseenCount(d.count || 0))
+    .catch(() => {})
+}, [])
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t bg-card md:hidden">

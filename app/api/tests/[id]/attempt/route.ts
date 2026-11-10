@@ -23,6 +23,9 @@ export async function POST(
   })
 
   if (!test) return NextResponse.json({ error: "Test not found" }, { status: 404 })
+    if (!test.isPublished) {
+  return NextResponse.json({ error: "This test is not published yet" }, { status: 403 })
+}
 
   // Access check
   let hasAccess = !test.isPremium
