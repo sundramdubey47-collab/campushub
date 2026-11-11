@@ -6,7 +6,7 @@ import { LogoutButton } from "@/components/logout-button"
 import { AvatarEdit } from "@/components/avatar-edit"
 import { Phone } from "lucide-react"
 import { DigitalIdCard } from "@/components/digital-id-card"
-import { ChevronRight, FileUp, Download, Ticket, ShoppingBag, Bookmark, Crown, Package, Mail, GraduationCap, ShieldCheck, Gift, } from "lucide-react"
+import { ChevronRight, FileUp, Download, Ticket, ShoppingBag, Bookmark, Crown, Package, Mail, GraduationCap, ShieldCheck, Gift,BellRing } from "lucide-react"
 import { ProfileQrTrigger } from "@/components/profile-qr-trigger"
 
 export default async function ProfilePage() {
@@ -46,12 +46,16 @@ export default async function ProfilePage() {
   { href: "/profile/academic",
      label: "Semester & Section",
       icon: GraduationCap },
+
+
+      { href: "/profile/notifications", label: "Notification Settings", icon: BellRing },
   {
     href: "/profile/orders",
     label: "My Orders",
     icon: ShoppingBag,
     count: dbUser._count.buyerOrders,
   },
+
 
   {
     href: "/rentals/my-bookings",

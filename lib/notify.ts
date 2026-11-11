@@ -1,55 +1,61 @@
-
 import { prisma } from "@/lib/prisma"
+import { sendPushToUsers } from "@/lib/notification-service"
 
-type NotifyParams = {
-  userId: number
-  type: string
-  title: string
-  body: string
-  link?: string
+const VALID_TYPES = new Set([
+  "NOTICE", "EVENT", "MARKETPLACE", "RENTAL", "RESOURCE", "RESOURCE_REQUEST", "RESOURCE_FULFILLED",
+  "RENTAL_REQUEST", "RENTAL_APPROVED", "CLASS_UPCOMING", "CLASS_LIVE", "FOOD", "SYSTEM",
+])
+
+const safeType = (type: string) => (VALID_TYPES.has(type) ? type : "SYSTEM")
+
+type Base = { type: string; title: string; body: string; link?: string }
+
+async function saveRows(userIds: number[], { type, title, body, link }: Base) {
+  const rows = (t: string) => userIds.map((userId) => ({ userId, type: t as any, title, body, link: link || null }))
+
+  try {
+    await prisma.notification.createMany({ data: rows(safeType(type)) })
+  } catch (err) {
+    // Type database ke enum me nahi hai (jaise migration baaki hai) to SYSTEM ke roop me save karo
+    console.error("[notify] createMany failed, retrying as SYSTEM:", err)
+    try {
+      await prisma.notification.createMany({ data: rows("SYSTEM") })
+    } catch (err2) {
+      console.error("[notify] could not save notification rows:", err2)
+    }
+  }
 }
 
-export async function notifyUser({
-  userId,
-  type,
-  title,
-  body,
-  link,
-}: NotifyParams) {
+export async function notifyUsers({ userIds, ...base }: Base & { userIds: number[] }) {
+  const ids = [...new Set(userIds)]
+  if (ids.length === 0) return
+
+  await saveRows(ids, base)
+
   try {
-    await prisma.notification.create({
-      data: {
-        userId,
-        type: type as any,
-        title,
-        body,
-        link: link || null,
-      },
+    await sendPushToUsers({
+      userIds: ids,
+      title: base.title,
+      body: base.body,
+      url: base.link,
+      type: safeType(base.type),
     })
   } catch (err) {
-    console.error("[notifyUser] Failed to save notification:", err)
+    console.error("[notify] push failed:", err)
   }
+}
+
+export async function notifyUser({ userId, ...base }: Base & { userId: number }) {
+  await notifyUsers({ userIds: [userId], ...base })
 }
 
 export async function notifyCollege({
   collegeId,
-  type,
-  title,
-  body,
-  link,
   excludeUserId,
   courseId,
   semesterId,
-}: {
-  collegeId: number
-  type: string
-  title: string
-  body: string
-  link?: string
-  excludeUserId?: number
-  courseId?: number
-  semesterId?: number
-}) {
+  ...base
+}: Base & { collegeId: number; excludeUserId?: number; courseId?: number; semesterId?: number }) {
   try {
     const users = await prisma.user.findMany({
       where: {
@@ -60,19 +66,8 @@ export async function notifyCollege({
       },
       select: { id: true },
     })
-
-    if (!users.length) return
-
-    await prisma.notification.createMany({
-      data: users.map((user) => ({
-        userId: user.id,
-        type: type as any,
-        title,
-        body,
-        link: link || null,
-      })),
-    })
+    await notifyUsers({ userIds: users.map((u) => u.id), ...base })
   } catch (err) {
-    console.error("[notifyCollege] Failed to save notifications:", err)
+    console.error("[notifyCollege] failed:", err)
   }
 }

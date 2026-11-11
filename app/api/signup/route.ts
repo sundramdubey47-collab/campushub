@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { generateReferralCode } from "@/lib/referral"
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit"
 import { signupSchema, formatZodError } from "@/lib/validations"
-import { adminAuth } from "@/lib/firebase-admin"
+import { getAdminAuth } from "@/lib/firebase-admin"
 
 
 export async function POST(req: Request) {
@@ -42,11 +42,9 @@ export async function POST(req: Request) {
 
 }
 
-
-const decodedToken = await adminAuth.verifyIdToken(
+const decodedToken = await getAdminAuth().verifyIdToken(
   firebaseToken
 )
-
 
 const verifiedPhone =
   decodedToken.phone_number?.replace("+91","")

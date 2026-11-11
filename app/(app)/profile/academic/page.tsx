@@ -41,8 +41,11 @@ export default function AcademicInfoPage() {
       setMessage("❌ " + data.error)
       return
     }
-    setMessage("✅ Updated. Timetable aur attendance ab naye semester ke hisaab se dikhenge.")
-    router.refresh()
+   setMessage("✅ Saved Profile!")
+setTimeout(() => {
+  router.push("/profile")
+  router.refresh()
+}, 600)
   }
 
   return (

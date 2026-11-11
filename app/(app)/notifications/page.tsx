@@ -66,8 +66,10 @@ export default function NotificationsPage() {
       setItems(data.items)
       setLoading(false)
     })
-  fetch("/api/notifications-v2/mark-read", { method: "POST" })
-  updateAppBadge(0)
+fetch("/api/notifications-v2/mark-read", { method: "POST" }).then(() => {
+  window.dispatchEvent(new Event("ch:notifications-changed"))
+})
+    updateAppBadge(0)
 }, [])
 
   const pulseText = pulse

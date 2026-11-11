@@ -14,7 +14,8 @@ import { prisma } from "@/lib/prisma"
 import { GlobalSearch } from "@/components/global-search"
 import { FeedbackButton } from "@/components/feedback-button"
 import { BottomNav } from "@/components/bottom-nav"
-import { NotificationPermission } from "@/components/notification-permission"
+import { PushManager } from "@/components/push-manager"
+import { InAppToast } from "@/components/in-app-toast"
 import { ShowOnRootPage } from "@/components/show-on-root-page"
 
 export default async function AppLayout({
@@ -93,7 +94,8 @@ if (!dbUser?.collegeId) {
         <ShowOnRootPage>
         <BottomNav />
         </ShowOnRootPage>
-        <NotificationPermission />
+       <PushManager />
+<InAppToast />
         <FeedbackButton />
       </div>
     </div>

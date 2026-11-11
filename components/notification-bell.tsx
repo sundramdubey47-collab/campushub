@@ -16,9 +16,7 @@ export function NotificationBell() {
       const data = await res.json()
       setCount(data.count ?? 0)
       updateAppBadge(data.count ?? 0)
-    } catch {
-      // network off hai to chupchap chhod do
-    }
+    } catch {}
   }, [])
 
   useEffect(() => {
@@ -29,10 +27,13 @@ export function NotificationBell() {
     const onVisible = () => {
       if (document.visibilityState === "visible") load()
     }
+
     document.addEventListener("visibilitychange", onVisible)
+    window.addEventListener("ch:notifications-changed", load)
     return () => {
       clearInterval(timer)
       document.removeEventListener("visibilitychange", onVisible)
+      window.removeEventListener("ch:notifications-changed", load)
     }
   }, [load])
 

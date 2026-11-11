@@ -1,66 +1,55 @@
-import { initializeApp, getApps } from "firebase/app"
-import { getMessaging, getToken, onMessage, isSupported } from "firebase/messaging"
+import { initializeApp, getApps, type FirebaseApp } from "firebase/app"
+import { getMessaging, getToken, deleteToken, isSupported } from "firebase/messaging"
 
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+// .env me galti se aaye quotes/spaces saaf karta hai
+const clean = (v?: string) => (v ?? "").trim().replace(/^["']|["']$/g, "")
+
+// NEXT_PUBLIC variables ko seedha naam se likhna zaroori hai, tabhi build me inline hote hain
+const env = {
+  NEXT_PUBLIC_FIREBASE_API_KEY: clean(process.env.NEXT_PUBLIC_FIREBASE_API_KEY),
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: clean(process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN),
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID: clean(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID),
+  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: clean(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET),
+  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: clean(process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID),
+  NEXT_PUBLIC_FIREBASE_APP_ID: clean(process.env.NEXT_PUBLIC_FIREBASE_APP_ID),
 }
 
-export function getFirebaseApp() {
-  if (!getApps().length) {
-    return initializeApp(firebaseConfig)
-  }
-  return getApps()[0]
+export function missingFirebaseConfig(): string[] {
+  return Object.entries(env)
+    .filter(([, v]) => !v)
+    .map(([k]) => k)
 }
 
-export async function requestNotificationPermissionAndToken(): Promise<string | null> {
-  const supported = await isSupported()
-  if (!supported) return null
-
-  const permission = await Notification.requestPermission()
-  if (permission !== "granted") return null
-
-  const rawVapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY
-
-  if (!rawVapidKey) {
-    console.error("[FCM] VAPID key is missing from environment variables")
-    return null
-  }
-
-  // Kabhi-kabhi .env me quotes ya extra whitespace/newline aa jaते hain copy-paste ke waqt —
-  // ye unhe saaf kar deता hai taaki base64 decode fail na ho
-  const vapidKey = rawVapidKey.trim().replace(/^["']|["']$/g, "")
-
-  if (vapidKey.length < 80) {
-    console.error("[FCM] VAPID key looks too short/malformed:", vapidKey.length, "characters")
-    return null
-  }
-
-  const app = getFirebaseApp()
-  const messaging = getMessaging(app)
-
-  try {
-    const registration = await navigator.serviceWorker.ready
-
-    const token = await getToken(messaging, {
-      vapidKey,
-      serviceWorkerRegistration: registration,
-    })
-    return token
-  } catch (err) {
-    console.error("[FCM] getToken failed:", err)
-    return null
-  }
+export function getVapidKey(): string | null {
+  const key = clean(process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY).replace(/\s+/g, "")
+  return /^[A-Za-z0-9_-]{80,100}$/.test(key) ? key : null
 }
-export function listenForForegroundMessages(callback: (payload: any) => void) {
-  isSupported().then((supported) => {
-    if (!supported) return
-    const app = getFirebaseApp()
-    const messaging = getMessaging(app)
-    onMessage(messaging, callback)
+
+function getFirebaseApp(): FirebaseApp {
+  if (getApps().length) return getApps()[0]
+  return initializeApp({
+    apiKey: env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain: env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    projectId: env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    storageBucket: env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    appId: env.NEXT_PUBLIC_FIREBASE_APP_ID,
   })
+}
+
+export async function fetchFcmToken(registration: ServiceWorkerRegistration): Promise<string> {
+  const vapidKey = getVapidKey()
+  if (!vapidKey) throw new Error("BAD_VAPID")
+  if (!(await isSupported())) throw new Error("UNSUPPORTED")
+
+  const messaging = getMessaging(getFirebaseApp())
+  const token = await getToken(messaging, { vapidKey, serviceWorkerRegistration: registration })
+  if (!token) throw new Error("NO_TOKEN")
+  return token
+}
+
+export async function dropFcmToken() {
+  try {
+    if (await isSupported()) await deleteToken(getMessaging(getFirebaseApp()))
+  } catch {}
 }
