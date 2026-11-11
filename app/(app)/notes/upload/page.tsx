@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Combobox } from "@/components/combobox"
 import { Autocomplete } from "@/components/autocomplete"
+import { uploadToCloudinary, MAX_DIRECT_UPLOAD_BYTES } from "@/lib/direct-upload"
+import { resizeKeepAspect } from "@/lib/image-utils"
 
 type Course = { id: number; name: string }
 type Semester = { id: number; number: number }
@@ -28,6 +30,9 @@ const CATEGORY_OPTIONS = [
   { value: "OTHERS", label: "Others" },
   { value: "SYLLABUS", label: "Syllabus" },
 ]
+
+const ALLOWED_TYPES = ["application/pdf", "image/jpeg", "image/png"]
+const PREMIUM_ENABLED = process.env.NEXT_PUBLIC_PREMIUM_ENABLED === "true"
 
 function UploadForm() {
   const router = useRouter()
@@ -51,6 +56,8 @@ function UploadForm() {
   const [fulfillsRequestId, setFulfillsRequestId] = useState(searchParams.get("requestId") || "")
 
   const [loading, setLoading] = useState(false)
+  const [stage, setStage] = useState<"idle" | "uploading" | "saving">("idle")
+  const [progress, setProgress] = useState(0)
   const [error, setError] = useState("")
 
   useEffect(() => {
@@ -87,43 +94,73 @@ function UploadForm() {
       .then(setSubjects)
   }, [semesterId])
 
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setError("")
+    const picked = e.target.files?.[0] ?? null
+    if (!picked) {
+      setFile(null)
+      return
+    }
+
+    if (!ALLOWED_TYPES.includes(picked.type)) {
+      setError("Sirf PDF, JPG ya PNG file upload ho sakti hai")
+      e.target.value = ""
+      setFile(null)
+      return
+    }
+    setFile(picked)
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError("")
 
-    if (!file || !title || !courseId || !semesterId) {
+    if (!file || !title.trim() || !courseId || !semesterId) {
       setError("Title, Branch, Semester and File are required")
       return
     }
 
     setLoading(true)
 
-    const formData = new FormData()
-    formData.append("title", title)
-    formData.append("description", description)
-    formData.append("file", file)
-    formData.append("courseId", courseId)
-    formData.append("semesterId", semesterId)
-    formData.append("subjectId", subjectId)
-    formData.append("category", category)
-    if (fulfillsRequestId) formData.append("fulfillsRequestId", fulfillsRequestId)
-    formData.append("isPremium", isPremium ? "true" : "false")
-    formData.append("unit", unit)
+    try {
+      // Photo hai to pehle halki kar do (PDF ko chhedte nahi)
+      const toUpload = file.type.startsWith("image/") ? await resizeKeepAspect(file) : file
 
-    const res = await fetch("/api/notes/upload", {
-      method: "POST",
-      body: formData,
-    })
+      if (toUpload.size > MAX_DIRECT_UPLOAD_BYTES) {
+        throw new Error("File 10 MB se badi hai. Chhoti karke dobara try karo (PDF ke liye 'compress PDF' site use karo).")
+      }
 
-    const data = await res.json()
-    setLoading(false)
+      setStage("uploading")
+      setProgress(0)
+      const fileUrl = await uploadToCloudinary(toUpload, "campushub-notes", setProgress)
 
-    if (!res.ok) {
-      setError(data.error)
-      return
+      setStage("saving")
+      const res = await fetch("/api/notes/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          description,
+          fileUrl,
+          courseId,
+          semesterId,
+          subjectId: subjectId || null,
+          category,
+          unit,
+          isPremium: PREMIUM_ENABLED ? isPremium : false,
+          fulfillsRequestId: fulfillsRequestId || null,
+        }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Could not save your upload")
+
+      router.push("/notes")
+    } catch (err: any) {
+      setError(err?.message || "Upload failed. Please try again.")
+      setLoading(false)
+      setStage("idle")
     }
-
-    router.push("/notes")
   }
 
   return (
@@ -132,9 +169,7 @@ function UploadForm() {
         {/* Header */}
         <div className="mb-6 rounded-3xl bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white shadow-xl sm:p-8">
           <div className="flex flex-col gap-3">
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              Upload Academic Resource
-            </h1>
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Upload Academic Resource</h1>
             <p className="text-sm text-blue-100 sm:text-base">
               Share your notes, assignments, papers and study materials with CampusHub students.
             </p>
@@ -147,14 +182,11 @@ function UploadForm() {
         </div>
 
         {/* Form Card */}
-        <form onSubmit={handleSubmit} className="rounded-3xl border bg-background p-5 shadow-xl space-y-6 sm:p-8">
+        <form onSubmit={handleSubmit} className="space-y-6 rounded-3xl border bg-white p-5 shadow-xl sm:p-8">
           {error && (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-600">
-              {error}
-            </div>
+            <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-600">{error}</div>
           )}
 
-          {/* Title */}
           <div className="space-y-2">
             <Label className="font-semibold">Resource Title</Label>
             <Input
@@ -165,20 +197,18 @@ function UploadForm() {
             />
           </div>
 
-          {/* Description */}
           <div className="space-y-2">
             <Label className="font-semibold">Description</Label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe your resource..."
-              className="min-h-[120px] rounded-xl resize-none"
+              className="min-h-[120px] resize-none rounded-xl"
             />
           </div>
 
-          {/* Academic Details Section */}
-          <div className="rounded-2xl border bg-muted/40 p-4 space-y-5 sm:p-6">
-            <h2 className="text-lg font-bold text-foreground">📖 Academic Information</h2>
+          <div className="space-y-5 rounded-2xl border bg-slate-50 p-4 sm:p-6">
+            <h2 className="text-lg font-bold text-slate-800">📖 Academic Information</h2>
 
             <div className="grid gap-5 md:grid-cols-2">
               <div className="space-y-2">
@@ -203,7 +233,6 @@ function UploadForm() {
               </div>
             </div>
 
-            {/* Subject Section */}
             <div className="space-y-2">
               <Label className="font-medium">Subject / Unit</Label>
               <Autocomplete
@@ -222,23 +251,16 @@ function UploadForm() {
             </div>
           </div>
 
-          {/* Resource Category */}
-          <div className="rounded-2xl border bg-card p-4 space-y-3 sm:p-6">
-            <h2 className="text-lg font-bold text-foreground">📂 Resource Category</h2>
-            <Combobox
-              placeholder="Select Resource Type"
-              value={category}
-              onChange={setCategory}
-              options={CATEGORY_OPTIONS}
-            />
+          <div className="space-y-3 rounded-2xl border bg-white p-4 sm:p-6">
+            <h2 className="text-lg font-bold text-slate-800">📂 Resource Category</h2>
+            <Combobox placeholder="Select Resource Type" value={category} onChange={setCategory} options={CATEGORY_OPTIONS} />
           </div>
 
-          {/* Fulfilling a Request */}
           {openRequests.length > 0 && (
-            <div className="rounded-2xl border border-green-200 bg-green-50 p-4 space-y-3 sm:p-6">
-              <h2 className="text-lg font-bold text-foreground">🙋 Fulfilling a Request?</h2>
-              <p className="text-xs text-muted-foreground">
-                If someone requested this resource, select it below — they'll be notified instantly.
+            <div className="space-y-3 rounded-2xl border border-green-200 bg-green-50 p-4 sm:p-6">
+              <h2 className="text-lg font-bold text-slate-800">🙋 Fulfilling a Request?</h2>
+              <p className="text-xs text-slate-600">
+                If someone requested this resource, select it below. They'll be notified instantly.
               </p>
               <Combobox
                 placeholder="Select a request (optional)"
@@ -249,60 +271,71 @@ function UploadForm() {
             </div>
           )}
 
-          {/* Premium Section */}
-          <div className="rounded-2xl border border-yellow-200 bg-gradient-to-r from-yellow-50 to-orange-50 p-4 sm:p-5">
-            <div className="flex items-start gap-3">
-              <input
-                type="checkbox"
-                id="isPremium"
-                checked={isPremium}
-                onChange={(e) => setIsPremium(e.target.checked)}
-                className="mt-1 h-5 w-5 cursor-pointer accent-yellow-500"
-              />
-              <div>
-                <Label htmlFor="isPremium" className="cursor-pointer font-semibold text-slate-800">
-                  ⭐ Mark as Premium Resource
-                </Label>
-                <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
-                  Only Premium members will be able to access this resource.
-                </p>
+          {PREMIUM_ENABLED && (
+            <div className="rounded-2xl border border-yellow-200 bg-gradient-to-r from-yellow-50 to-orange-50 p-4 sm:p-5">
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  id="isPremium"
+                  checked={isPremium}
+                  onChange={(e) => setIsPremium(e.target.checked)}
+                  className="mt-1 h-5 w-5 cursor-pointer accent-yellow-500"
+                />
+                <div>
+                  <Label htmlFor="isPremium" className="cursor-pointer font-semibold text-slate-800">
+                    ⭐ Mark as Premium Resource
+                  </Label>
+                  <p className="mt-1 text-xs text-slate-600 sm:text-sm">
+                    Only Premium members will be able to access this resource.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Upload File */}
           <div className="rounded-2xl border-2 border-dashed border-blue-200 bg-blue-50/50 p-5 sm:p-6">
             <div className="mb-3 text-center">
               <div className="text-4xl">📄</div>
-              <h3 className="mt-2 font-semibold text-foreground">Upload PDF / Image</h3>
-              <p className="text-sm text-muted-foreground">PDF, JPG, PNG supported</p>
+              <h3 className="mt-2 font-semibold text-slate-800">Upload PDF / Image</h3>
+              <p className="text-sm text-slate-500">PDF, JPG, PNG • max 10 MB</p>
             </div>
 
             <Input
               type="file"
               accept=".pdf,.jpg,.jpeg,.png"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              required
+              onChange={handleFileChange}
+              disabled={loading}
               className="cursor-pointer rounded-xl bg-white"
             />
+
+            {file && (
+              <p className="mt-2 truncate text-center text-xs text-slate-600">
+                {file.name} • {(file.size / (1024 * 1024)).toFixed(1)} MB
+              </p>
+            )}
+
+            {stage === "uploading" && (
+              <div className="mt-4 space-y-1.5">
+                <div className="h-2 overflow-hidden rounded-full bg-blue-100">
+                  <div className="h-full rounded-full bg-blue-600 transition-all" style={{ width: `${progress}%` }} />
+                </div>
+                <p className="text-center text-xs text-slate-600">Uploading... {progress}%</p>
+              </div>
+            )}
           </div>
 
-          {/* Submit Button */}
           <Button
             type="submit"
             disabled={loading}
             className="h-12 w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-base font-semibold shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl"
           >
-            {loading ? "Uploading..." : "🚀 Upload Resource"}
+            {stage === "uploading" ? `Uploading ${progress}%` : stage === "saving" ? "Saving..." : "🚀 Upload Resource"}
           </Button>
         </form>
 
-        {/* Footer Info */}
         <div className="mt-6 rounded-2xl bg-slate-900 p-5 text-center text-white shadow-lg">
           <p className="text-sm font-medium">CampusHub Community Sharing</p>
-          <p className="mt-1 text-xs text-slate-300">
-            Help thousands of students by sharing quality resources.
-          </p>
+          <p className="mt-1 text-xs text-slate-300">Help thousands of students by sharing quality resources.</p>
         </div>
       </div>
     </div>

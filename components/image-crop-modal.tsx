@@ -17,21 +17,40 @@ const ASPECTS: { label: string; value: number | null }[] = [
 const MIN_SIZE = 60
 const MAX_OUTPUT_SIDE = 1600
 
+function initialBox(rect: Rect, a: number | null): Rect {
+  if (a === null) {
+    return { x: rect.x + rect.w * 0.08, y: rect.y + rect.h * 0.08, w: rect.w * 0.84, h: rect.h * 0.84 }
+  }
+  let w = rect.w * 0.84
+  let h = w / a
+  if (h > rect.h * 0.84) {
+    h = rect.h * 0.84
+    w = h * a
+  }
+  return { x: rect.x + (rect.w - w) / 2, y: rect.y + (rect.h - h) / 2, w, h }
+}
+
 export function ImageCropModal({
   file,
   open,
   onClose,
   onCropped,
+  shape = "rect",
+  title,
 }: {
   file: File | null
   open: boolean
   onClose: () => void
   onCropped: (cropped: File) => void
+  shape?: "rect" | "round"
+  title?: string
 }) {
+  const round = shape === "round"
+
   const [previewUrl, setPreviewUrl] = useState("")
   const [imgRect, setImgRect] = useState<Rect | null>(null)
   const [box, setBox] = useState<Rect | null>(null)
-  const [aspect, setAspect] = useState<number | null>(null)
+  const [aspect, setAspect] = useState<number | null>(round ? 1 : null)
   const [busy, setBusy] = useState(false)
 
   const containerRef = useRef<HTMLDivElement>(null)
@@ -47,9 +66,9 @@ export function ImageCropModal({
     setPreviewUrl(url)
     setImgRect(null)
     setBox(null)
-    setAspect(null)
+    setAspect(round ? 1 : null)
     return () => URL.revokeObjectURL(url)
-  }, [file])
+  }, [file, round])
 
   function handleImageLoad() {
     const container = containerRef.current
@@ -64,30 +83,12 @@ export function ImageCropModal({
     const rect = { x: (cw - w) / 2, y: (ch - h) / 2, w, h }
 
     setImgRect(rect)
-    setBox({ x: rect.x + w * 0.08, y: rect.y + h * 0.08, w: w * 0.84, h: h * 0.84 })
+    setBox(initialBox(rect, round ? 1 : null))
   }
 
   function applyAspect(value: number | null) {
     setAspect(value)
-    if (!imgRect) return
-
-    if (value === null) {
-      setBox({
-        x: imgRect.x + imgRect.w * 0.08,
-        y: imgRect.y + imgRect.h * 0.08,
-        w: imgRect.w * 0.84,
-        h: imgRect.h * 0.84,
-      })
-      return
-    }
-
-    let w = imgRect.w * 0.84
-    let h = w / value
-    if (h > imgRect.h * 0.84) {
-      h = imgRect.h * 0.84
-      w = h * value
-    }
-    setBox({ x: imgRect.x + (imgRect.w - w) / 2, y: imgRect.y + (imgRect.h - h) / 2, w, h })
+    if (imgRect) setBox(initialBox(imgRect, value))
   }
 
   function startDrag(e: React.PointerEvent, mode: "move" | "resize") {
@@ -192,7 +193,7 @@ export function ImageCropModal({
     >
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Adjust your photo</DialogTitle>
+          <DialogTitle>{title ?? (round ? "Crop your profile photo" : "Adjust your photo")}</DialogTitle>
         </DialogHeader>
 
         <div
@@ -215,23 +216,27 @@ export function ImageCropModal({
 
           {box && (
             <div
-              className="absolute cursor-move border-2 border-white"
+              className={`absolute cursor-move border-2 border-white ${round ? "rounded-full" : ""}`}
               style={{
                 left: box.x,
                 top: box.y,
                 width: box.w,
                 height: box.h,
-                boxShadow: "0 0 0 9999px rgba(0,0,0,0.55)",
+                boxShadow: "0 0 0 9999px rgba(0,0,0,0.6)",
               }}
               onPointerDown={(e) => startDrag(e, "move")}
             >
-              <div className="pointer-events-none absolute inset-0 grid grid-cols-3 grid-rows-3">
-                {Array.from({ length: 9 }).map((_, i) => (
-                  <div key={i} className="border border-white/25" />
-                ))}
-              </div>
+              {!round && (
+                <div className="pointer-events-none absolute inset-0 grid grid-cols-3 grid-rows-3">
+                  {Array.from({ length: 9 }).map((_, i) => (
+                    <div key={i} className="border border-white/25" />
+                  ))}
+                </div>
+              )}
               <div
-                className="absolute bottom-0 right-0 flex h-8 w-8 cursor-nwse-resize items-end justify-end"
+                className={`absolute flex h-8 w-8 cursor-nwse-resize items-end justify-end ${
+                  round ? "bottom-[3%] right-[3%]" : "bottom-0 right-0"
+                }`}
                 onPointerDown={(e) => startDrag(e, "resize")}
               >
                 <span className="h-4 w-4 rounded-sm border-2 border-primary bg-white" />
@@ -240,35 +245,40 @@ export function ImageCropModal({
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5">
-          {ASPECTS.map((a) => (
-            <button
-              type="button"
-              key={a.label}
-              onClick={() => applyAspect(a.value)}
-              className={`rounded-full border px-3 py-1 text-xs transition-colors ${
-                aspect === a.value ? "border-primary bg-primary text-primary-foreground" : "bg-card"
-              }`}
-            >
-              {a.label}
-            </button>
-          ))}
-        </div>
+        {!round && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {ASPECTS.map((a) => (
+              <button
+                type="button"
+                key={a.label}
+                onClick={() => applyAspect(a.value)}
+                className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                  aspect === a.value ? "border-primary bg-primary text-primary-foreground" : "bg-card"
+                }`}
+              >
+                {a.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         <p className="text-[11px] leading-relaxed text-muted-foreground">
-          Box ko drag karke move karo, neeche-right corner se size badlo. Crop nahi karna to "Use Full Photo" dabao,
-          poori photo jaisi hai waisi hi jaayegi.
+          {round
+            ? "Drag the circular box over your face and resize it using the corner handles. Only the area inside the box will be used as your profile photo."
+            : 'Drag the box to move it and resize it using the bottom-right corner. If you do not want to crop the photo, click Use Full Photo" .'}
         </p>
 
-        <div className="grid grid-cols-3 gap-2">
+        <div className={`grid gap-2 ${round ? "grid-cols-2" : "grid-cols-3"}`}>
           <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={busy}>
             Cancel
           </Button>
-          <Button type="button" variant="outline" size="sm" onClick={handleUseFull} disabled={busy}>
-            Use Full Photo
-          </Button>
+          {!round && (
+            <Button type="button" variant="outline" size="sm" onClick={handleUseFull} disabled={busy}>
+              Use Full Photo
+            </Button>
+          )}
           <Button type="button" size="sm" onClick={handleCrop} disabled={busy || !box}>
-            Crop & Use
+            {round ? "Save photo" : "Crop & Use"}
           </Button>
         </div>
       </DialogContent>

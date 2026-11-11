@@ -5,12 +5,12 @@ import { checkRateLimit } from "@/lib/rate-limit"
 import { firebaseAdminEnvStatus } from "@/lib/firebase-admin"
 import { sendPushToUsers, type PushSummary } from "@/lib/notification-service"
 
-async function currentUserId() {
+async function superAdminId() {
   const session = await auth()
   const email = session?.user?.email
   if (!email) return null
-  const user = await prisma.user.findUnique({ where: { email }, select: { id: true } })
-  return user?.id ?? null
+  const user = await prisma.user.findUnique({ where: { email }, select: { id: true, role: true } })
+  return user && user.role === "SUPER_ADMIN" ? user.id : null
 }
 
 function hintFor(s: PushSummary): string | undefined {
@@ -25,8 +25,8 @@ function hintFor(s: PushSummary): string | undefined {
 }
 
 export async function GET() {
-  const userId = await currentUserId()
-  if (!userId) return NextResponse.json({ error: "Login is required" }, { status: 401 })
+  const userId = await superAdminId()
+  if (!userId) return NextResponse.json({ error: "Permission denied" }, { status: 403 })
 
   const devices = await prisma.userDevice.findMany({
     where: { userId },
@@ -41,8 +41,8 @@ export async function GET() {
 }
 
 export async function POST() {
-  const userId = await currentUserId()
-  if (!userId) return NextResponse.json({ error: "Login is required" }, { status: 401 })
+  const userId = await superAdminId()
+  if (!userId) return NextResponse.json({ error: "Permission denied" }, { status: 403 })
 
   const rate = checkRateLimit(`push-test:${userId}`, { maxAttempts: 5, windowMs: 60_000 })
   if (!rate.allowed) return NextResponse.json({ error: "Thoda ruko, ek minute me 5 se zyada test nahi" }, { status: 429 })

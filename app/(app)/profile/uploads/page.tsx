@@ -1,9 +1,9 @@
 import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, FileUp } from "lucide-react"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { EmptyState } from "@/components/empty-state"
-import { FileUp } from "lucide-react"
+import { DeleteNoteButton } from "@/components/delete-note-button"
 
 export default async function MyUploadsPage() {
   const session = await auth()
@@ -31,18 +31,21 @@ export default async function MyUploadsPage() {
       ) : (
         <div className="space-y-2">
           {notes.map((note) => (
-            <Link key={note.id} href={`/notes/${note.id}`}>
-              <div className="rounded-xl border bg-card p-4 hover:border-primary transition-colors flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium">{note.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {new Date(note.createdAt).toLocaleDateString()}
+            <div key={note.id} className="flex items-center gap-2 rounded-xl border bg-card p-4 transition-colors hover:border-primary">
+              <Link href={`/notes/${note.id}`} className="flex min-w-0 flex-1 items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{note.title}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {new Date(note.createdAt).toLocaleDateString("en-GB")}
                     {note.isPremium && " • Premium"}
                   </p>
                 </div>
-                <p className="text-xs text-muted-foreground shrink-0 ml-2">{note.views} views • {note.downloads} downloads</p>
-              </div>
-            </Link>
+                <p className="shrink-0 text-xs text-muted-foreground">
+                  {note.views} views • {note.downloads} downloads
+                </p>
+              </Link>
+              <DeleteNoteButton id={note.id} title={note.title} />
+            </div>
           ))}
         </div>
       )}
